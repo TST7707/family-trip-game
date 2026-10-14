@@ -138,3 +138,15 @@ textarea.text{min-height:120px}
 .cmts{margin-top:8px;text-align:left}
 .cmts .cmt{font-size:14px;margin:4px 0}
 .cmt-in{flex:1;min-width:0}
+
+/* v1.3：每日行程時間軸 */
+.timeline{position:relative;margin-left:8px;padding-left:20px;border-left:2px solid var(--sep,rgba(0,0,0,.12))}
+.day{position:relative;margin:0 0 10px}
+.day summary{list-style:none;cursor:pointer;display:flex;flex-wrap:wrap;align-items:center;gap:8px;min-height:44px;padding:6px 0}
+.day summary::-webkit-details-marker{display:none}
+.day .dot{position:absolute;left:-27px;top:16px;width:12px;height:12px;border-radius:50%;background:var(--primary)}
+.day .dt{font-weight:700}
+.day .dc{color:var(--muted,#8E8E93);font-size:14px}
+.day-body{padding:4px 0 8px}
+.plan-list{list-style:none;padding:0;margin:8px 0 0}
+.plan-list li{display:flex;justify-content:space-between;gap:8px;padding:8px 0;border-bottom:1px solid var(--sep,rgba(0,0,0,.08))}

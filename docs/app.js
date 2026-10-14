@@ -338,7 +338,9 @@ route('/', () => {
     <span>城市卡 ${c.cityCards.length} 張・景點 ${c.spots.length} 個</span></a>`).join('');
   view(`<div class="sub">${esc(S.player)}，你好</div><h1>家族任務遊戲</h1><p class="sub">旅遊也能解任務!</p>${hero}
     <h2>選一座城市</h2><div class="grid2">${tiles}</div>
-    <div style="margin-top:16px"><a class="btn ghost block" href="#/help">玩法說明</a></div>`);
+    ${t < RESET_DATE ? '<div class="card" style="margin-top:12px"><b>出發前的分數 12/7 會清空</b><p class="sub" style="margin:4px 0 0">12/9 出發後才正式計分。</p></div>' : ''}
+    <div style="margin-top:16px"><a class="btn block" href="#/trip">看每日行程</a></div>
+    <div style="margin-top:10px"><a class="btn ghost block" href="#/help">玩法說明</a></div>`);
   return 'home';
 });
 
@@ -1081,6 +1083,70 @@ route('/help', () => {
     <div class="card"><h3>留言</h3><p>在「排行」看大家的九宮格，留一句評語就 +5 分，每張照片只能留一次。</p></div>
     <div class="card"><h3>計分</h3><p>初階題 10 分、挑戰題 20 分、長題 30 分、現場驗證 20 分、加分題 15 分、現場任務 30 分、九宮格 20 分、留言 5 分、小遊戲 5–30 分。每題只能答一次。</p></div>
     <div class="card"><h3>沒有網路的時候</h3><p>題目、拍照、拼貼都能照常玩。上傳和分數會先存在手機，連上網路再自動補傳。</p></div>`);
+  return 'home';
+});
+
+
+/* ---------- 每日行程（只寫那天可能去的地方；還沒定的會標出來） ---------- */
+const RESET_DATE = '2026-12-07';
+const WEEK = ['日', '一', '二', '三', '四', '五', '六'];
+const DAY_NOTE = {
+  '2026-12-09': '巴塞隆納的第一天，還沒定去哪裡，可以先看城市卡。',
+  '2026-12-11': '聖家堂（四人去，已定）。其他景點還沒定。',
+  '2026-12-12': '巴塞隆納的最後一天，還沒定去哪裡。',
+  '2026-12-19': '下午去加泰隆尼亞音樂宮（已定）。',
+  '2026-12-20': '還沒定去哪裡。',
+  '2026-12-21': '還沒定去哪裡。',
+  '2026-12-26': '瓜迪斯 3 天中的一天，會去阿爾罕布拉宮（票已買）。',
+  '2026-12-27': '瓜迪斯 3 天中的一天，還沒定去哪裡。',
+  '2026-12-28': '瓜迪斯 3 天中的一天，還沒定去哪裡。',
+  '2026-12-18': '海上日，在船上玩，不下船。',
+  '2027-01-01': '元旦，還沒定去哪裡。',
+  '2027-01-03': '托雷多或賽哥維亞一日遊，哪一天還沒定。',
+  '2027-01-04': '托雷多或賽哥維亞一日遊，哪一天還沒定。',
+  '2027-01-06': '最後一天，三王節，還沒定去哪裡。',
+};
+function dayName(date) {
+  const d = new Date(date + 'T00:00:00+08:00');
+  return Number(date.slice(5, 7)) + '/' + Number(date.slice(8, 10)) + '（' + WEEK[d.getDay()] + '）';
+}
+function dayPlan(date) {
+  const u = C.unlock[date];
+  const cityId = u ? u[0] : null;
+  const card = u ? CARD[u[0] + '-c' + u[1]] : null;
+  let places = [];
+  if (cityId === 'cruise') {
+    places = CITY.cruise.spots.filter((x) => x.port && x.port.startsWith(date.slice(5).replace('-', '/')))
+      .map((x) => ({ name: x.title, sub: x.port.split(' ').slice(1, 2).join(' ') + '・景點卡' }));
+  } else if (cityId) {
+    places = CITY[cityId].spots.map((x) => ({ name: x.title, sub: '景點卡' }));
+  }
+  const port = cityId === 'cruise' ? (DAY_NOTE[date] && date === '2026-12-18' ? '海上' : (places[0] ? places[0].sub.split('・')[0] : '海上')) : (cityId ? CITY[cityId].name : '');
+  return { cityId, card, places, port };
+}
+route('/trip', () => {
+  const dates = [];
+  for (let d = new Date(TRIP_START + 'T00:00:00+08:00'); ; d = new Date(d.getTime() + 86400000)) {
+    const iso = d.toLocaleDateString('sv-SE', { timeZone: 'Asia/Taipei' });
+    dates.push(iso);
+    if (iso >= TRIP_END) break;
+  }
+  const rows = dates.map((date) => {
+    const p = dayPlan(date);
+    const note = DAY_NOTE[date] || '';
+    const list = p.places.length ? `<ul class="plan-list">${p.places.map((x) => `<li><b>${esc(x.name)}</b><span class="sub">${esc(x.sub)}</span></li>`).join('')}</ul>` : '';
+    return `<details class="day"><summary><span class="dot"></span><span class="dt">${esc(dayName(date))}</span>
+        <span class="dc">${esc(p.port || '')}${p.card ? ' ・ ' + esc(p.card.title.split('：').slice(-1)[0]) : ''}</span></summary>
+        <div class="day-body">
+          ${p.card ? `<p><a href="#/card/${p.card.id}">今天的城市卡：${esc(p.card.title)}</a></p>` : ''}
+          ${note ? `<p class="sub">${esc(note)}</p>` : ''}
+          ${list}
+        </div></details>`;
+  }).join('');
+  view(`${back('#/', '首頁')}<h1>每日行程</h1>
+    <div class="card"><b>提醒：</b>出發前在遊戲裡累積的分數，會在 <b>12/7</b> 清空。12/9 出發後才開始正式計分，請到時候再玩。</div>
+    <p class="sub">點一天就會展開。只寫那天可能會去的地方，還沒定的會寫在上面。行程會隨時更新。</p>
+    <div class="timeline">${rows}</div>`);
   return 'home';
 });
 
