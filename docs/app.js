@@ -1,6 +1,6 @@
 'use strict';
 /* 家族任務遊戲 — single-page app. Content comes from content.json (generated from the script). */
-const APP_VERSION = '1.1.0';
+const APP_VERSION = '1.2.0';
 const TRIP_START = '2026-12-09';
 const TRIP_END = '2027-01-06';
 
@@ -8,6 +8,7 @@ const TRIP_END = '2027-01-06';
 const $ = (s, el = document) => el.querySelector(s);
 const $$ = (s, el = document) => Array.from(el.querySelectorAll(s));
 const esc = (s) => String(s == null ? '' : s).replace(/[&<>"']/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
+const plain = (s) => String(s || '').replace(/<[^>]+>/g, '');
 const CHEV = '<svg class="chev" viewBox="0 0 24 24" aria-hidden="true"><path d="m9 18 6-6-6-6"/></svg>';
 function today() {
   const d = new Date();
@@ -18,6 +19,13 @@ function uid() { return Date.now().toString(36) + Math.random().toString(36).sli
 function toast(msg, ms = 2200) {
   const t = $('#toast'); t.textContent = msg; t.hidden = false;
   clearTimeout(toast._t); toast._t = setTimeout(() => { t.hidden = true; }, ms);
+}
+/* 台灣時間現在是幾點幾分（以分鐘計）。截止時間都用台灣時間，不管人在哪裡。 */
+function taipeiMinutes() {
+  const parts = new Intl.DateTimeFormat('en-GB', { timeZone: 'Asia/Taipei', hour: '2-digit', minute: '2-digit', hourCycle: 'h23' }).formatToParts(new Date());
+  const h = Number(parts.find((p) => p.type === 'hour').value);
+  const m = Number(parts.find((p) => p.type === 'minute').value);
+  return h * 60 + m;
 }
 
 /* ---------- local storage (per device) ---------- */
@@ -33,6 +41,8 @@ const S = {
   get family() { return LS.get('family', []); },
   get paused() { return LS.get('paused', false); },
 };
+/* 從伺服器拿到的最新狀態：讚、留言、最近得分、截止時間 */
+const META = { likes: {}, comments: {}, recent: [], cutoff: '' };
 
 /* ---------- IndexedDB for photos and the upload queue ---------- */
 const DB = (() => {
@@ -90,9 +100,16 @@ function todayCard() {
   if (!u) return null;
   return CARD[u[0] + '-c' + u[1]] || null;
 }
+function cutoffText() { return META.cutoff || LS.get('cutoff', ''); }
+function cutoffPassed() {
+  const m = /^(\d{1,2}):(\d{2})$/.exec(cutoffText());
+  if (!m) return false;
+  return taipeiMinutes() > Number(m[1]) * 60 + Number(m[2]);
+}
 
 /* ---------- scoring ---------- */
 function ledger() { return LS.get('ledger', []); }
+function ledgerHas(key, player = S.player) { return ledger().some((e) => e.id === player + '|' + key); }
 function award({ key, points, label, cardId = '', player = S.player, unique = true }) {
   if (!player) return false;
   const all = ledger();
@@ -146,9 +163,35 @@ function blobToBase64(blob) {
     r.readAsDataURL(blob);
   });
 }
+/* 把伺服器的最新狀態存到手機；如果主辦人清空過（新的一季），就把這支手機上的舊分數也清掉 */
+async function syncMeta(d) {
+  if (!d) return;
+  META.likes = d.likes || {};
+  META.comments = d.comments || {};
+  META.recent = d.recent || [];
+  META.cutoff = d.cutoff || '';
+  LS.set('cutoff', META.cutoff);
+  if (d.epoch != null) {
+    const was = LS.get('epoch', null);
+    if (was !== null && was !== d.epoch) {
+      await wipeLocal();
+      toast('新的一季開始了，分數和照片已重新開始');
+    }
+    LS.set('epoch', d.epoch);
+  }
+}
+async function wipeLocal() {
+  LS.set('ledger', []);
+  LS.set('likes', {});
+  Object.keys(localStorage).filter((k) => k.startsWith('ftg:ans:')).forEach((k) => localStorage.removeItem(k));
+  for (const it of await DB.qAll()) await DB.qDel(it.id);
+}
+
 let flushing = false;
+let again = false;
 async function flush() {
-  if (flushing || S.paused || !S.server.url || !navigator.onLine) return;
+  if (flushing) { again = true; return; }
+  if (S.paused || !S.server.url || !navigator.onLine) return;
   flushing = true;
   try {
     const items = await DB.qAll();
@@ -156,6 +199,14 @@ async function flush() {
     if (scores.length) {
       await api('score', { entries: scores.map((s) => s.entry) });
       for (const s of scores) await DB.qDel(s.id);
+    }
+    for (const l of items.filter((i) => i.type === 'like')) {
+      await api('like', { factId: l.factId, player: l.player, on: l.on });
+      await DB.qDel(l.id);
+    }
+    for (const c of items.filter((i) => i.type === 'comment')) {
+      await api('comment', { id: c.id, fileId: c.fileId, player: c.player, text: c.text, ts: c.ts });
+      await DB.qDel(c.id);
     }
     const photos = items.filter((i) => i.type === 'photo').sort((a, b) => a.ts - b.ts);
     let n = 0;
@@ -167,12 +218,16 @@ async function flush() {
       const data = await blobToBase64(blob);
       await api('photo', Object.assign({}, p.meta, { id: p.id, mime: blob.type || 'image/jpeg', data }));
       await DB.qDel(p.id);
+      if (p.meta.kind === 'task') await DB.del(p.key);
+      // 上傳成功才加分
+      if (p.award) award(p.award);
     }
     if (n) toast('上傳完成，共 ' + n + ' 張');
   } catch (e) {
     if (String(e.message) !== 'no server') toast('上傳暫停，連上網路後會自動再試');
   } finally {
     flushing = false;
+    if (again) { again = false; setTimeout(flush, 0); }
   }
 }
 async function queueCount() { return (await DB.qAll()).length; }
@@ -241,13 +296,13 @@ function back(href, label) { return `<a class="back" href="${href}"><svg class="
 
 /* ---------- onboarding ---------- */
 route('/onboard', () => {
-  view(`<h1>歡迎！</h1>
-    <p class="sub">先告訴我你是誰，分數和照片都會記在你名下。</p>
-    <label class="field"><span>你的名字（例如：爸爸、阿嬤、弟弟）</span><input class="text" id="nm" autocomplete="name" value="${esc(S.player)}"></label>
+  view(`<h1>西班牙＋豪華遊輪之旅要開始了！</h1>
+    <p class="sub">輸入你的名字（中英文、暱稱皆可）</p>
+    <label class="field"><span>你的名字</span><input class="text" id="nm" autocomplete="name" value="${esc(S.player)}"></label>
     <p class="section-label">題目難度</p>
     <div class="pill-switch" id="md"><button type="button" data-m="basic">初階版</button><button type="button" data-m="challenge">我要挑戰</button></div>
     <p class="sub" style="margin-top:8px">初階版只答比較簡單的題目；我要挑戰全部都答，挑戰題分數加倍。之後在「我的」可以改。</p>
-    <button class="btn block" id="go" style="margin-top:16px">開始玩</button>`);
+    <button class="btn block" id="go" style="margin-top:16px">我們出發囉！</button>`);
   let mode = S.mode;
   const paint = () => $$('#md button').forEach((b) => b.classList.toggle('on', b.dataset.m === mode));
   paint();
@@ -281,7 +336,7 @@ route('/', () => {
   }
   const tiles = C.cities.map((c) => `<a class="city-tile" href="#/city/${c.id}"><b>${esc(c.name)}</b>
     <span>城市卡 ${c.cityCards.length} 張・景點 ${c.spots.length} 個</span></a>`).join('');
-  view(`<div class="sub">${esc(S.player)}，你好</div><h1>家族任務遊戲</h1>${hero}
+  view(`<div class="sub">${esc(S.player)}，你好</div><h1>家族任務遊戲</h1><p class="sub">旅遊也能解任務!</p>${hero}
     <h2>選一座城市</h2><div class="grid2">${tiles}</div>
     <div style="margin-top:16px"><a class="btn ghost block" href="#/help">玩法說明</a></div>`);
   return 'home';
@@ -378,8 +433,49 @@ function bindQuiz(card) {
   });
 }
 
+/* ---------- tasks: 照片任務要上傳成功才加分；其他任務直接按 ---------- */
+function needsPhoto(text) { return /拍|照|票根|收據/.test(text); }
+function taskControl(box, o) {
+  const host = $('.tc', box);
+  if (!host) return;
+  const pts = o.points;
+  const noteEl = $('.task-note', box);
+  const note = () => (noteEl ? noteEl.value.trim() : '');
+  const label = () => o.label + (note() ? '（' + note() + '）' : '');
+  const paintDone = () => { host.innerHTML = `<span class="chip good">已完成 +${pts}</span>`; };
+  if (ledgerHas(o.key)) return paintDone();
+  if (!needsPhoto(o.text)) {
+    host.innerHTML = `<button class="btn small ghost" type="button">我們完成了 +${pts}</button>`;
+    $('button', host).onclick = () => { if (award({ key: o.key, points: pts, label: label(), cardId: o.cardId })) paintDone(); };
+    return;
+  }
+  host.innerHTML = `<label class="btn small upload-btn">拍照上傳，成功就 +${pts}<input type="file" accept="image/*" hidden></label>
+    <p class="sub" style="margin:6px 0 0">照片要上傳成功才會加分。</p>`;
+  const input = $('input', host);
+  input.onchange = async () => {
+    const f = input.files && input.files[0];
+    if (!f) return;
+    if (!S.server.url) { toast('請先到「我的」設定家庭雲端，上傳成功才會加分'); input.value = ''; return; }
+    const pk = 'tp:' + o.key + ':' + uid();
+    await DB.put(pk, f);
+    await DB.qPut({
+      id: 'p:' + pk, type: 'photo', ts: Date.now(), key: pk,
+      meta: { player: S.player, cardId: o.cardId || '', cardTitle: o.cardTitle || '', city: o.city || '', theme: o.theme || '任務', date: today(), kind: 'task', slot: 0 },
+      award: { key: o.key, points: pts, label: label(), cardId: o.cardId || '' },
+    });
+    toast('已排進上傳清單，上傳成功就加分');
+    input.value = '';
+    flush();
+  };
+}
+
 /* ---------- card page ---------- */
 const TOOL_FOR = [['命運之輪', 'wheel'], ['物價', 'price'], ['步數', 'steps'], ['神秘任務', 'secret']];
+function factId(card, i) { return card.id + '#' + i; }
+function likeCount(id) {
+  const others = (META.likes[id] || []).filter((n) => n !== S.player).length;
+  return others + (LS.get('likes', {})[id] ? 1 : 0);
+}
 route('/card/:id', (id) => {
   const card = CARD[id];
   if (!card) { location.hash = '#/'; return; }
@@ -399,8 +495,13 @@ route('/card/:id', (id) => {
     html += quizHtml(card, 'b', '加分題');
   } else {
     html += `<button type="button" class="btn ghost block" data-jump="q-p" style="margin-bottom:12px">不想讀？直接跳到題目</button>
-      <details class="read" open><summary>景點小知識 <span class="sub">點一下收起來</span></summary><div class="inner reading">
-      ${card.facts.length ? '<ul class="facts">' + card.facts.map((f) => `<li>${f}</li>`).join('') + '</ul>' : ''}
+      <details class="read" open><summary>景點冷知識 <span class="sub">點一下收起來，覺得特別有趣就按讚</span></summary><div class="inner reading">
+      ${card.facts.length ? card.facts.map((f, i) => {
+        const fid = factId(card, i);
+        const on = !!LS.get('likes', {})[fid];
+        return `<div class="fact"><div class="ftxt">${f}</div>
+          <button type="button" class="like-btn${on ? ' on' : ''}" data-like="${fid}" aria-pressed="${on}">👍 讚 <span>${likeCount(fid)}</span></button></div>`;
+      }).join('') : ''}
       ${card.story.map((p) => `<p>${p}</p>`).join('')}</div></details>
       <p><b>準備好挑戰今天的任務了嗎？</b></p>`;
     html += quizHtml(card, 'p', '出發前的題目');
@@ -410,8 +511,9 @@ route('/card/:id', (id) => {
         ${tool ? `<a class="btn small" href="#/tool/${tool[1]}">打開${esc(tool[0])}工具</a>` : ''}</div>`;
     }
     if (card.tasks.length) {
-      html += `<h2>現場任務</h2><div class="stack">${card.tasks.map((t, i) => `<div class="card"><p>${t}</p>
-        <button class="btn small ghost" data-task="${i}">我們完成了 +30</button></div>`).join('')}</div>`;
+      html += `<h2>現場任務</h2><div class="stack">${card.tasks.map((t, i) => `<div class="card task-box" data-task="${i}"><p>${t}</p>
+        <input class="text task-note" placeholder="寫下細節（選填，例如名字、地點）">
+        <div class="tc"></div></div>`).join('')}</div>`;
     }
     html += `<a class="btn ghost block" href="#/grid/${card.id}/S">開一個這個景點的九宮格</a>`;
     html += quizHtml(card, 'q', '收尾 3 題');
@@ -419,11 +521,26 @@ route('/card/:id', (id) => {
   view(html);
   bindQuiz(card);
   $$('[data-jump]').forEach((b) => b.onclick = () => { const t = document.getElementById(b.dataset.jump); if (t) t.scrollIntoView({ behavior: 'smooth' }); });
-  $$('[data-task]').forEach((b) => {
-    const k = 'task|' + card.id + '|' + b.dataset.task;
-    if (ledger().some((e) => e.id === S.player + '|' + k)) { b.disabled = true; b.textContent = '已完成'; }
-    b.onclick = () => { if (award({ key: k, points: 30, label: '任務：' + card.title, cardId: card.id })) { b.disabled = true; b.textContent = '已完成'; } };
+  $$('[data-like]').forEach((b) => b.onclick = () => {
+    const fid = b.dataset.like;
+    const m = LS.get('likes', {});
+    m[fid] = !m[fid];
+    if (!m[fid]) delete m[fid];
+    LS.set('likes', m);
+    b.classList.toggle('on', !!m[fid]);
+    b.setAttribute('aria-pressed', String(!!m[fid]));
+    $('span', b).textContent = likeCount(fid);
+    DB.qPut({ id: 'l:' + fid, type: 'like', factId: fid, player: S.player, on: !!m[fid] }).then(flush);
   });
+  if (card.type !== 'city') {
+    $$('.task-box').forEach((box) => {
+      const i = Number(box.dataset.task);
+      taskControl(box, {
+        key: 'task|' + card.id + '|' + i, points: 30, label: '任務：' + card.title,
+        text: plain(card.tasks[i]), cardId: card.id, cardTitle: card.title, city: city.name, theme: '現場任務',
+      });
+    });
+  }
   return card.type === 'city' && todayCard() === card ? 'today' : 'home';
 });
 
@@ -481,7 +598,7 @@ route('/grid/:cardId/:key', (cardId, key) => {
     $('#out').innerHTML = `<img class="collage" src="${u}" alt="拼好的九宮格">
       <div class="stack"><button class="btn block" id="up">一鍵上傳到家庭雲端</button>
       <button class="btn ghost block" id="save">存到手機</button></div>
-      <p class="sub" style="margin-top:8px">${S.server.url ? '會上傳 9 張原圖和這張拼貼。沒網路時先存在手機，連上網再自動補傳。' : '還沒連上家庭雲端（到「我的」設定），可以先存到手機。'}</p>`;
+      <p class="sub" style="margin-top:8px">${S.server.url ? '會上傳 9 張原圖和這張拼貼。上傳成功就加 20 分。沒網路時先存在手機，連上網再自動補傳。' : '還沒連上家庭雲端（到「我的」設定），可以先存到手機。'}</p>`;
     $('#save').onclick = () => saveBlob(blob, theme.title + '-九宮格.jpg');
     $('#up').onclick = async () => {
       if (!S.server.url) { toast('請先到「我的」設定家庭雲端'); return; }
@@ -491,9 +608,12 @@ route('/grid/:cardId/:key', (cardId, key) => {
       for (let i = 0; i < 9; i++) {
         await DB.qPut({ id: 'p:' + slotKey(cardId, key, i) + ':' + ts, type: 'photo', ts: ts + i, key: slotKey(cardId, key, i), meta: Object.assign({ slot: i + 1, kind: 'original' }, base) });
       }
-      await DB.qPut({ id: 'p:' + slotKey(cardId, key, 'collage') + ':' + ts, type: 'photo', ts: ts + 9, key: slotKey(cardId, key, 'collage'), meta: Object.assign({ slot: 0, kind: 'collage' }, base) });
-      award({ key: 'grid|' + card.id + '|' + key, points: 20, label: '九宮格：' + theme.title, cardId: card.id });
-      toast('已排進上傳清單');
+      await DB.qPut({
+        id: 'p:' + slotKey(cardId, key, 'collage') + ':' + ts, type: 'photo', ts: ts + 9, key: slotKey(cardId, key, 'collage'),
+        meta: Object.assign({ slot: 0, kind: 'collage' }, base),
+        award: { key: 'grid|' + card.id + '|' + key, points: 20, label: '九宮格：' + theme.title, cardId: card.id },
+      });
+      toast('已排進上傳清單，上傳成功就加分');
       flush();
     };
   };
@@ -548,39 +668,67 @@ async function saveBlob(blob, name) {
   a.href = URL.createObjectURL(blob); a.download = name; a.click();
 }
 
-/* ---------- tools ---------- */
+/* ---------- tools (遊戲間) ---------- */
 const SECRET_TASKS = [
-  '讓一位家人不知不覺說出「好好吃」三次。', '偷拍到一位家人打哈欠的瞬間。', '讓一位家人跟一座雕像擺一樣的姿勢合照，不能說是任務。',
-  '讓全家在同一張照片裡同時比 YA。', '用當地話說「謝謝」給 3 個不同的人聽，還要讓家人注意到。', '讓一位家人幫你拍一張「你和一扇藍色的門」。',
-  '偷拍到一位家人吃東西吃到一半的瞬間。', '讓一位家人自己說出今天景點的名字，不能提示。', '晚餐時讓大家討論 30 秒「今天學到的一件事」。',
-  '找到一隻狗，讓一位家人跟牠合照。', '讓家人用你的手機幫你拍一張跳起來的照片。', '收集 3 張不同的票根或收據。',
-  '讓兩位家人在照片裡牽手。', '讓一位家人用「累」以外的形容詞形容今天。', '偷偷記下一位家人今天說了幾次「好漂亮」，晚上公布。',
-  '讓一位家人陪你買一樣東西，不能說是任務。', '拍到一位家人和街頭藝人的合照。', '讓一張全家福裡每個人身上都有紅色。',
-  '讓一位家人請你喝一杯飲料。', '拍到一位家人認真看地圖的照片。', '今天幫每位家人各拍一張「最佳照片」。',
-  '讓一位家人跟你學一句西班牙文或加泰隆尼亞文。', '拍到一張鐘樓和家人的合照。', '讓一位家人說出今天答錯的一題。',
-  '偷拍到一位家人笑到眼睛瞇起來。', '在噴泉邊讓一位家人丟硬幣許願，不能說是任務。', '跟一位家人交換一個小東西（糖果、明信片都可以）。',
-  '讓同一位家人出現在今天 3 個不同地點的照片裡。', '讓一位家人模仿一幅畫或一張海報的動作。', '不被發現地拍下全家今天的鞋子，晚上比誰的最髒。',
+  '讓一位家人不知不覺說出「好好吃」三次。',
+  '偷拍到一位家人打哈欠的瞬間。',
+  '讓一位家人跟一座雕像擺一樣的姿勢合照，不能說是任務。',
+  '讓全家在同一張照片裡同時比 YA。',
+  '用當地話跟 3 個不同的人說謝謝，並寫下他們是誰（例如：餐廳服務生）。',
+  '讓一位家人幫你拍一張「你和一扇藍色的門」。',
+  '偷拍到一位家人吃東西吃到一半的瞬間。',
+  '讓一位家人在無任何提示的情況下，說出今天所有的景點。',
+  '晚餐時讓大家討論 30 秒「今天學到的一件事」。',
+  '找一個你覺得最好笑的路牌，讓一位家人跟它合照。',
+  '讓家人用你的手機幫你拍一張跳起來的照片。',
+  '收集 3 張不同的票根或收據，全部拍進同一張照片裡上傳。',
+  '讓兩位家人在照片裡擁抱。',
+  '讓一位家人用「累」以外的形容詞形容今天。',
+  '偷偷記下一位家人今天說了幾次「好漂亮」，晚上公布。',
+  '讓一位家人陪你買一樣東西，不能說是任務。',
+  '拍到一位家人和街頭藝人的合照。',
+  '讓一張全家福裡每個人身上都有紅色。',
+  '讓一位家人請你喝一杯飲料。',
+  '拍到一位家人認真看地圖的照片。',
+  '今天幫每位家人各拍一張「最佳照片」。',
+  '讓一位家人跟你學一句西班牙文或加泰隆尼亞文。',
+  '拍到一張鐘樓和家人的合照。',
+  '讓一位家人說出今天答錯的一題。',
+  '偷拍到一位家人笑到眼睛瞇起來。',
+  '在噴泉邊讓一位家人丟硬幣許願，不能說是任務。',
+  '跟一位家人交換一個小東西（糖果、明信片都可以）。',
+  '讓同一位家人出現在今天 3 個不同地點的照片裡。',
+  '讓一位家人模仿一幅畫或一張海報的動作，並拍下來。',
+  '替一位家人想好一個今天的封號，當晚大家投票決定要不要用。',
 ];
 route('/tools', () => {
-  view(`<h1>遊戲工具</h1><p class="sub">景點小遊戲會用到的工具。分數會記在玩的人名下。</p>
+  view(`<h1>遊戲間</h1><p class="sub">景點小遊戲和各種小任務都在這裡。分數會記在玩的人名下。</p>
     <div class="list">
       <a class="item" href="#/tool/wheel"><div class="t"><b>命運之輪</b><span>轉一次，轉到什麼就做什麼</span></div>${CHEV}</a>
       <a class="item" href="#/tool/price"><div class="t"><b>物價猜猜猜</b><span>手機輪流傳，每人偷偷輸入猜價</span></div>${CHEV}</a>
-      <a class="item" href="#/tool/steps"><div class="t"><b>步數猜猜猜</b><span>進景點前猜，出來對答案</span></div>${CHEV}</a>
-      <a class="item" href="#/tool/secret"><div class="t"><b>神秘任務</b><span>輸入實體籤卡上的號碼，偷看任務</span></div>${CHEV}</a>
+      <a class="item" href="#/tool/steps"><div class="t"><b>步數猜猜猜</b><span>進景點前猜，出來對答案（可以在截止時間前下）</span></div>${CHEV}</a>
+      <a class="item" href="#/tool/secret"><div class="t"><b>神秘任務</b><span>填一個你今天喜歡的數字，領取小任務</span></div>${CHEV}</a>
       <a class="item" href="#/tool/give"><div class="t"><b>給分</b><span>連連看、小小觀察家、當一次雕像等遊戲的勝利者</span></div>${CHEV}</a>
     </div>`);
   return 'tools';
 });
+const WHEEL_DEFAULT = [
+  '負責今天所有的點餐',
+  '找兩個家人一起跟一扇漂亮的門合照',
+  '全家拍一張每個人姿勢都不同的照片',
+  '與一個已經1000歲的東西合照',
+  '找一個家人跟你一起模仿最近雕像的動作，並拍下來',
+  '跟當地人學一句當地話',
+];
 route('/tool/wheel', () => {
-  const def = LS.get('wheel', ['模仿附近一座雕像', '學一句當地話', '找一個紅色的東西', '全家拍一張跳起來的照片', '找一個比你老的東西', '自由選擇！']);
-  view(`${back('#/tools', '遊戲工具')}<h1>命運之輪</h1>
+  const def = LS.get('wheel2', WHEEL_DEFAULT);
+  view(`${back('#/tools', '遊戲間')}<h1>命運之輪</h1>
     <div class="wheel-wrap"><canvas id="wh" width="640" height="640" aria-label="命運之輪"></canvas></div>
     <button class="btn block" id="spin">轉！</button>
     <div id="res" class="center" style="margin:16px 0"></div>
     <details class="read"><summary>修改輪盤上的選項</summary><div class="inner">
       <textarea class="text" id="opts">${esc(def.join('\n'))}</textarea>
-      <p class="sub">一行一個，最多 10 個。可以照景點卡上的小遊戲改。</p>
+      <p class="sub">一行一個，最多 10 個。有拍照的任務，轉到後要拍照上傳成功才加 20 分。</p>
       <button class="btn small" id="saveo">儲存</button></div></details>`);
   let items = def.slice(0, 10), angle = 0;
   const cv = $('#wh'), g = cv.getContext('2d');
@@ -594,7 +742,7 @@ route('/tool/wheel', () => {
       g.fillStyle = colors[i % colors.length]; g.fill();
       g.save(); g.translate(cx, cy); g.rotate((a0 + a1) / 2);
       g.fillStyle = '#000'; g.font = 'bold 24px -apple-system, "PingFang TC", sans-serif'; g.textAlign = 'right';
-      g.fillText(items[i].slice(0, 10), r - 16, 8); g.restore();
+      g.fillText(items[i].slice(0, 8), r - 16, 8); g.restore();
     }
     g.beginPath(); g.moveTo(cx + r - 10, cy); g.lineTo(cx + r + 18, cy - 16); g.lineTo(cx + r + 18, cy + 16); g.closePath();
     g.fillStyle = '#000'; g.fill();
@@ -611,9 +759,10 @@ route('/tool/wheel', () => {
         const n = items.length;
         const a = ((-angle % (Math.PI * 2)) + Math.PI * 2) % (Math.PI * 2);
         const idx = Math.floor((a / (Math.PI * 2)) * n) % n;
-        $('#res').innerHTML = `<div class="big-num" style="font-size:28px">${esc(items[idx])}</div>
-          <button class="btn ghost small" id="did" style="margin-top:10px">${esc(S.player)} 完成了 +20</button>`;
-        $('#did').onclick = () => { award({ key: 'wheel', points: 20, label: '命運之輪：' + items[idx], unique: false }); $('#did').disabled = true; };
+        const text = items[idx];
+        $('#res').innerHTML = `<div class="big-num" style="font-size:24px">${esc(text)}</div>
+          <div class="task-box" id="wres" style="margin-top:12px"><div class="tc"></div></div>`;
+        taskControl($('#wres'), { key: 'wheel|' + uid(), points: 20, label: '命運之輪：' + text, text, cardTitle: '命運之輪', theme: '命運之輪' });
         $('#spin').disabled = false;
       }
     };
@@ -622,21 +771,35 @@ route('/tool/wheel', () => {
   $('#saveo').onclick = () => {
     items = $('#opts').value.split('\n').map((s) => s.trim()).filter(Boolean).slice(0, 10);
     if (items.length < 2) { toast('至少要 2 個選項'); return; }
-    LS.set('wheel', items); draw(); toast('已儲存');
+    LS.set('wheel2', items); draw(); toast('已儲存');
   };
   return 'tools';
 });
+
+/* 得獎紀錄（這支手機上記下的） */
+function winnersHtml(kind) {
+  const rows = LS.get('winners', []).filter((w) => w.tool === kind).slice().reverse();
+  if (!rows.length) return '<p class="sub">還沒有得獎紀錄。</p>';
+  return rows.map((w) => `<div class="score-row"><span class="name">${esc(w.item || '（未填）')}</span>
+    <span class="sub">${esc(w.date)}</span><span class="pts">${esc(w.winner)}</span></div>`).join('');
+}
 function guessTool(kind) {
   const isPrice = kind === 'price';
   const fam = S.family.length ? S.family : [S.player];
-  view(`${back('#/tools', '遊戲工具')}<h1>${isPrice ? '物價猜猜猜' : '步數猜猜猜'}</h1>
+  const late = cutoffPassed();
+  view(`${back('#/tools', '遊戲間')}<h1>${isPrice ? '物價猜猜猜' : '步數猜猜猜'}</h1>
     <p class="sub">${isPrice ? '先不要看標價。手機輪流傳，每個人點自己的名字、偷偷輸入猜的價格（歐元）。' : '進景點前，每個人點自己的名字、偷偷輸入猜的步數。'}</p>
+    ${cutoffText() ? `<p class="sub">每天下好離手的截止時間：台灣時間 ${esc(cutoffText())}</p>` : ''}
+    ${late ? '<div class="card"><b>今天的截止時間已經過了，這次先不能再猜。</b></div>' : ''}
     ${isPrice ? '<div class="card center"><div class="sub">剩餘時間</div><div class="big-num" id="clock">60</div><button class="btn small ghost" id="startc">開始倒數一分鐘</button></div>' : ''}
-    <div class="list" id="who">${fam.map((n) => `<button class="item" type="button" data-n="${esc(n)}" style="width:100%;border:0;background:none;text-align:left"><div class="t"><b>${esc(n)}</b><span class="st">還沒猜</span></div></button>`).join('')}</div>
+    <div class="list" id="who">${fam.map((n) => `<button class="item" type="button" data-n="${esc(n)}" ${late ? 'disabled' : ''} style="width:100%;border:0;background:none;text-align:left"><div class="t"><b>${esc(n)}</b><span class="st">還沒猜</span></div></button>`).join('')}</div>
+    <label class="field"><span>${isPrice ? '猜的是什麼東西（例如：一瓶水）' : '猜的是哪裡（例如：聖家堂）'}</span><input class="text" id="item"></label>
     <label class="field"><span>${isPrice ? '真正的價格（歐元）' : '實際步數'}</span><input class="text" id="real" inputmode="decimal"></label>
-    <button class="btn block" id="rev">公布誰最接近</button><div id="win" style="margin-top:12px"></div>`);
+    <button class="btn block" id="rev">公布誰最接近</button><div id="win" style="margin-top:12px"></div>
+    <h2>得獎紀錄</h2><div class="list" id="wlist">${winnersHtml(kind)}</div>`);
   const guesses = {};
   $$('#who [data-n]').forEach((b) => b.onclick = () => {
+    if (cutoffPassed()) { toast('已經過截止時間'); return; }
     const n = b.dataset.n;
     const v = prompt(n + '，請偷偷輸入你的猜測（數字）');
     if (v == null) return;
@@ -658,35 +821,44 @@ function guessTool(kind) {
     if (isNaN(real) || !names.length) { toast('要先有人猜，也要輸入答案'); return; }
     names.sort((a, b) => Math.abs(guesses[a] - real) - Math.abs(guesses[b] - real));
     const best = names[0];
+    const item = $('#item').value.trim();
     $('#win').innerHTML = `<div class="card"><h3>最接近：${esc(best)}</h3>
       ${names.map((n) => `<div>${esc(n)}：${guesses[n]}（差 ${Math.round(Math.abs(guesses[n] - real) * 100) / 100}）</div>`).join('')}
-      <button class="btn small" id="give" style="margin-top:10px">給 ${esc(best)} 20 分</button></div>`;
-    $('#give').onclick = () => { award({ key: kind, points: 20, label: (isPrice ? '物價猜猜猜' : '步數猜猜猜') + '冠軍', player: best, unique: false }); $('#give').disabled = true; };
+      <button class="btn small" id="give" style="margin-top:10px">給 ${esc(best)} 20 分並記下來</button></div>`;
+    $('#give').onclick = () => {
+      const label = (isPrice ? '物價猜猜猜' : '步數猜猜猜') + (item ? '：' + item : '') + ' 冠軍';
+      award({ key: kind + '|' + item + '|' + today() + '|' + best, points: 20, label, player: best, unique: true });
+      const w = LS.get('winners', []);
+      w.push({ tool: kind, item, winner: best, real, date: today() });
+      LS.set('winners', w);
+      $('#give').disabled = true;
+      $('#wlist').innerHTML = winnersHtml(kind);
+    };
   };
 }
 route('/tool/price', () => { guessTool('price'); return 'tools'; });
 route('/tool/steps', () => { guessTool('steps'); return 'tools'; });
 route('/tool/secret', () => {
-  view(`${back('#/tools', '遊戲工具')}<h1>神秘任務</h1><p class="sub">輸入實體籤卡上的號碼（1–${SECRET_TASKS.length}），確認旁邊沒人在偷看再點開。被發現就作廢。</p>
-    <label class="field"><span>籤卡號碼</span><input class="text" id="no" inputmode="numeric"></label>
-    <button class="secret" id="sec" type="button">輸入號碼後，點這裡偷看</button>
-    <button class="btn ghost block" id="done" style="margin-top:12px" disabled>我完成了 +30</button>`);
-  let open = false;
-  const paint = () => {
+  view(`${back('#/tools', '遊戲間')}<h1>神秘任務</h1>
+    <p class="sub">填一個你今天喜歡的數字（1 到 ${SECRET_TASKS.length} 之間，或任何數字都可以），就會抽到一個小任務。</p>
+    <label class="field"><span>你今天喜歡的數字</span><input class="text" id="no" inputmode="numeric"></label>
+    <button class="btn block" id="sec" type="button">領取任務</button>
+    <div id="secout" style="margin-top:12px"></div>`);
+  $('#sec').onclick = () => {
     const n = parseInt($('#no').value, 10);
-    const ok = n >= 1 && n <= SECRET_TASKS.length;
-    $('#done').disabled = !ok;
-    $('#sec').classList.toggle('open', open && ok);
-    $('#sec').textContent = open && ok ? SECRET_TASKS[n - 1] + '（再點一下蓋起來）' : (ok ? '點這裡偷看任務' : '輸入號碼後，點這裡偷看');
+    if (isNaN(n)) { toast('請先填一個數字'); return; }
+    const idx = ((n - 1) % SECRET_TASKS.length + SECRET_TASKS.length) % SECRET_TASKS.length;
+    const text = SECRET_TASKS[idx];
+    $('#secout').innerHTML = `<div class="card"><h3>神秘任務 #${idx + 1}</h3><p>${esc(text)}</p>
+      <input class="text task-note" placeholder="寫下細節（選填，例如名字）">
+      <div class="task-box"><div class="tc"></div></div></div>`;
+    taskControl($('#secout .task-box'), { key: 'secret|' + (idx + 1), points: 30, label: '神秘任務 #' + (idx + 1) + '：' + text, text, cardTitle: '神秘任務', theme: '神秘任務' });
   };
-  $('#no').oninput = () => { open = false; paint(); };
-  $('#sec').onclick = () => { open = !open; paint(); };
-  $('#done').onclick = () => { const n = parseInt($('#no').value, 10); award({ key: 'secret|' + n + '|' + today(), points: 30, label: '神秘任務 #' + n }); };
   return 'tools';
 });
 route('/tool/give', () => {
   const fam = S.family.length ? S.family : [S.player];
-  view(`${back('#/tools', '遊戲工具')}<h1>給分</h1><p class="sub">連連看、小小觀察家、特寫尋寶、當一次雕像、一句當地話的分數在這裡給。</p>
+  view(`${back('#/tools', '遊戲間')}<h1>給分</h1><p class="sub">連連看、小小觀察家、特寫尋寶、當一次雕像、一句當地話的分數在這裡給。</p>
     <label class="field"><span>給誰</span><select class="text" id="who">${fam.map((n) => `<option>${esc(n)}</option>`).join('')}</select></label>
     <label class="field"><span>幾分</span><select class="text" id="pts"><option>5</option><option>10</option><option>15</option><option selected>20</option><option>30</option></select></label>
     <label class="field"><span>原因</span><input class="text" id="why" placeholder="例如：小小觀察家第一名"></label>
@@ -699,32 +871,76 @@ route('/tool/give', () => {
 
 /* ---------- wall / leaderboard ---------- */
 let wallTimer = null;
+function commentsFor(fileId) { return META.comments[fileId] || []; }
 route('/wall', () => {
   view(`<h1>排行與動態牆</h1><p class="sub" id="ws">讀取中…</p>
     <h2>總分</h2><div class="list" id="board"></div>
-    <h2>大家的九宮格</h2><div class="wall-grid" id="pics"></div>
+    <h2>最近得分</h2><div class="list" id="recent"></div>
+    <h2>大家最愛的冷知識</h2><div class="list" id="facts"></div>
+    <h2>大家的九宮格</h2><p class="sub">看完可以留一句評語，每張照片留言一次就 +5 分。</p><div class="wall-grid" id="pics"></div>
     <button class="btn ghost block" id="rf" style="margin-top:16px">重新整理</button>`);
   const paintBoard = (rows) => {
     $('#board').innerHTML = rows.length ? rows.map((r, i) => `<div class="score-row"><span class="rank">${i + 1}</span><span class="name">${esc(r.name)}</span>
       <span class="sub">今天 +${r.today}</span><span class="pts">${r.total}</span></div>`).join('') : '<div class="score-row">還沒有人得分</div>';
   };
+  const paintRecent = (rows) => {
+    $('#recent').innerHTML = rows.length ? rows.slice(0, 20).map((r) => `<div class="score-row"><span class="name">${esc(r.player)}</span>
+      <span class="sub">${esc(r.label)}</span><span class="pts">+${r.points}</span></div>`).join('') : '<div class="score-row">還沒有得分紀錄</div>';
+  };
+  const paintFacts = () => {
+    const top = Object.entries(META.likes).map(([id, names]) => [id, names.length]).filter(([, n]) => n > 0)
+      .sort((a, b) => b[1] - a[1]).slice(0, 5);
+    $('#facts').innerHTML = top.length ? top.map(([id, n]) => {
+      const [cid, idx] = id.split('#');
+      const f = CARD[cid] && CARD[cid].facts[Number(idx)];
+      return `<div class="score-row"><span class="name" style="white-space:normal">${esc(plain(f).slice(0, 60))}</span><span class="pts">👍 ${n}</span></div>`;
+    }).join('') : '<div class="score-row">還沒有人按讚</div>';
+  };
+  const paintPics = (collages) => {
+    $('#pics').innerHTML = collages.map((p) => `<figure><img loading="lazy" data-id="${esc(p.fileId)}" src="https://drive.google.com/thumbnail?id=${encodeURIComponent(p.fileId)}&sz=w800" alt="${esc(p.player)}的九宮格：${esc(p.theme)}">
+        <figcaption><b>${esc(p.player)}</b>・${esc(p.theme)}<br><span class="sub">${esc(p.city)}・${esc(fmtDate(p.date))}</span></figcaption>
+        <div class="cmts" data-f="${esc(p.fileId)}"></div></figure>`).join('') || '<p class="sub">還沒有人上傳九宮格。</p>';
+    $$('#pics img').forEach((img) => img.onerror = async () => {
+      img.onerror = null;
+      try { const r = await apiGet({ action: 'image', id: img.dataset.id }); img.src = r.dataUrl; } catch (e) { /* leave blank */ }
+    });
+    collages.forEach((p) => paintComments(p));
+  };
+  const paintComments = (p) => {
+    const box = $(`.cmts[data-f="${p.fileId}"]`);
+    if (!box) return;
+    const done = ledgerHas('comment|' + p.fileId);
+    const list = commentsFor(p.fileId).map((c) => `<div class="cmt"><b>${esc(c.player)}</b>：${esc(c.text)}</div>`).join('');
+    box.innerHTML = `${list}
+      <div class="row" style="margin-top:6px"><input class="text cmt-in" placeholder="寫一句評語" maxlength="80" ${done ? 'disabled' : ''}>
+      <button class="btn small" type="button" ${done ? 'disabled' : ''}>${done ? '已留言' : '留言 +5'}</button></div>`;
+    const btn = $('button', box);
+    if (done) return;
+    btn.onclick = () => {
+      const text = $('.cmt-in', box).value.trim();
+      if (text.length < 2) { toast('評語至少寫 2 個字'); return; }
+      if (!award({ key: 'comment|' + p.fileId, points: 5, label: '評語：' + p.theme, cardId: '' })) return;
+      DB.qPut({ id: 'c:' + p.fileId + ':' + uid(), type: 'comment', fileId: p.fileId, player: S.player, text, ts: Date.now() }).then(flush);
+      META.comments[p.fileId] = commentsFor(p.fileId).concat([{ player: S.player, text }]);
+      paintComments(p);
+    };
+  };
   const load = async () => {
     if (!S.server.url) {
       $('#ws').textContent = '還沒連上家庭雲端，只顯示這支手機上的分數。到「我的」設定後就能看到全家。';
       paintBoard(localTotals());
+      $('#recent').innerHTML = '';
       $('#pics').innerHTML = '';
       return;
     }
     try {
       const d = await apiGet({ action: 'feed', date: today() });
+      await syncMeta(d);
       $('#ws').textContent = '每分鐘自動更新。最後更新：' + new Date().toLocaleTimeString('zh-TW', { hour: '2-digit', minute: '2-digit' });
       paintBoard(d.players || []);
-      $('#pics').innerHTML = (d.collages || []).map((p) => `<figure><img loading="lazy" data-id="${esc(p.fileId)}" src="https://drive.google.com/thumbnail?id=${encodeURIComponent(p.fileId)}&sz=w800" alt="${esc(p.player)}的九宮格：${esc(p.theme)}">
-        <figcaption><b>${esc(p.player)}</b>・${esc(p.theme)}<br><span class="sub">${esc(p.city)}・${esc(fmtDate(p.date))}</span></figcaption></figure>`).join('') || '<p class="sub">還沒有人上傳九宮格。</p>';
-      $$('#pics img').forEach((img) => img.onerror = async () => {
-        img.onerror = null;
-        try { const r = await apiGet({ action: 'image', id: img.dataset.id }); img.src = r.dataUrl; } catch (e) { /* leave blank */ }
-      });
+      paintRecent(META.recent);
+      paintFacts();
+      paintPics(d.collages || []);
     } catch (e) {
       $('#ws').textContent = '現在連不上家庭雲端，先顯示這支手機上的分數。';
       paintBoard(localTotals());
@@ -751,13 +967,14 @@ route('/me', () => {
     </div>
     <div class="card"><p class="section-label">上傳清單</p><p id="qc" class="sub">計算中…</p><button class="btn small" id="fl">現在上傳</button></div>
     <h2>全家名單</h2>
-    <div class="card"><label class="field"><span>一行一個名字（遊戲工具和給分會用到）</span><textarea class="text" id="fam">${esc(S.family.join('\n'))}</textarea></label>
+    <div class="card"><label class="field"><span>一行一個名字（遊戲間和給分會用到）</span><textarea class="text" id="fam">${esc(S.family.join('\n'))}</textarea></label>
       <button class="btn small" id="savef">儲存名單</button></div>
     <h2>家庭雲端（一個人設定就好）</h2>
     <div class="card"><label class="field"><span>Apps Script 網址</span><input class="text" id="su" value="${esc(sv.url)}" placeholder="https://script.google.com/macros/s/…/exec"></label>
       <label class="field"><span>家庭密碼</span><input class="text" id="sc" value="${esc(sv.code)}"></label>
       <div class="row"><button class="btn small" id="saves">儲存並測試</button><button class="btn small ghost" id="inv">產生全家邀請連結</button></div>
       <p class="sub" id="invout" style="margin-top:10px">設定好後按「產生全家邀請連結」，貼到 LINE 群組。家人點開就自動連好，不用再輸入。</p></div>
+    <div style="margin-top:16px"><a class="btn ghost block" href="#/admin">主辦人後台</a></div>
     <p class="sub center">版本 ${APP_VERSION}</p>`);
   let mode = S.mode;
   const paint = () => $$('#md button').forEach((b) => b.classList.toggle('on', b.dataset.m === mode));
@@ -776,7 +993,7 @@ route('/me', () => {
   $('#savef').onclick = () => { LS.set('family', $('#fam').value.split('\n').map((s) => s.trim()).filter(Boolean)); toast('名單已儲存'); };
   $('#saves').onclick = async () => {
     LS.set('server', { url: $('#su').value.trim(), code: $('#sc').value.trim() });
-    try { await apiGet({ action: 'ping' }); toast('連線成功！'); flush(); } catch (e) { toast('連不上，請檢查網址和密碼'); }
+    try { const d = await apiGet({ action: 'feed', date: today() }); await syncMeta(d); toast('連線成功！'); flush(); } catch (e) { toast('連不上，請檢查網址和密碼'); }
   };
   $('#inv').onclick = async () => {
     const sv2 = { url: $('#su').value.trim(), code: $('#sc').value.trim() };
@@ -792,13 +1009,77 @@ route('/me', () => {
   return 'me';
 });
 
+/* ---------- admin (主辦人後台) ---------- */
+async function adminCall(payload, code) {
+  return api('admin', Object.assign({ admin: code }, payload));
+}
+route('/admin', () => {
+  if (!LS.get('adminCode', '')) {
+    view(`${back('#/me', '我的')}<h1>主辦人後台</h1><p class="sub">只有主辦人需要用。</p>
+      <div class="card"><label class="field"><span>後台密碼</span><input class="text" id="ac" type="password"></label>
+      <button class="btn block" id="al">進入</button></div>`);
+    $('#al').onclick = async () => {
+      const code = $('#ac').value;
+      try { await adminCall({ op: 'check' }, code); LS.set('adminCode', code); render(); } catch (e) { toast(e.message || '密碼不對'); }
+    };
+    return 'me';
+  }
+  renderAdmin();
+  return 'me';
+});
+async function renderAdmin() {
+  view(`${back('#/me', '我的')}<h1>主辦人後台</h1>
+    <p class="sub" id="ast">讀取中…</p>
+    <h2>玩家</h2><p class="sub">刪除後，他的分數、留言、讚都會清掉，之後他手機上的資料也不會再回到家庭雲端。</p>
+    <div class="list" id="plist"></div>
+    <h2>每天截止時間</h2>
+    <div class="card"><label class="field"><span>台灣時間，例如 21:30（留空就是不截止）</span><input class="text" id="cut" placeholder="HH:MM"></label>
+      <button class="btn small" id="sc2">儲存時間</button></div>
+    <h2>重新開始</h2>
+    <div class="card"><p class="sub">會清空所有分數、照片、留言和讚。台灣時間 12/7 00:00 也會自動清空一次。</p>
+      <button class="btn small ghost" id="wipe">清空全部測試資料</button></div>
+    <button class="btn ghost block" id="lo" style="margin-top:16px">登出後台</button>`);
+  const code = LS.get('adminCode', '');
+  const load = async () => {
+    try {
+      const d = await apiGet({ action: 'feed', date: today() });
+      await syncMeta(d);
+      $('#ast').textContent = '已連上家庭雲端。';
+      $('#cut').value = d.cutoff || '';
+      const names = Array.from(new Set([...(d.players || []).map((p) => p.name), ...S.family]));
+      const totals = Object.fromEntries((d.players || []).map((p) => [p.name, p.total]));
+      $('#plist').innerHTML = names.length ? names.map((n) => `<div class="score-row"><span class="name">${esc(n)}</span>
+        <span class="pts">${totals[n] || 0}</span><button class="btn small ghost" data-del="${esc(n)}" type="button">刪除</button></div>`).join('') : '<div class="score-row">還沒有玩家</div>';
+      $$('#plist [data-del]').forEach((b) => b.onclick = async () => {
+        const n = b.dataset.del;
+        if (!confirm('確定要刪除「' + n + '」嗎？他的分數、留言和讚都會清掉，之後也不會再回來。')) return;
+        try { await adminCall({ op: 'deletePlayer', name: n }, code); toast('已刪除 ' + n); load(); } catch (e) { toast(e.message); }
+      });
+    } catch (e) {
+      $('#ast').textContent = '現在連不上家庭雲端，請稍後再試。';
+    }
+  };
+  $('#sc2').onclick = async () => {
+    const v = $('#cut').value.trim();
+    if (v && !/^\d{1,2}:\d{2}$/.test(v)) { toast('時間格式請寫成 21:30'); return; }
+    try { await adminCall({ op: 'setCutoff', value: v }, code); toast('已儲存截止時間'); } catch (e) { toast(e.message); }
+  };
+  $('#wipe').onclick = async () => {
+    if (!confirm('真的要清空全部測試資料嗎？這個動作無法復原。')) return;
+    try { await adminCall({ op: 'wipe' }, code); await wipeLocal(); toast('已清空，重新開始'); load(); } catch (e) { toast(e.message); }
+  };
+  $('#lo').onclick = () => { LS.set('adminCode', ''); location.hash = '#/me'; };
+  load();
+}
+
 /* ---------- help ---------- */
 route('/help', () => {
   view(`${back('#/', '首頁')}<h1>玩法說明</h1>
     <div class="card"><h3>每天早上</h3><p>打開「今天」，解鎖今天的城市卡：讀一個冷門小故事（不想讀可以跳過），挑一個九宮格主題，答 3 題加分題。</p></div>
-    <div class="card"><h3>到了景點</h3><p>在城市裡點想去的景點卡：先答出發前的題目，到現場玩小遊戲、做現場任務，最後答收尾 3 題。</p></div>
-    <div class="card"><h3>九宮格</h3><p>拍滿 9 張就能一鍵拼貼。按「一鍵上傳」會把 9 張原圖和拼貼存到家庭雲端，全家在「排行」都看得到。</p></div>
-    <div class="card"><h3>計分</h3><p>初階題 10 分、挑戰題 20 分、長題 30 分、現場驗證 20 分、加分題 15 分、現場任務 30 分、九宮格 20 分、小遊戲 5–30 分。每題只能答一次。</p></div>
+    <div class="card"><h3>到了景點</h3><p>在城市裡點想去的景點卡：先答出發前的題目，看景點冷知識（覺得有趣就按讚），到現場做任務，最後答收尾 3 題。</p></div>
+    <div class="card"><h3>九宮格與照片任務</h3><p>拍滿 9 張就能一鍵拼貼。照片任務要拍照上傳，上傳成功才加分。</p></div>
+    <div class="card"><h3>留言</h3><p>在「排行」看大家的九宮格，留一句評語就 +5 分，每張照片只能留一次。</p></div>
+    <div class="card"><h3>計分</h3><p>初階題 10 分、挑戰題 20 分、長題 30 分、現場驗證 20 分、加分題 15 分、現場任務 30 分、九宮格 20 分、留言 5 分、小遊戲 5–30 分。每題只能答一次。</p></div>
     <div class="card"><h3>沒有網路的時候</h3><p>題目、拍照、拼貼都能照常玩。上傳和分數會先存在手機，連上網路再自動補傳。</p></div>`);
   return 'home';
 });
@@ -817,6 +1098,7 @@ async function start() {
   window.addEventListener('online', flush);
   setInterval(flush, 60000);
   render();
+  if (S.server.url) apiGet({ action: 'feed', date: today() }).then(syncMeta).catch(() => {});
   flush();
 }
 start();

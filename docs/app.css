@@ -126,3 +126,15 @@ textarea.text{min-height:120px}
 .pill-switch button{min-height:44px;border:0;border-radius:8px;background:transparent;font-weight:600;cursor:pointer}
 .pill-switch button.on{background:var(--card);box-shadow:var(--shadow);color:var(--primary)}
 .done-mark{color:var(--good);font-weight:700}
+
+/* v1.2：冷知識卡、讚、留言、任務按鈕、後台 */
+.fact{border-bottom:1px solid var(--sep,rgba(0,0,0,.08));padding:12px 0}
+.fact:last-child{border-bottom:0}
+.fact .ftxt{margin-bottom:8px}
+.like-btn{min-height:40px;padding:0 14px;border-radius:999px;border:1px solid var(--primary);background:transparent;color:var(--primary);font-weight:600;cursor:pointer}
+.like-btn.on{background:var(--primary);color:#fff}
+.task-note{margin:8px 0}
+.upload-btn{display:inline-flex;align-items:center;cursor:pointer}
+.cmts{margin-top:8px;text-align:left}
+.cmts .cmt{font-size:14px;margin:4px 0}
+.cmt-in{flex:1;min-width:0}
