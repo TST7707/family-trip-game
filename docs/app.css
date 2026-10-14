@@ -150,3 +150,8 @@ textarea.text{min-height:120px}
 .day-body{padding:4px 0 8px}
 .plan-list{list-style:none;padding:0;margin:8px 0 0}
 .plan-list li{display:flex;justify-content:space-between;gap:8px;padding:8px 0;border-bottom:1px solid var(--sep,rgba(0,0,0,.08))}
+.plan-list li{align-items:flex-start;flex-wrap:wrap}
+.plan-main{flex:1;min-width:0}
+.plan-btns{display:flex;gap:6px;flex-shrink:0}
+.plan-btns .btn{min-height:36px;padding:0 10px}
+.day[open] .plan-list{margin-top:4px}

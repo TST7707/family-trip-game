@@ -1087,65 +1087,102 @@ route('/help', () => {
 });
 
 
-/* ---------- 每日行程（只寫那天可能去的地方；還沒定的會標出來） ---------- */
+/* ---------- 每日行程：只列出那天確定或可能的行程 ---------- */
 const RESET_DATE = '2026-12-07';
 const WEEK = ['日', '一', '二', '三', '四', '五', '六'];
-const DAY_NOTE = {
-  '2026-12-09': '巴塞隆納的第一天，還沒定去哪裡，可以先看城市卡。',
-  '2026-12-11': '聖家堂（四人去，已定）。其他景點還沒定。',
-  '2026-12-12': '巴塞隆納的最後一天，還沒定去哪裡。',
-  '2026-12-19': '下午去加泰隆尼亞音樂宮（已定）。',
-  '2026-12-20': '還沒定去哪裡。',
-  '2026-12-21': '還沒定去哪裡。',
-  '2026-12-26': '瓜迪斯 3 天中的一天，會去阿爾罕布拉宮（票已買）。',
-  '2026-12-27': '瓜迪斯 3 天中的一天，還沒定去哪裡。',
-  '2026-12-28': '瓜迪斯 3 天中的一天，還沒定去哪裡。',
-  '2026-12-18': '海上日，在船上玩，不下船。',
-  '2027-01-01': '元旦，還沒定去哪裡。',
-  '2027-01-03': '托雷多或賽哥維亞一日遊，哪一天還沒定。',
-  '2027-01-04': '托雷多或賽哥維亞一日遊，哪一天還沒定。',
-  '2027-01-06': '最後一天，三王節，還沒定去哪裡。',
-};
-function dayName(date) {
-  const d = new Date(date + 'T00:00:00+08:00');
-  return Number(date.slice(5, 7)) + '/' + Number(date.slice(8, 10)) + '（' + WEEK[d.getDay()] + '）';
+function mapUrl(q) { return 'https://www.google.com/maps/search/?api=1&query=' + encodeURIComponent(q); }
+function weekOf(date) { const [y, m, d] = date.split('-').map(Number); return WEEK[new Date(Date.UTC(y, m - 1, d)).getUTCDay()]; }
+function dayName(date) { return Number(date.slice(5, 7)) + '/' + Number(date.slice(8, 10)) + '（' + weekOf(date) + '）'; }
+function spotIdByTitle(key) {
+  if (!key) return null;
+  const hit = Object.values(CARD).find((c) => c.type !== 'city' && c.title.includes(key));
+  return hit ? hit.id : null;
 }
-function dayPlan(date) {
+/* 住宿：地址有給的用地址，沒給的用城市搜尋 */
+const STAYS = [
+  { date: '2026-12-09', name: '聖家堂旁邊的飯店', q: 'Sagrada Familia, Barcelona' },
+  { date: '2026-12-19', name: 'Avinguda d\'Isabel la Catòlica, 65, 08905 L\'Hospitalet de Llobregat, Barcelona', q: 'Avinguda d\'Isabel la Catòlica, 65, 08905 L\'Hospitalet de Llobregat, Barcelona, Spain' },
+  { date: '2026-12-22', name: '塞維利亞（92V8+Q2G）', q: '37.394444,-5.984917' },
+  { date: '2026-12-26', name: 'Plazuela los Bacas, 8, 18500 Guadix, Granada', q: 'Plazuela los Bacas, 8, 18500 Guadix, Granada, Spain' },
+  { date: '2026-12-29', name: 'Av. del Corregidor, 14, Poniente Sur, 14004 Córdoba', q: 'Av. del Corregidor, 14, 14004 Córdoba, Spain' },
+  { date: '2026-12-31', name: '馬德里（地址還沒給）', q: 'Madrid, Spain' },
+];
+/* 每天的行程。tentative 表示還不確定。spot 是景點卡的關鍵字，有的話會連到景點任務卡。 */
+const PLAN = {
+  '2026-12-09': [{ text: '聖家堂前方的聖誕市集', q: 'Christmas market Sagrada Familia Barcelona' }],
+  '2026-12-10': [
+    { text: '桂爾公園', spot: '桂爾公園', q: 'Park Güell Barcelona' },
+    { text: '聖露西亞市集', tentative: true, q: 'Fira de Santa Llúcia Barcelona' },
+    { text: '畢卡索博物館（如果搶到免費票）', tentative: true, spot: '畢卡索', q: 'Museu Picasso Barcelona' },
+  ],
+  '2026-12-11': [
+    { when: '白天', text: '聖家堂（已定）', spot: '聖家堂', q: 'Sagrada Família Barcelona' },
+    { when: '下午', text: '聖保羅醫院', tentative: true, spot: '聖保羅醫院', q: 'Hospital de Sant Pau Barcelona' },
+    { when: '晚上', text: '巴特略之家', tentative: true, spot: '巴特略之家', q: 'Casa Batlló Barcelona' },
+    { when: '晚上（三選一）', text: '格拉西亞大道與市區燈光 ／ 米拉之家 ／ 維森斯之家', tentative: true, q: 'Passeig de Gràcia Barcelona' },
+    { when: '或下午', text: '聖露西亞市集', tentative: true, q: 'Fira de Santa Llúcia Barcelona' },
+  ],
+  '2026-12-12': [
+    { when: '早上', text: '第二批人去聖家堂', spot: '聖家堂', q: 'Sagrada Família Barcelona' },
+    { when: '中午', text: '巴塞隆納港口', q: 'Port de Barcelona' },
+  ],
+  '2026-12-13': [
+    { text: '馬賽・守護聖母院', spot: '守護聖母院', q: 'Notre-Dame de la Garde Marseille' },
+    { text: '馬賽・舊港與 Le Panier', spot: 'Le Panier', q: 'Le Panier Marseille' },
+  ],
+  '2026-12-14': [
+    { text: '熱那亞・老城與新街', spot: '老城與新街', q: 'Genova centro storico' },
+    { text: '熱那亞・舊港與燈塔', spot: '舊港與燈塔', q: 'Porto Antico Genova' },
+  ],
+  '2026-12-15': [{ text: '那不勒斯・龐貝', spot: '龐貝', q: 'Pompeii' }],
+  '2026-12-16': [
+    { text: '巴勒摩・主教座堂與帕拉提納禮拜堂', spot: '主教座堂與帕拉提納', q: 'Palermo Cathedral' },
+    { text: '巴勒摩・巴拉羅市場與 Teatro Massimo', spot: '巴拉羅市場', q: 'Mercato di Ballarò Palermo' },
+  ],
+  '2026-12-17': [
+    { text: '突尼西亞・迦太基遺址', spot: '迦太基', q: 'Carthage Tunisia' },
+    { text: '突尼西亞・西迪布賽義德', spot: '西迪布賽義德', q: 'Sidi Bou Said' },
+  ],
+  '2026-12-18': [{ text: '海上日，在船上玩', q: '' }],
+  '2026-12-19': [{ when: '下午五點', text: '加泰隆尼亞音樂宮自由參觀＋聖誕節音樂舞蹈會', spot: '音樂宮', q: 'Palau de la Música Catalana' }],
+  '2026-12-20': [{ text: '蒙特惠克山（Montjuïc）', spot: '蒙特惠克', q: 'Montjuïc Barcelona' }],
+  '2026-12-27': [{ when: '14:30', text: '阿爾罕布拉宮', spot: '阿爾罕布拉', note: '買票窗口請強調：14:30 horas Palacios Nazaríes', q: 'Alhambra Granada' }],
+  '2026-12-28': [{ text: '四驅越野車', q: 'Guadix Granada' }],
+};
+function cityLabel(date) {
   const u = C.unlock[date];
-  const cityId = u ? u[0] : null;
-  const card = u ? CARD[u[0] + '-c' + u[1]] : null;
-  let places = [];
-  if (cityId === 'cruise') {
-    places = CITY.cruise.spots.filter((x) => x.port && x.port.startsWith(date.slice(5).replace('-', '/')))
-      .map((x) => ({ name: x.title, sub: x.port.split(' ').slice(1, 2).join(' ') + '・景點卡' }));
-  } else if (cityId) {
-    places = CITY[cityId].spots.map((x) => ({ name: x.title, sub: '景點卡' }));
-  }
-  const port = cityId === 'cruise' ? (DAY_NOTE[date] && date === '2026-12-18' ? '海上' : (places[0] ? places[0].sub.split('・')[0] : '海上')) : (cityId ? CITY[cityId].name : '');
-  return { cityId, card, places, port };
+  if (!u) return '';
+  return u[0] === 'cruise' ? '地中海郵輪' : CITY[u[0]].name;
 }
 route('/trip', () => {
   const dates = [];
-  for (let d = new Date(TRIP_START + 'T00:00:00+08:00'); ; d = new Date(d.getTime() + 86400000)) {
-    const iso = d.toLocaleDateString('sv-SE', { timeZone: 'Asia/Taipei' });
+  for (let d = new Date(TRIP_START + 'T00:00:00Z'); ; d = new Date(d.getTime() + 86400000)) {
+    const iso = d.toISOString().slice(0, 10);
     dates.push(iso);
     if (iso >= TRIP_END) break;
   }
+  const stays = STAYS.map((x) => `<div class="score-row" style="align-items:flex-start"><span class="name" style="white-space:normal">${esc(dayName(x.date))}<br><span class="sub">${esc(x.name)}</span></span>
+    <a class="btn small ghost" href="${esc(mapUrl(x.q))}" target="_blank" rel="noopener">地圖</a></div>`).join('');
   const rows = dates.map((date) => {
-    const p = dayPlan(date);
-    const note = DAY_NOTE[date] || '';
-    const list = p.places.length ? `<ul class="plan-list">${p.places.map((x) => `<li><b>${esc(x.name)}</b><span class="sub">${esc(x.sub)}</span></li>`).join('')}</ul>` : '';
-    return `<details class="day"><summary><span class="dot"></span><span class="dt">${esc(dayName(date))}</span>
-        <span class="dc">${esc(p.port || '')}${p.card ? ' ・ ' + esc(p.card.title.split('：').slice(-1)[0]) : ''}</span></summary>
-        <div class="day-body">
-          ${p.card ? `<p><a href="#/card/${p.card.id}">今天的城市卡：${esc(p.card.title)}</a></p>` : ''}
-          ${note ? `<p class="sub">${esc(note)}</p>` : ''}
-          ${list}
-        </div></details>`;
+    const items = PLAN[date] || [];
+    const label = cityLabel(date);
+    const body = items.length ? items.map((it) => {
+      const sid = spotIdByTitle(it.spot);
+      const tag = it.tentative ? '<span class="chip">未定</span>' : '';
+      const mapBtn = it.q ? `<a class="btn small ghost" href="${esc(mapUrl(it.q))}" target="_blank" rel="noopener">地圖</a>` : '';
+      const cardBtn = sid ? `<a class="btn small ghost" href="#/card/${sid}">任務卡</a>` : '';
+      return `<li><div class="plan-main">${it.when ? `<span class="sub">${esc(it.when)}</span> ` : ''}<b>${esc(it.text)}</b> ${tag}
+        ${it.note ? `<div class="sub">${esc(it.note)}</div>` : ''}</div>
+        <div class="plan-btns">${mapBtn}${cardBtn}</div></li>`;
+    }).join('') : `<p class="sub">還沒定，這天在${esc(label)}。</p>`;
+    return `<details class="day"${items.length ? ' open' : ''}><summary><span class="dot"></span><span class="dt">${esc(dayName(date))}</span>
+        <span class="dc">${esc(label)}</span></summary>
+        <div class="day-body"><ul class="plan-list">${items.length ? body : ''}</ul>${items.length ? '' : body}</div></details>`;
   }).join('');
   view(`${back('#/', '首頁')}<h1>每日行程</h1>
     <div class="card"><b>提醒：</b>出發前在遊戲裡累積的分數，會在 <b>12/7</b> 清空。12/9 出發後才開始正式計分，請到時候再玩。</div>
-    <p class="sub">點一天就會展開。只寫那天可能會去的地方，還沒定的會寫在上面。行程會隨時更新。</p>
+    <h2>住宿</h2><div class="list">${stays}</div>
+    <h2>每一天</h2><p class="sub">只列出那天確定或可能的行程。「未定」是還沒決定的。點「地圖」開 Google Maps，點「任務卡」打開景點任務。</p>
     <div class="timeline">${rows}</div>`);
   return 'home';
 });
