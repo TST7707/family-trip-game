@@ -1,0 +1,15 @@
+{
+  "name": "家族任務遊戲",
+  "short_name": "家族任務",
+  "description": "西班牙＋地中海家族旅行任務遊戲",
+  "start_url": "./#/",
+  "scope": "./",
+  "display": "standalone",
+  "background_color": "#F2F2F7",
+  "theme_color": "#F2F2F7",
+  "lang": "zh-Hant",
+  "icons": [
+    { "src": "icon-192.png", "sizes": "192x192", "type": "image/png", "purpose": "any maskable" },
+    { "src": "icon-512.png", "sizes": "512x512", "type": "image/png", "purpose": "any maskable" }
+  ]
+}
