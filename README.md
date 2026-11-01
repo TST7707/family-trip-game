@@ -18,6 +18,7 @@
 | `版本紀錄.md` | 每一版改了什麼 |
 | `設定教學.md` | 讓網站上線的步驟（GitHub Pages＋家庭雲端） |
 | `docs/` | 遊戲網站本體，GitHub Pages 從這裡發布 |
+| `docs/itinerario.html` | 專屬西班牙文 30 天行程分享頁（可直接分享給西班牙同事） |
 | `apps-script/Code.gs` | 貼到 Google 試算表的程式，負責收照片和記分數 |
 | `工具/parse.py` | 把腳本轉成網站內容（docs/content.json）的小程式，Claude 用的 |
 

@@ -1,0 +1,674 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Itinerario Familiar de 30 Días por España y el Mediterráneo</title>
+<meta name="description" content="El viaje de 30 días de nuestra familia taiwanesa por España y el Mediterráneo: Barcelona, crucero, Sevilla, Granada, Córdoba y Madrid.">
+<link rel="icon" href="icon-192.png">
+<style>
+:root {
+  --bg: #FBFBFA;
+  --card: #FFFFFF;
+  --line: #E5E5EA;
+  --fg: #1C1C1E;
+  --muted: #6C6C70;
+  --red: #C5221F;
+  --gold: #D97706;
+  --blue: #1D4ED8;
+  --green: #15803D;
+  --shadow: 0 2px 10px rgba(0,0,0,0.06);
+  --font: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+}
+@media (prefers-color-scheme: dark) {
+  :root {
+    --bg: #121214;
+    --card: #1C1C1E;
+    --line: #2C2C2E;
+    --fg: #F2F2F7;
+    --muted: #98989D;
+    --shadow: none;
+  }
+}
+* { box-sizing: border-box; }
+body { margin: 0; background: var(--bg); color: var(--fg); font: 16px/1.6 var(--font); }
+a { color: var(--blue); text-decoration: none; }
+a:hover { text-decoration: underline; }
+.hero {
+  background: linear-gradient(135deg, #A81D1A 0%, #C5221F 50%, #D97706 100%);
+  color: #fff;
+  padding: 48px 20px 40px;
+  text-align: center;
+}
+.hero h1 { font-size: 32px; line-height: 1.25; margin: 0 0 12px; font-weight: 800; }
+.hero p { max-width: 680px; margin: 0 auto 12px; font-size: 17px; opacity: 0.95; }
+.hero .badge { display: inline-block; background: rgba(255,255,255,0.22); padding: 4px 14px; border-radius: 999px; font-size: 14px; font-weight: 600; margin-top: 6px; }
+.container { max-width: 820px; margin: 0 auto; padding: 24px 16px 60px; }
+.nav-actions { display: flex; justify-content: space-between; align-items: center; margin-bottom: 24px; gap: 12px; flex-wrap: wrap; }
+.btn { display: inline-flex; align-items: center; gap: 8px; padding: 10px 18px; border-radius: 10px; font-weight: 600; font-size: 15px; border: 0; cursor: pointer; text-decoration: none; }
+.btn-primary { background: var(--red); color: #fff; }
+.btn-outline { background: var(--card); color: var(--fg); border: 1px solid var(--line); box-shadow: var(--shadow); }
+.section-title { font-size: 24px; font-weight: 700; margin: 32px 0 16px; display: flex; align-items: center; gap: 10px; border-bottom: 2px solid var(--red); padding-bottom: 8px; }
+.card { background: var(--card); border-radius: 14px; padding: 20px; box-shadow: var(--shadow); border: 1px solid var(--line); margin-bottom: 16px; }
+.route-summary { display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 12px; margin-bottom: 28px; }
+.route-item { background: var(--card); border: 1px solid var(--line); border-radius: 12px; padding: 14px; border-left: 4px solid var(--red); }
+.route-item b { display: block; font-size: 17px; margin-bottom: 4px; }
+.route-item span { font-size: 14px; color: var(--muted); }
+.timeline { position: relative; padding-left: 28px; border-left: 3px solid var(--line); margin-left: 10px; }
+.day { position: relative; margin-bottom: 24px; }
+.day .pin { position: absolute; left: -36px; top: 4px; width: 14px; height: 14px; border-radius: 50%; background: var(--red); border: 3px solid var(--bg); }
+.day-header { display: flex; align-items: baseline; gap: 10px; flex-wrap: wrap; margin-bottom: 6px; }
+.day-date { font-weight: 800; font-size: 18px; color: var(--red); }
+.day-city { font-weight: 700; font-size: 17px; }
+.day-tag { font-size: 12px; font-weight: 700; padding: 2px 8px; border-radius: 999px; background: rgba(217,119,6,0.15); color: var(--gold); }
+.day-tag.free { background: rgba(21,128,61,0.15); color: var(--green); }
+.day-body { background: var(--card); border: 1px solid var(--line); border-radius: 12px; padding: 16px; box-shadow: var(--shadow); }
+.day-body ul { margin: 8px 0 0; padding-left: 20px; }
+.day-body li { margin-bottom: 6px; }
+.highlight-badge { background: #FEF3C7; color: #92400E; padding: 2px 8px; border-radius: 6px; font-size: 13px; font-weight: 600; display: inline-block; margin-top: 4px; }
+.colleague-box { background: #FFFBEB; border: 2px dashed #F59E0B; border-radius: 16px; padding: 24px; margin-top: 40px; }
+.colleague-box h3 { margin: 0 0 8px; font-size: 20px; color: #B45309; }
+.form-group { margin-bottom: 12px; }
+.form-group label { display: block; font-size: 14px; font-weight: 600; margin-bottom: 4px; }
+.form-group input, .form-group textarea { width: 100%; padding: 10px 12px; border-radius: 8px; border: 1px solid #D1D5DB; font-size: 15px; font-family: inherit; }
+.recs-list { margin-top: 20px; display: flex; flex-direction: column; gap: 10px; }
+.rec-item { background: #fff; border: 1px solid #FCD34D; border-radius: 10px; padding: 12px 16px; }
+.rec-author { font-weight: 700; color: #92400E; font-size: 14px; }
+.rec-text { margin-top: 4px; font-size: 15px; }
+footer { text-align: center; padding: 40px 16px; color: var(--muted); font-size: 14px; border-top: 1px solid var(--line); margin-top: 40px; }
+</style>
+</head>
+<body>
+
+<header class="hero">
+  <div class="badge">09/12/2026 – 06/01/2027 • Familia de 7 personas desde Taiwán</div>
+  <h1>¡Nuestro Viaje de 30 Días por España y el Mediterráneo! 🇪🇸🚢</h1>
+  <p>Hola colegas y amigos españoles. Hemos preparado este itinerario detallado para nuestro gran viaje familiar de fin de año. Queremos empaparnos de la historia, las costumbres, la comida y las tradiciones navideñas de vuestro maravilloso país.</p>
+</header>
+
+<div class="container">
+
+  <div class="nav-actions">
+    <a href="index.html" class="btn btn-outline">← Volver al Juego Familiar (中文 / Español)</a>
+    <a href="#recomendaciones" class="btn btn-primary">✍️ ¡Déjanos tu recomendación local!</a>
+  </div>
+
+  <div class="card">
+    <h3 style="margin-top:0">Quiénes somos y qué buscamos</h3>
+    <p>Somos una familia de 7 personas que viaja desde Taiwán: padres, nosotros y mi hermano menor. Para nosotros es un viaje muy especial de 30 días, combinando grandes capitales, pueblos blancos, ciudades Patrimonio de la Humanidad y un crucero por el Mediterráneo.</p>
+    <p>Hemos diseñado una aplicación web con tarjetas de historia y juegos para aprender sobre las tradiciones locales (el Caga Tió, el Caganer, el sorteo del Gordo de Navidad, las 12 uvas en Nochevieja y la Cabalgata de los Reyes Magos).</p>
+  </div>
+
+  <h2 class="section-title">🗺️ Resumen de la Ruta (30 Días)</h2>
+  <div class="route-summary">
+    <div class="route-item">
+      <b>1. Barcelona (Etapa 1)</b>
+      <span>09 – 12 Dic (4 días)</span><br>
+      Sagrada Família, Park Güell, Fira de Santa Llúcia.
+    </div>
+    <div class="route-item">
+      <b>2. Crucero Mediterráneo</b>
+      <span>13 – 18 Dic (6 días)</span><br>
+      Marsella, Génova, Nápoles/Pompeya, Palermo, Túnez.
+    </div>
+    <div class="route-item">
+      <b>3. Barcelona (Etapa 2)</b>
+      <span>19 – 21 Dic (3 días)</span><br>
+      Palau de la Música, Montjuïc, Mercado de la Boqueria.
+    </div>
+    <div class="route-item">
+      <b>4. Sevilla (Navidad)</b>
+      <span>22 – 25 Dic (4 días)</span><br>
+      Catedral, Alcázar, Plaza de España, Nochebuena y Navidad.
+    </div>
+    <div class="route-item">
+      <b>5. Guadix y Granada</b>
+      <span>26 – 28 Dic (3 días)</span><br>
+      Casas cueva de Guadix, La Alhambra (Palacios Nazaríes).
+    </div>
+    <div class="route-item">
+      <b>6. Córdoba</b>
+      <span>29 – 30 Dic (2 días)</span><br>
+      Mezquita-Catedral, Judería y Puente Romano.
+    </div>
+    <div class="route-item" style="border-left-color: #D97706;">
+      <b>7. Madrid, Nochevieja y Reyes</b>
+      <span>31 Dic – 06 Ene (7 días)</span><br>
+      12 Uvas, Prado, Museo Arqueológico, Segovia, Toledo, Palacio Real y Cabalgata.
+    </div>
+  </div>
+
+  <h2 class="section-title">📅 Itinerario Detallado Día a Día</h2>
+  <div class="timeline">
+
+    <!-- BARCELONA 1 -->
+    <div class="day">
+      <div class="pin"></div>
+      <div class="day-header">
+        <span class="day-date">09/12 (Mié)</span>
+        <span class="day-city">Llegada a Barcelona</span>
+      </div>
+      <div class="day-body">
+        <ul>
+          <li>Llegada y check-in en el hotel junto a la <b>Sagrada Família</b>.</li>
+          <li>Paseo por el mercadillo navideño frente a la basílica y primeros churros con chocolate.</li>
+        </ul>
+      </div>
+    </div>
+
+    <div class="day">
+      <div class="pin"></div>
+      <div class="day-header">
+        <span class="day-date">10/12 (Jue)</span>
+        <span class="day-city">Barcelona</span>
+      </div>
+      <div class="day-body">
+        <ul>
+          <li>Mañana: Visita al <b>Park Güell</b> y arquitectura de Gaudí.</li>
+          <li>Tarde: <b>Fira de Santa Llúcia</b> junto a la Catedral gótica (buscaremos figuras de Caganer y Caga Tió).</li>
+          <li>Tarde/noche: Museo Picasso de Barcelona (si conseguimos pases libres).</li>
+        </ul>
+      </div>
+    </div>
+
+    <div class="day">
+      <div class="pin"></div>
+      <div class="day-header">
+        <span class="day-date">11/12 (Vie)</span>
+        <span class="day-city">Barcelona</span>
+      </div>
+      <div class="day-body">
+        <ul>
+          <li>Mañana: <b>Basílica de la Sagrada Família</b> (visita confirmada).</li>
+          <li>Tarde: <b>Hospital de Sant Pau</b> (joya del modernismo catalán de Domènech i Montaner).</li>
+          <li>Noche: Luces de Navidad en Passeig de Gràcia y fachadas de <b>Casa Batlló</b> y <b>Casa Milà (La Pedrera)</b>.</li>
+        </ul>
+      </div>
+    </div>
+
+    <div class="day">
+      <div class="pin"></div>
+      <div class="day-header">
+        <span class="day-date">12/12 (Sáb)</span>
+        <span class="day-city">Barcelona ➔ Embarque en el Crucero</span>
+      </div>
+      <div class="day-body">
+        <ul>
+          <li>Segundo grupo para Sagrada Família / mañana libre.</li>
+          <li>Mediodía: Traslado al Puerto de Barcelona y embarque en el crucero por el Mediterráneo. ¡Zarpamos!</li>
+        </ul>
+      </div>
+    </div>
+
+    <!-- CRUCERO -->
+    <div class="day">
+      <div class="pin"></div>
+      <div class="day-header">
+        <span class="day-date">13/12 (Dom)</span>
+        <span class="day-city">Marsella (Francia)</span>
+      </div>
+      <div class="day-body">
+        <ul>
+          <li>Escala en Marsella: Basílica de <b>Notre-Dame de la Garde</b> (La Bonne Mère) y vistas panorámicas.</li>
+          <li>Paseo por el barrio histórico de <b>Le Panier</b> y Vieux-Port.</li>
+        </ul>
+      </div>
+    </div>
+
+    <div class="day">
+      <div class="pin"></div>
+      <div class="day-header">
+        <span class="day-date">14/12 (Lun)</span>
+        <span class="day-city">Génova (Italia)</span>
+      </div>
+      <div class="day-body">
+        <ul>
+          <li>Centro histórico medieval de Génova, Via Garibaldi y Palazzi dei Rolli.</li>
+          <li>Porto Antico y vista de la Lanterna.</li>
+        </ul>
+      </div>
+    </div>
+
+    <div class="day">
+      <div class="pin"></div>
+      <div class="day-header">
+        <span class="day-date">15/12 (Mar)</span>
+        <span class="day-city">Nápoles y Pompeya (Italia)</span>
+      </div>
+      <div class="day-body">
+        <ul>
+          <li>Excursión arqueológica a las ruinas de <b>Pompeya</b> a los pies del Vesubio.</li>
+          <li>Paseo por el centro de Nápoles y auténtica pizza napolitana.</li>
+        </ul>
+      </div>
+    </div>
+
+    <div class="day">
+      <div class="pin"></div>
+      <div class="day-header">
+        <span class="day-date">16/12 (Mié)</span>
+        <span class="day-city">Palermo, Sicilia (Italia)</span>
+      </div>
+      <div class="day-body">
+        <ul>
+          <li>Catedral de Palermo y mosaicos bizantinos de la Cappella Palatina.</li>
+          <li>Atmósfera vibrante del <b>Mercato di Ballarò</b> y Teatro Massimo.</li>
+        </ul>
+      </div>
+    </div>
+
+    <div class="day">
+      <div class="pin"></div>
+      <div class="day-header">
+        <span class="day-date">17/12 (Jue)</span>
+        <span class="day-city">Túnez</span>
+      </div>
+      <div class="day-body">
+        <ul>
+          <li>Ruinas milenarias de <b>Cartago</b>.</li>
+          <li>Pueblo costero blanco y azul de <b>Sidi Bou Said</b> con té a la menta y piñones.</li>
+        </ul>
+      </div>
+    </div>
+
+    <div class="day">
+      <div class="pin"></div>
+      <div class="day-header">
+        <span class="day-date">18/12 (Vie)</span>
+        <span class="day-city">Navegación en Alta Mar</span>
+      </div>
+      <div class="day-body">
+        <ul>
+          <li>Día completo de navegación en el crucero cruzando el Mediterráneo rumbo a España.</li>
+          <li>Juegos familiares en cubierta y descanso.</li>
+        </ul>
+      </div>
+    </div>
+
+    <!-- BARCELONA 2 -->
+    <div class="day">
+      <div class="pin"></div>
+      <div class="day-header">
+        <span class="day-date">19/12 (Sáb)</span>
+        <span class="day-city">Barcelona (Desembarque)</span>
+      </div>
+      <div class="day-body">
+        <ul>
+          <li>Desembarque por la mañana y traslado al alojamiento en L'Hospitalet / Barcelona.</li>
+          <li>17:00 h: Visita y concierto navideño en el bellísimo <b>Palau de la Música Catalana</b>.</li>
+        </ul>
+      </div>
+    </div>
+
+    <div class="day">
+      <div class="pin"></div>
+      <div class="day-header">
+        <span class="day-date">20/12 (Dom)</span>
+        <span class="day-city">Barcelona</span>
+      </div>
+      <div class="day-body">
+        <ul>
+          <li>Montaña de <b>Montjuïc</b>, Castillo, miradores hacia el puerto y Poble Espanyol.</li>
+          <li>Paseo por las fuentes de Plaça d'Espanya y MNAC.</li>
+        </ul>
+      </div>
+    </div>
+
+    <div class="day">
+      <div class="pin"></div>
+      <div class="day-header">
+        <span class="day-date">21/12 (Lun)</span>
+        <span class="day-city">Barcelona</span>
+      </div>
+      <div class="day-body">
+        <ul>
+          <li>Las Ramblas, Mercado de la Boqueria y barrio del Raval.</li>
+          <li>Últimas compras en Barcelona antes de poner rumbo al sur.</li>
+        </ul>
+      </div>
+    </div>
+
+    <!-- SEVILLA -->
+    <div class="day">
+      <div class="pin"></div>
+      <div class="day-header">
+        <span class="day-date">22/12 (Mar)</span>
+        <span class="day-city">Llegada a Sevilla</span>
+        <span class="day-tag">El Gordo de Navidad</span>
+      </div>
+      <div class="day-body">
+        <ul>
+          <li>Tren de alta velocidad hacia Sevilla. ¡Escucharemos en la radio los niños de San Ildefonso cantando la Lotería de Navidad!</li>
+          <li>Llegada a Sevilla y paseo por el romántico <b>Barrio de Santa Cruz</b> con sus naranjos y patios.</li>
+        </ul>
+      </div>
+    </div>
+
+    <div class="day">
+      <div class="pin"></div>
+      <div class="day-header">
+        <span class="day-date">23/12 (Mié)</span>
+        <span class="day-city">Sevilla</span>
+      </div>
+      <div class="day-body">
+        <ul>
+          <li><b>Catedral de Sevilla</b> y subida a las rampas de la <b>Giralda</b>.</li>
+          <li>Tarde en la monumental <b>Plaza de España</b> y Parque de María Luisa.</li>
+        </ul>
+      </div>
+    </div>
+
+    <div class="day">
+      <div class="pin"></div>
+      <div class="day-header">
+        <span class="day-date">24/12 (Jue)</span>
+        <span class="day-city">Sevilla • Nochebuena</span>
+      </div>
+      <div class="day-body">
+        <ul>
+          <li><b>Real Alcázar de Sevilla</b> (palacios mudéjares y jardines).</li>
+          <li>Paseo junto a la Torre del Oro y río Guadalquivir.</li>
+          <li>Cena especial de Nochebuena en familia con jamón ibérico y turrones.</li>
+        </ul>
+      </div>
+    </div>
+
+    <div class="day">
+      <div class="pin"></div>
+      <div class="day-header">
+        <span class="day-date">25/12 (Vie)</span>
+        <span class="day-city">Sevilla • Día de Navidad</span>
+      </div>
+      <div class="day-body">
+        <ul>
+          <li>Día de Navidad tranquilo en Sevilla, paseando por Triana y disfrutando del ambiente festivo.</li>
+          <li>Espectáculo tradicional de flamenco íntimo por la tarde.</li>
+        </ul>
+      </div>
+    </div>
+
+    <!-- GUADIX Y GRANADA -->
+    <div class="day">
+      <div class="pin"></div>
+      <div class="day-header">
+        <span class="day-date">26/12 (Sáb)</span>
+        <span class="day-city">Guadix (Granada)</span>
+      </div>
+      <div class="day-body">
+        <ul>
+          <li>Viaje a <b>Guadix</b> y check-in en las auténticas <b>Casas Cueva</b> bioclimáticas (Plazuela los Bacas).</li>
+          <li>Paseo por el barrio de cuevas con sus chimeneas blancas y la Catedral de Guadix.</li>
+        </ul>
+      </div>
+    </div>
+
+    <div class="day">
+      <div class="pin"></div>
+      <div class="day-header">
+        <span class="day-date">27/12 (Dom)</span>
+        <span class="day-city">Granada • La Alhambra</span>
+      </div>
+      <div class="day-body">
+        <ul>
+          <li>Excursión de día completo a Granada.</li>
+          <li><b>14:30 h: Visita a La Alhambra y Palacios Nazaríes</b> (Generalife y Alcazaba).</li>
+          <li>Atardecer desde el Mirador de San Nicolás en el <b>Albaicín</b> con vistas a Sierra Nevada.</li>
+        </ul>
+      </div>
+    </div>
+
+    <div class="day">
+      <div class="pin"></div>
+      <div class="day-header">
+        <span class="day-date">28/12 (Lun)</span>
+        <span class="day-city">Guadix ➔ Córdoba</span>
+      </div>
+      <div class="day-body">
+        <ul>
+          <li>Ruta matutina en 4x4 por los impresionantes paisajes desérticos (badlands) de Guadix.</li>
+          <li>Traslado por la tarde hacia Córdoba y check-in (Av. del Corregidor).</li>
+        </ul>
+      </div>
+    </div>
+
+    <!-- CORDOBA -->
+    <div class="day">
+      <div class="pin"></div>
+      <div class="day-header">
+        <span class="day-date">29/12 (Mar)</span>
+        <span class="day-city">Córdoba</span>
+      </div>
+      <div class="day-body">
+        <ul>
+          <li>Visita a la sobrecogedora <b>Mezquita-Catedral de Córdoba</b> y su bosque de arcos rojiblancos.</li>
+          <li>Paseo por la <b>Judería</b>, Calleja de las Flores y Sinagoga histórica.</li>
+          <li>Degustación de salmorejo cordobés y berenjenas con miel de caña.</li>
+        </ul>
+      </div>
+    </div>
+
+    <div class="day">
+      <div class="pin"></div>
+      <div class="day-header">
+        <span class="day-date">30/12 (Mié)</span>
+        <span class="day-city">Córdoba ➔ Llegada a Madrid</span>
+      </div>
+      <div class="day-body">
+        <ul>
+          <li>Mañana: Alcázar de los Reyes Cristianos y paseo por el <b>Puente Romano</b> sobre el Guadalquivir.</li>
+          <li>Tarde: Tren de alta velocidad AVE hacia <b>Madrid</b>. Llegada a la capital de España.</li>
+        </ul>
+      </div>
+    </div>
+
+    <!-- MADRID - OPTIMIZADO -->
+    <div class="day">
+      <div class="pin"></div>
+      <div class="day-header">
+        <span class="day-date">31/12 (Jue)</span>
+        <span class="day-city">Madrid • Nochevieja</span>
+        <span class="day-tag">Campanadas y 12 Uvas</span>
+      </div>
+      <div class="day-body">
+        <ul>
+          <li>Día por el centro: <b>Puerta del Sol</b> (Kilómetro Cero), <b>Plaza Mayor</b> y Mercado de San Miguel.</li>
+          <li>Compramos las <b>12 uvas de la suerte</b> y cotillón para la noche.</li>
+          <li><span class="highlight-badge">¡Nochevieja en la Puerta del Sol!</span> Esperamos las 12 campanadas de la Real Casa de Correos y comemos las 12 uvas para dar la bienvenida al 2027.</li>
+        </ul>
+      </div>
+    </div>
+
+    <div class="day">
+      <div class="pin"></div>
+      <div class="day-header">
+        <span class="day-date">01/01 (Vie)</span>
+        <span class="day-city">Madrid • Año Nuevo</span>
+      </div>
+      <div class="day-body">
+        <ul>
+          <li>Día festivo nacional (museos cerrados): Disfrutamos del ambiente tranquilo al aire libre.</li>
+          <li>Paseo familiar por el <b>Parque de El Retiro</b>, Estanque Grande, <b>Palacio de Cristal</b> y la <b>Puerta de Alcalá</b>.</li>
+          <li>Tradicionales churros con chocolate caliente en la histórica Chocolatería San Ginés.</li>
+        </ul>
+      </div>
+    </div>
+
+    <div class="day">
+      <div class="pin"></div>
+      <div class="day-header">
+        <span class="day-date">02/01 (Sáb)</span>
+        <span class="day-city">Madrid • Día de Museos</span>
+        <span class="day-tag free">MAN y Prado Gratis</span>
+      </div>
+      <div class="day-body">
+        <ul>
+          <li><b>14:00 h en adelante: Museo Arqueológico Nacional (MAN)</b> (Entrada Gratuita los sábados por la tarde).
+            <ul>
+              <li>Admiraremos la misteriosa <b>Dama de Elche</b>, las coronas visigodas del <b>Tesoro de Guarrazar</b> y la réplica de la cueva de Altamira.</li>
+            </ul>
+          </li>
+          <li>Paseo por el Paseo del Prado y Fuente de Neptuno.</li>
+          <li><b>18:00 – 20:00 h: Museo Nacional del Prado</b> (Horario gratuito de tarde).
+            <ul>
+              <li>Vemos <i>Las Meninas</i> de Velázquez, las Pinturas Negras de Goya y <i>El jardín de las delicias</i> de El Bosco.</li>
+            </ul>
+          </li>
+        </ul>
+      </div>
+    </div>
+
+    <div class="day">
+      <div class="pin"></div>
+      <div class="day-header">
+        <span class="day-date">03/01 (Dom)</span>
+        <span class="day-city">Excursión a Segovia</span>
+      </div>
+      <div class="day-body">
+        <ul>
+          <li>Tren Avant desde Chamartín (solo 28 minutos a Segovia).</li>
+          <li>Maravilla milenaria del <b>Acueducto Romano de Segovia</b>.</li>
+          <li>Catedral gótica y el mágico <b>Alcázar de Segovia</b> (inspiración para el castillo de Cenicienta de Disney).</li>
+          <li>Almuerzo tradicional de <b>cochinillo asado</b> crujiente.</li>
+        </ul>
+      </div>
+    </div>
+
+    <div class="day">
+      <div class="pin"></div>
+      <div class="day-header">
+        <span class="day-date">04/01 (Lun)</span>
+        <span class="day-city">Excursión a Toledo</span>
+      </div>
+      <div class="day-body">
+        <ul>
+          <li>Tren Avant desde Atocha (solo 33 minutos a Toledo).</li>
+          <li>Visita a la Ciudad de las Tres Culturas: <b>Catedral Primada de Toledo</b>, Sinagoga del Tránsito y Santa María la Blanca.</li>
+          <li>Iglesia de Santo Tomé con la obra maestra de El Greco (<i>El entierro del conde de Orgaz</i>).</li>
+          <li>Mirador del Valle con vistas panorámicas sobre el río Tajo y el Alcázar.</li>
+        </ul>
+      </div>
+    </div>
+
+    <div class="day">
+      <div class="pin"></div>
+      <div class="day-header">
+        <span class="day-date">05/01 (Mar)</span>
+        <span class="day-city">Madrid • Víspera de Reyes</span>
+        <span class="day-tag">Gran Cabalgata de Reyes</span>
+      </div>
+      <div class="day-body">
+        <ul>
+          <li>Mañana: Visita al suntuoso <b>Palacio Real de Madrid</b>, Plaza de Oriente y Catedral de la Almudena.</li>
+          <li><span class="highlight-badge">¡Tarde/Noche mágica: Cabalgata de los Reyes Magos!</span> De 18:30 a 21:00 h por el Paseo de la Castellana hasta Cibeles. ¡Llevaremos paraguas invertidos para coger caramelos con toda la ilusión del mundo!</li>
+        </ul>
+      </div>
+    </div>
+
+    <div class="day">
+      <div class="pin"></div>
+      <div class="day-header">
+        <span class="day-date">06/01 (Mié)</span>
+        <span class="day-city">Madrid • Día de Reyes (Despedida)</span>
+      </div>
+      <div class="day-body">
+        <ul>
+          <li>Desayuno tradicional en familia compartiendo el <b>Roscón de Reyes</b> con nata. ¡A ver a quién le toca la figurita y a quién el haba!</li>
+          <li>Mañana: <b>Museo Nacional Centro de Arte Reina Sofía</b> para contemplar el <i>Guernica</i> de Picasso.</li>
+          <li>Últimos recuerdos, maletas y despedida con el corazón lleno de gratitud hacia España. ¡Volvemos a Taiwán!</li>
+        </ul>
+      </div>
+    </div>
+
+  </div><!-- /timeline -->
+
+  <!-- RECOMENDACIONES -->
+  <div class="colleague-box" id="recomendaciones">
+    <h3>💬 Zona de Recomendaciones de Nuestros Colegas Españoles</h3>
+    <p>¿Conoces algún bar de tapas imprescindible, un mirador secreto, una pastelería especial o algún consejo para no meter la pata? ¡Escríbenos aquí y nos lo guardaremos en la guía!</p>
+    
+    <div class="form-group">
+      <label for="rec-name">Tu nombre / Quién eres:</label>
+      <input type="text" id="rec-name" placeholder="Ej: Javier (Dpto. de Ingeniería)">
+    </div>
+    <div class="form-group">
+      <label for="rec-city">¿Para qué ciudad es?:</label>
+      <input type="text" id="rec-city" placeholder="Ej: Madrid / Sevilla / Segovia / Toda España">
+    </div>
+    <div class="form-group">
+      <label for="rec-msg">Tu recomendación o consejo:</label>
+      <textarea id="rec-msg" rows="3" placeholder="Ej: En Madrid tenéis que pedir un bocadillo de calamares en El Brillante o Bar La Campana junto a Plaza Mayor. En Segovia reservad el cochinillo con antelación..."></textarea>
+    </div>
+    <div style="display:flex; gap:10px; flex-wrap:wrap;">
+      <button class="btn btn-primary" id="btn-save-rec" type="button">Guardar Recomendación</button>
+      <button class="btn btn-outline" id="btn-share-rec" type="button">Copiar / Compartir por WhatsApp</button>
+    </div>
+
+    <div class="recs-list" id="recs-list">
+      <!-- Se llenará dinámicamente con las recomendaciones guardadas -->
+    </div>
+  </div>
+
+</div><!-- /container -->
+
+<footer>
+  <p>Familia de Taiwán viajando por España • 2026–2027 • ¡Muchísimas gracias por vuestro cariño y hospitalidad!</p>
+  <p><a href="index.html">Volver a la App Principal del Juego</a></p>
+</footer>
+
+<script>
+const DEFAULT_RECS = [
+  { name: 'Colega de Madrid', city: 'Madrid', msg: 'En Madrid no os perdáis el bocata de calamares en la Plaza Mayor y unos churros en San Ginés a medianoche. Para las campanadas de Sol, ¡llegad con un par de horas de antelación porque se llena mucho!' },
+  { name: 'Colega de Andalucía', city: 'Sevilla', msg: 'En Sevilla pasead por el Callejón del Agua al anochecer. Si queréis buenas tapas, pedid espinacas con garbanzos y cazón en adobo.' },
+  { name: 'Consejo para Segovia', city: 'Segovia', msg: 'Para el cochinillo en Segovia, Mesón de Cándido está justo pegado al acueducto y es espectacular, pero José María en una callejuela del centro tiene una calidad insuperable.' }
+];
+
+function getRecs() {
+  try {
+    const s = localStorage.getItem('ftg_spanish_recs');
+    return s ? JSON.parse(s) : DEFAULT_RECS;
+  } catch(e) { return DEFAULT_RECS; }
+}
+
+function saveRecs(list) {
+  try { localStorage.setItem('ftg_spanish_recs', JSON.stringify(list)); } catch(e){}
+}
+
+function renderRecs() {
+  const list = getRecs();
+  const box = document.getElementById('recs-list');
+  box.innerHTML = list.map(r => `
+    <div class="rec-item">
+      <div class="rec-author">💡 ${r.name} <span>(${r.city})</span></div>
+      <div class="rec-text">${r.msg}</div>
+    </div>
+  `).join('');
+}
+
+document.getElementById('btn-save-rec').onclick = () => {
+  const name = document.getElementById('rec-name').value.trim();
+  const city = document.getElementById('rec-city').value.trim() || 'General';
+  const msg = document.getElementById('rec-msg').value.trim();
+  if (!name || !msg) { alert('Por favor, indica tu nombre y tu recomendación.'); return; }
+  const list = getRecs();
+  list.unshift({ name, city, msg });
+  saveRecs(list);
+  renderRecs();
+  document.getElementById('rec-msg').value = '';
+  alert('¡Muchísimas gracias! Tu recomendación ha quedado guardada en nuestro itinerario.');
+};
+
+document.getElementById('btn-share-rec').onclick = () => {
+  const name = document.getElementById('rec-name').value.trim();
+  const msg = document.getElementById('rec-msg').value.trim();
+  const text = (name && msg) ? `Recomendación de ${name} para el viaje a España:\n${msg}` : '¡Aquí podéis ver nuestro itinerario completo de 30 días en España!\n' + window.location.href;
+  if (navigator.clipboard) {
+    navigator.clipboard.writeText(text).then(() => alert('¡Texto copiado al portapapeles! Ya puedes pegarlo en WhatsApp o Teams.')).catch(() => {});
+  } else {
+    alert(text);
+  }
+};
+
+renderRecs();
+</script>
+</body>
+</html>

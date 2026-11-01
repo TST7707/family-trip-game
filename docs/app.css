@@ -155,3 +155,48 @@ textarea.text{min-height:120px}
 .plan-btns{display:flex;gap:6px;flex-shrink:0}
 .plan-btns .btn{min-height:36px;padding:0 10px}
 .day[open] .plan-list{margin-top:4px}
+
+/* v1.5：雙語切換、每日 Tapa 刮刮樂、城市旗故事、全家步數里程碑、旅行大圖鑑與拍立得 */
+.top-header{display:flex;justify-content:space-between;align-items:center;padding:10px 16px;background:var(--card);border-bottom:1px solid var(--line);position:sticky;top:0;z-index:9}
+.lang-toggle-btn{display:inline-flex;align-items:center;gap:6px;padding:6px 14px;border-radius:999px;border:1px solid var(--line);background:var(--bg);color:var(--fg);font-size:14px;font-weight:700;cursor:pointer}
+.flame-pill{display:inline-flex;align-items:center;gap:4px;padding:4px 10px;border-radius:999px;background:var(--warn-bg);color:var(--warn);font-size:14px;font-weight:800}
+
+/* 每日美味 Tapa 刮刮樂 */
+.scratch-box{position:relative;width:100%;min-height:220px;border-radius:var(--r-md);overflow:hidden;background:var(--card);box-shadow:var(--shadow);border:2px dashed var(--line);display:flex;flex-direction:column;align-items:center;justify-content:center;padding:20px;text-align:center}
+.scratch-content{display:flex;flex-direction:column;align-items:center;justify-content:center;gap:10px;width:100%}
+.scratch-emoji{font-size:52px;line-height:1}
+.scratch-title{font-size:22px;font-weight:800;color:var(--primary)}
+.scratch-desc{font-size:15px;color:var(--muted);max-width:420px}
+.scratch-cover{position:absolute;inset:0;background:linear-gradient(135deg,#D97706,#B45309);display:flex;flex-direction:column;align-items:center;justify-content:center;color:#fff;cursor:pointer;z-index:2;transition:opacity .4s ease,visibility .4s}
+.scratch-cover.scratched{opacity:0;visibility:hidden;pointer-events:none}
+.scratch-cover .cover-txt{font-size:20px;font-weight:800;letter-spacing:1px;margin-top:8px}
+
+/* 全家合作里程碑進度條 */
+.milestone-card{background:var(--card);border-radius:var(--r-md);box-shadow:var(--shadow);padding:16px;margin-bottom:14px;border-left:4px solid var(--good)}
+.progress-outer{background:var(--sunken);border-radius:999px;height:16px;overflow:hidden;margin:10px 0 6px;position:relative}
+.progress-inner{background:linear-gradient(90deg,var(--good-fill),#10B981);height:100%;border-radius:999px;transition:width .5s ease}
+.progress-labels{display:flex;justify-content:space-between;font-size:13px;color:var(--muted);font-weight:600}
+
+/* 西班牙旅行大圖鑑 Pokédex */
+.pokedex-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px}
+@media (min-width: 520px){.pokedex-grid{grid-template-columns:repeat(3,minmax(0,1fr))}}
+.poke-card{background:var(--card);border-radius:var(--r-md);box-shadow:var(--shadow);border:1px solid var(--line);padding:12px;display:flex;flex-direction:column;align-items:center;text-align:center;gap:6px;cursor:pointer;position:relative}
+.poke-card.locked{opacity:.6;filter:grayscale(90%)}
+.poke-card.unlocked{border-color:var(--good);background:var(--good-bg)}
+.poke-icon{font-size:40px;line-height:1}
+.poke-name{font-weight:700;font-size:15px;line-height:1.2}
+.poke-sub{font-size:12px;color:var(--muted)}
+.poke-thumb{width:100%;aspect-ratio:1/1;object-fit:cover;border-radius:8px;margin-top:6px}
+
+/* 城市旗與小眾故事 */
+.flag-card{display:flex;align-items:center;gap:12px;padding:12px 14px;background:var(--card);border-radius:var(--r-sm);border:1px solid var(--line);margin-bottom:8px}
+.flag-badge{font-size:32px;line-height:1;width:44px;text-align:center}
+.flag-info{flex:1;min-width:0}
+.flag-title{font-weight:700;font-size:16px}
+.flag-story{font-size:13px;color:var(--muted);margin-top:2px;line-height:1.4}
+
+/* 復古拍立得 Polaroid 相框 */
+.polaroid{background:#fff;color:#1C1C1E;padding:14px 14px 24px;border-radius:6px;box-shadow:0 4px 18px rgba(0,0,0,.15);max-width:380px;margin:12px auto;text-align:center}
+.polaroid img{width:100%;aspect-ratio:1/1;object-fit:cover;display:block;border-radius:2px;background:#eee}
+.polaroid-caption{margin-top:12px;font-family:"Caveat","Comic Sans MS",cursive,sans-serif;font-size:20px;font-weight:700;color:#333}
+.polaroid-date{font-size:12px;color:#777;margin-top:2px}
