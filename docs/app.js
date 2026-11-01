@@ -831,9 +831,9 @@ async function makeCollage(blobs, themeTitle, cardTitle) {
   const cv = document.createElement('canvas'); cv.width = W; cv.height = H;
   const g = cv.getContext('2d');
   g.fillStyle = '#FFFFFF'; g.fillRect(0, 0, W, H);
-  g.fillStyle = '#000000'; g.font = 'bold 46px -apple-system, sans-serif';
+  g.fillStyle = '#1A1F2C'; g.font = 'bold 46px -apple-system, sans-serif';
   g.fillText(themeTitle.slice(0, 18), 24, 64);
-  g.fillStyle = '#57575A'; g.font = '30px -apple-system, sans-serif';
+  g.fillStyle = '#4B5563'; g.font = '30px -apple-system, sans-serif';
   g.fillText((S.player + '・' + today() + '・' + cardTitle).slice(0, 34), 24, 116);
   for (let i = 0; i < 9; i++) {
     const bmp = await loadBitmap(blobs[i]);
@@ -1056,7 +1056,7 @@ route('/tool/wheel', () => {
       <button class="btn small" id="saveo">儲存</button></div></details>`);
   let items = def.slice(0, 10), angle = 0;
   const cv = $('#wh'), g = cv.getContext('2d');
-  const colors = ['#007AFF', '#34C759', '#FF9500', '#5856D6', '#FF3B30', '#30B0C7', '#AF52DE', '#FFCC00', '#A2845E', '#FF2D55'];
+  const colors = ['#D84315', '#0284C7', '#15803D', '#F59E0B', '#7C3AED', '#E11D48', '#0891B2', '#EA580C', '#16A34A', '#F97316'];
   const draw = () => {
     const n = items.length, r = 300, cx = 320, cy = 320;
     g.clearRect(0, 0, 640, 640);
@@ -1065,7 +1065,7 @@ route('/tool/wheel', () => {
       g.beginPath(); g.moveTo(cx, cy); g.arc(cx, cy, r, a0, a1); g.closePath();
       g.fillStyle = colors[i % colors.length]; g.fill();
       g.save(); g.translate(cx, cy); g.rotate((a0 + a1) / 2);
-      g.fillStyle = '#000'; g.font = 'bold 24px -apple-system, sans-serif'; g.textAlign = 'right';
+      g.fillStyle = '#FFFFFF'; g.font = 'bold 24px -apple-system, sans-serif'; g.textAlign = 'right';
       g.fillText(items[i].slice(0, 8), r - 16, 8); g.restore();
     }
     g.beginPath(); g.moveTo(cx + r - 10, cy); g.lineTo(cx + r + 18, cy - 16); g.lineTo(cx + r + 18, cy + 16); g.closePath();
