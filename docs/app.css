@@ -1,6 +1,7 @@
 :root{
+  color-scheme:light;
   /* 電子書溫和紙質風格（E-Reader Warm Paper / Kindle 護眼柔和風格） */
-  --bg:#F5F2EB;            /* 溫潤淡米紙色（柔和護眼、抗反光、如電子紙般零疲勞感） */
+  --bg:#F5F2EB;            /* 溫潤淡米紙色（柔和護眼、抗反光、零疲勞感，全天候保持暖紙底） */
   --card:#FFFDF9;          /* 純淨暖紙白（如精裝書內頁紙張，乾淨不刺眼） */
   --card-hover:#FAF6F0;
   --sunken:#ECE7DE;        /* 輕柔暖砂紙槽（如書本折頁微凹質感） */
@@ -50,47 +51,15 @@
   --font:-apple-system,BlinkMacSystemFont,"SF Pro Text","PingFang TC","Noto Sans TC","Microsoft JhengHei",serif,sans-serif;
 }
 
-@media (prefers-color-scheme: dark){
-  :root{
-    /* 電子書夜間紙質模式（Kindle Warm Dark / 深焙暖木紙墨，非刺眼黑） */
-    --bg:#1F1D1A;          /* 暖夜墨底，非純黑 OLED，舒適柔和 */
-    --card:#2B2723;        /* 深木質紙張 */
-    --card-hover:#34302B;
-    --sunken:#38332E;
-    --line:#453F39;
-    --sep:rgba(255, 255, 255, 0.08);
-    --fg:#EBE5DC;          /* 柔暖米白墨水 */
-    --muted:#B8B0A5;       /* 溫和次要文字 */
-    --muted-light:#8E867C;
-    --primary:#D67D65;     /* 柔和晚霞紅陶 */
-    --primary-fill:#DE8B74;
-    --primary-gradient:linear-gradient(135deg, #D67D65 0%, #E2967F 100%);
-    --on-primary:#1F1D1A;
-    --sea:#6A96B2;
-    --sea-bg:#1A2833;
-    --good:#5FA56E;
-    --good-fill:#4B8358;
-    --good-bg:#1A291E;
-    --bad:#DE6D66;
-    --bad-bg:#301B1A;
-    --warn:#D89C57;
-    --warn-bg:#2E2214;
-    --plan:#6A96B2;
-    --plan-bg:#1A2833;
-    --shadow:0 3px 12px rgba(0, 0, 0, 0.35);
-    --shadow-lg:0 6px 20px rgba(0, 0, 0, 0.45);
-  }
-}
-
 *{box-sizing:border-box}
-html{-webkit-text-size-adjust:100%}
+html{-webkit-text-size-adjust:100%;color-scheme:light}
 body{margin:0;background:var(--bg);color:var(--fg);font:17.5px/1.65 var(--font);padding-bottom:calc(88px + env(safe-area-inset-bottom));-webkit-font-smoothing:antialiased}
 a{color:var(--primary);text-decoration:none}
 a:hover{text-decoration:underline}
 button,input,select,textarea{font:inherit;color:inherit}
-h1{font-size:30px;line-height:1.25;margin:4px 0 8px;letter-spacing:-.01em;font-weight:800}
-h2{font-size:22px;line-height:1.3;margin:24px 0 12px;font-weight:800}
-h3{font-size:19px;margin:0 0 8px;font-weight:700}
+h1{font-size:30px;line-height:1.25;margin:4px 0 8px;letter-spacing:-.01em;font-weight:800;color:var(--fg)}
+h2{font-size:22px;line-height:1.3;margin:24px 0 12px;font-weight:800;color:var(--fg)}
+h3{font-size:19px;margin:0 0 8px;font-weight:700;color:var(--fg)}
 p{margin:0 0 10px}
 .wrap{max-width:720px;margin:0 auto;padding:16px max(16px,env(safe-area-inset-left)) 28px max(16px,env(safe-area-inset-right))}
 .sub{color:var(--muted);font-size:15px;line-height:1.55}
@@ -120,7 +89,7 @@ p{margin:0 0 10px}
 .list a.item:hover{background:var(--card-hover)}
 .list .item:last-child{border-bottom:0}
 .item .t{flex:1;min-width:0}
-.item .t b{display:block;font-weight:700;font-size:17px}
+.item .t b{display:block;font-weight:700;font-size:17px;color:var(--fg)}
 .item .t span{display:block;color:var(--muted);font-size:14.5px;margin-top:2px}
 .item.locked{opacity:.55}
 .chev{width:18px;height:18px;flex:none;stroke:var(--muted);fill:none;stroke-width:2.2}
@@ -135,14 +104,17 @@ p{margin:0 0 10px}
 .city-tile[href*="guadix"]::before{background:#8E4A5C}
 .city-tile[href*="cordoba"]::before{background:#9E6738}
 .city-tile[href*="madrid"]::before{background:#A23D35}
-.city-tile b{font-size:20px;font-weight:800;margin-bottom:2px}
+.city-tile b{font-size:20px;font-weight:800;margin-bottom:2px;color:var(--fg)}
 .city-tile span{color:var(--muted);font-size:14.5px}
 
-/* 首頁頂部主視覺：典雅溫暖精裝書書封感 */
-.hero{background:var(--primary-gradient);color:#FFFDF9;border-radius:var(--r-lg);padding:22px 20px;margin-bottom:16px;box-shadow:var(--shadow-lg);border:1px solid rgba(255,255,255,0.2)}
-.hero h1{color:#FFFDF9;margin-top:0}
-.hero .sub{color:#FFFDF9;opacity:.95;font-size:16px}
-.hero .btn{background:#FFFDF9;color:var(--primary);box-shadow:0 3px 10px rgba(0,0,0,0.12)}
+/* 首頁頂部主視覺：電子書經典手帳章節卡（暖紙白底、典雅裝訂框線，字體清晰不反光，大數字超醒目！） */
+.hero{background:var(--card);color:var(--fg);border-radius:var(--r-md);border:2px solid var(--primary);box-shadow:var(--shadow);padding:24px 20px;margin-bottom:16px;text-align:center;position:relative;overflow:hidden}
+.hero::before{content:'';position:absolute;top:0;left:0;right:0;height:5px;background:var(--primary-gradient)}
+.hero h1,.hero h2{color:var(--fg);margin:0 0 10px;font-weight:800}
+.hero .sub{color:var(--muted);font-size:16px;font-weight:700;letter-spacing:0.04em;margin-bottom:4px}
+.hero .big-num{font-size:60px;font-weight:900;color:var(--primary);line-height:1.1;margin:8px 0 10px}
+.hero p{color:var(--muted);font-size:15px;line-height:1.6;margin:6px 0 0}
+.hero .btn{background:var(--primary-gradient);color:var(--on-primary);box-shadow:0 3px 10px rgba(184,83,56,0.22);margin-top:10px}
 
 .section-label{font-weight:800;font-size:17px;margin-bottom:6px;color:var(--primary)}
 .reading{border-left:0}
@@ -150,11 +122,11 @@ p{margin:0 0 10px}
 
 /* 故事閱讀折疊卡：電子紙閱讀排版、大字清晰柔和 */
 details.read{background:var(--card);border-radius:var(--r-md);border:1px solid var(--line);box-shadow:var(--shadow);margin:0 0 14px;overflow:hidden}
-details.read summary{list-style:none;cursor:pointer;padding:16px 18px;min-height:56px;font-weight:800;font-size:18px;display:flex;align-items:center;justify-content:space-between;background:var(--card);transition:background .15s ease}
+details.read summary{list-style:none;cursor:pointer;padding:16px 18px;min-height:56px;font-weight:800;font-size:18px;display:flex;align-items:center;justify-content:space-between;background:var(--card);transition:background .15s ease;color:var(--fg)}
 details.read summary:hover{background:var(--card-hover)}
 details.read summary::-webkit-details-marker{display:none}
 details.read[open] summary{border-bottom:2px solid var(--line);color:var(--primary)}
-details.read .inner{padding:18px;font-size:17.5px;line-height:1.75}
+details.read .inner{padding:18px;font-size:17.5px;line-height:1.75;color:var(--fg)}
 ul.facts{margin:0 0 14px;padding-left:22px}
 ul.facts li{margin-bottom:8px}
 
@@ -170,7 +142,7 @@ ul.facts li{margin-bottom:8px}
 .q .opt.wrong{border-color:var(--bad);background:var(--bad-bg)}
 .q .opt.wrong .k{background:var(--bad);color:#fff;border-color:var(--bad)}
 .q .opt:disabled{cursor:default;opacity:1}
-.q .exp{margin-top:14px;padding:14px 16px;border-radius:var(--r-sm);background:var(--sunken);font-size:16.5px;line-height:1.65;border-left:4px solid var(--primary)}
+.q .exp{margin-top:14px;padding:14px 16px;border-radius:var(--r-sm);background:var(--sunken);font-size:16.5px;line-height:1.65;border-left:4px solid var(--primary);color:var(--fg)}
 .q .verdict{font-weight:800;font-size:18px;margin-bottom:6px}
 .q .verdict.ok{color:var(--good)} .q .verdict.no{color:var(--bad)}
 
@@ -180,7 +152,7 @@ ul.facts li{margin-bottom:8px}
 .themes{display:flex;flex-direction:column;gap:10px}
 .theme-btn{display:block;text-align:left;padding:14px 16px;border-radius:var(--r-sm);border:1px solid var(--line);background:var(--card);color:var(--fg);text-decoration:none;box-shadow:var(--shadow-sm);transition:all .15s ease}
 .theme-btn:hover{border-color:var(--primary);transform:translateY(-1px)}
-.theme-btn b{display:block;font-size:17px;font-weight:700}
+.theme-btn b{display:block;font-size:17px;font-weight:700;color:var(--fg)}
 .theme-btn span{color:var(--muted);font-size:15px}
 
 /* 九宮格照片卡槽 */
@@ -196,7 +168,7 @@ ul.facts li{margin-bottom:8px}
 .score-row{display:flex;align-items:center;gap:14px;padding:14px 18px;border-bottom:1px solid var(--line)}
 .score-row:last-child{border-bottom:0}
 .score-row .rank{width:28px;font-weight:800;font-size:18px;color:var(--primary)}
-.score-row .name{flex:1;font-weight:700;font-size:17px}
+.score-row .name{flex:1;font-weight:700;font-size:17px;color:var(--fg)}
 .score-row .pts{font-weight:800;font-size:18px;color:var(--fg);font-variant-numeric:tabular-nums}
 .wall-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px}
 .wall-grid figure{margin:0;background:var(--card);border-radius:var(--r-md);border:1px solid var(--line);overflow:hidden;box-shadow:var(--shadow)}
@@ -240,10 +212,10 @@ textarea.text{min-height:120px;line-height:1.55}
 /* 冷知識卡、讚、留言、任務按鈕 */
 .fact{border-bottom:1px solid var(--line);padding:14px 0}
 .fact:last-child{border-bottom:0}
-.fact .ftxt{margin-bottom:10px;font-size:17px;line-height:1.65}
+.fact .ftxt{margin-bottom:10px;font-size:17px;line-height:1.65;color:var(--fg)}
 .like-btn{min-height:44px;padding:0 16px;border-radius:999px;border:2px solid var(--primary);background:transparent;color:var(--primary);font-weight:700;cursor:pointer;transition:all .15s ease}
 .like-btn.on{background:var(--primary);color:#fff}
-.task-note{margin:10px 0;font-size:16.5px}
+.task-note{margin:10px 0;font-size:16.5px;color:var(--fg)}
 .upload-btn{display:inline-flex;align-items:center;cursor:pointer}
 .cmts{margin-top:10px;text-align:left}
 .cmts .cmt{font-size:15px;margin:6px 0;color:var(--muted)}
@@ -260,7 +232,7 @@ textarea.text{min-height:120px;line-height:1.55}
 .day-body{padding:6px 0 10px}
 .plan-list{list-style:none;padding:0;margin:10px 0 0}
 .plan-list li{display:flex;justify-content:space-between;gap:10px;padding:10px 0;border-bottom:1px solid var(--line);align-items:flex-start;flex-wrap:wrap}
-.plan-main{flex:1;min-width:0;font-size:16.5px}
+.plan-main{flex:1;min-width:0;font-size:16.5px;color:var(--fg)}
 .plan-btns{display:flex;gap:8px;flex-shrink:0}
 .plan-btns .btn{min-height:38px;padding:0 12px;font-size:15px}
 .day[open] .plan-list{margin-top:6px}
