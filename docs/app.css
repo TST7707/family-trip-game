@@ -1,90 +1,90 @@
 :root{
-  /* 地中海暖陽明亮畫布（普韋布洛白牆與陽光石灰岩質感，長輩護眼不反光、年輕人溫暖渡假感） */
-  --bg:#FDFBF7;
-  --card:#FFFFFF;
-  --card-hover:#FFFBF5;
-  --sunken:#F5EFEB;
-  --line:#E8DFD5;
-  --sep:rgba(180, 83, 9, 0.08);
+  /* 電子書溫和紙質風格（E-Reader Warm Paper / Kindle 護眼柔和風格） */
+  --bg:#F5F2EB;            /* 溫潤淡米紙色（柔和護眼、抗反光、如電子紙般零疲勞感） */
+  --card:#FFFDF9;          /* 純淨暖紙白（如精裝書內頁紙張，乾淨不刺眼） */
+  --card-hover:#FAF6F0;
+  --sunken:#ECE7DE;        /* 輕柔暖砂紙槽（如書本折頁微凹質感） */
+  --line:#DDD6C9;          /* 細膩書頁裝訂線與柔和邊框 */
+  --sep:rgba(70, 55, 40, 0.08);
 
-  /* 長輩友善高對比文字：深濃縮咖啡黑炭，嚴禁低對比灰字，室外陽光下依然清晰 */
-  --fg:#1A1F2C;
-  --muted:#4B5563;
-  --muted-light:#6B7280;
+  /* 書籍墨水文字（深濃郁墨水黑炭，如優質印刷字體，長輩閱讀清晰不傷眼） */
+  --fg:#2C2621;            /* 暖黑墨水色（Deep Book Ink，對比鮮明無冷色刺激） */
+  --muted:#5C554E;         /* 溫暖頁尾說明墨色（高對比易讀，非漂白死灰） */
+  --muted-light:#7E756B;
 
-  /* 西班牙標誌色：塞維亞夕陽赤陶紅（Terracotta）與活力甜橙 */
-  --primary:#D84315;
-  --primary-fill:#EA580C;
-  --primary-gradient:linear-gradient(135deg, #D84315 0%, #EA580C 50%, #F59E0B 100%);
-  --on-primary:#FFFFFF;
+  /* 西班牙手帳專屬墨色：陶土磚紅（Terracotta Bookcloth）與溫潤印章 */
+  --primary:#B85338;       /* 溫潤西班牙陶土紅，柔和內斂不刺眼 */
+  --primary-fill:#C66247;
+  --primary-gradient:linear-gradient(135deg, #B85338 0%, #C86A4E 60%, #D48459 100%);
+  --on-primary:#FFFDF9;
 
-  /* 地中海蔚藍（Mar Mediterráneo） */
-  --sea:#0284C7;
-  --sea-bg:#E0F2FE;
+  /* 地中海柔灰藍（Mediterranean Slate Ink） */
+  --sea:#3D6780;
+  --sea-bg:#EAF1F5;
 
-  /* 西班牙綠意與橄欖園（Oliva） */
-  --good:#15803D;
-  --good-fill:#16A34A;
-  --good-bg:#ECFDF5;
+  /* 橄欖林墨綠（Olive Leaf Ink） */
+  --good:#3E6E49;
+  --good-fill:#4B8358;
+  --good-bg:#EDF4EE;
 
-  /* 里奧哈陳釀紅酒（Vino Tinto） */
-  --bad:#B91C1C;
-  --bad-bg:#FEF2F2;
+  /* 封蠟復古暗紅（Sealing Wax Crimson） */
+  --bad:#9E3832;
+  --bad-bg:#F8EDEC;
 
-  /* 安達魯西亞番紅花金（Azafrán & Sol） */
-  --warn:#D97706;
-  --warn-bg:#FFFBEB;
+  /* 古典琥珀番紅花（Warm Amber Saffron） */
+  --warn:#A86F30;
+  --warn-bg:#F8F1E5;
 
-  /* 航海探索深藍（Navegación） */
-  --plan:#0369A1;
-  --plan-bg:#F0F9FF;
+  /* 航海旅記墨藍（Naval Blue） */
+  --plan:#3B617C;
+  --plan-bg:#EBF2F7;
 
-  /* 暖陽立體柔影 */
-  --shadow-sm:0 2px 6px rgba(180, 83, 9, 0.05), 0 1px 2px rgba(0, 0, 0, 0.03);
-  --shadow:0 4px 14px rgba(180, 83, 9, 0.07), 0 1px 3px rgba(0, 0, 0, 0.04);
-  --shadow-lg:0 10px 25px rgba(216, 67, 21, 0.12), 0 3px 8px rgba(0, 0, 0, 0.05);
+  /* 電子紙質柔影（如書頁自然厚度，無生硬投影） */
+  --shadow-sm:0 1px 4px rgba(60, 45, 30, 0.04), 0 1px 2px rgba(60, 45, 30, 0.03);
+  --shadow:0 3px 10px rgba(60, 45, 30, 0.06), 0 1px 3px rgba(60, 45, 30, 0.04);
+  --shadow-lg:0 8px 24px rgba(60, 45, 30, 0.09), 0 2px 6px rgba(60, 45, 30, 0.04);
 
-  --r-sm:12px;
-  --r-md:16px;
-  --r-lg:22px;
-  --font:-apple-system,BlinkMacSystemFont,"SF Pro Text","PingFang TC","Noto Sans TC","Microsoft JhengHei",sans-serif;
+  --r-sm:10px;
+  --r-md:14px;
+  --r-lg:20px;
+  --font:-apple-system,BlinkMacSystemFont,"SF Pro Text","PingFang TC","Noto Sans TC","Microsoft JhengHei",serif,sans-serif;
 }
 
 @media (prefers-color-scheme: dark){
   :root{
-    /* 西班牙午夜地中海藍調（Noche Mediterránea），維持高對比與暖金點綴 */
-    --bg:#141824;
-    --card:#1E2333;
-    --card-hover:#262D42;
-    --sunken:#293046;
-    --line:#3A445C;
+    /* 電子書夜間紙質模式（Kindle Warm Dark / 深焙暖木紙墨，非刺眼黑） */
+    --bg:#1F1D1A;          /* 暖夜墨底，非純黑 OLED，舒適柔和 */
+    --card:#2B2723;        /* 深木質紙張 */
+    --card-hover:#34302B;
+    --sunken:#38332E;
+    --line:#453F39;
     --sep:rgba(255, 255, 255, 0.08);
-    --fg:#F9FAFB;
-    --muted:#CBD5E1;
-    --muted-light:#94A3B8;
-    --primary:#FB923C;
-    --primary-fill:#F97316;
-    --primary-gradient:linear-gradient(135deg, #F97316 0%, #FB923C 50%, #FBBF24 100%);
-    --on-primary:#1E293B;
-    --sea:#38BDF8;
-    --sea-bg:#082F49;
-    --good:#34D399;
-    --good-fill:#10B981;
-    --good-bg:#064E3B;
-    --bad:#F87171;
-    --bad-bg:#450A0A;
-    --warn:#FBBF24;
-    --warn-bg:#451A03;
-    --plan:#38BDF8;
-    --plan-bg:#0C4A6E;
-    --shadow:0 4px 16px rgba(0, 0, 0, 0.4);
-    --shadow-lg:0 8px 28px rgba(0, 0, 0, 0.5);
+    --fg:#EBE5DC;          /* 柔暖米白墨水 */
+    --muted:#B8B0A5;       /* 溫和次要文字 */
+    --muted-light:#8E867C;
+    --primary:#D67D65;     /* 柔和晚霞紅陶 */
+    --primary-fill:#DE8B74;
+    --primary-gradient:linear-gradient(135deg, #D67D65 0%, #E2967F 100%);
+    --on-primary:#1F1D1A;
+    --sea:#6A96B2;
+    --sea-bg:#1A2833;
+    --good:#5FA56E;
+    --good-fill:#4B8358;
+    --good-bg:#1A291E;
+    --bad:#DE6D66;
+    --bad-bg:#301B1A;
+    --warn:#D89C57;
+    --warn-bg:#2E2214;
+    --plan:#6A96B2;
+    --plan-bg:#1A2833;
+    --shadow:0 3px 12px rgba(0, 0, 0, 0.35);
+    --shadow-lg:0 6px 20px rgba(0, 0, 0, 0.45);
   }
 }
 
 *{box-sizing:border-box}
 html{-webkit-text-size-adjust:100%}
-body{margin:0;background:var(--bg);color:var(--fg);font:17.5px/1.6 var(--font);padding-bottom:calc(88px + env(safe-area-inset-bottom));-webkit-font-smoothing:antialiased}
+body{margin:0;background:var(--bg);color:var(--fg);font:17.5px/1.65 var(--font);padding-bottom:calc(88px + env(safe-area-inset-bottom));-webkit-font-smoothing:antialiased}
 a{color:var(--primary);text-decoration:none}
 a:hover{text-decoration:underline}
 button,input,select,textarea{font:inherit;color:inherit}
@@ -93,28 +93,28 @@ h2{font-size:22px;line-height:1.3;margin:24px 0 12px;font-weight:800}
 h3{font-size:19px;margin:0 0 8px;font-weight:700}
 p{margin:0 0 10px}
 .wrap{max-width:720px;margin:0 auto;padding:16px max(16px,env(safe-area-inset-left)) 28px max(16px,env(safe-area-inset-right))}
-.sub{color:var(--muted);font-size:15px;line-height:1.5}
+.sub{color:var(--muted);font-size:15px;line-height:1.55}
 .card{background:var(--card);border-radius:var(--r-md);border:1px solid var(--line);box-shadow:var(--shadow);padding:18px;margin:0 0 14px}
 .card.flat{box-shadow:none;border:1px solid var(--line)}
 .stack{display:flex;flex-direction:column;gap:12px}
 .row{display:flex;gap:10px;align-items:center;flex-wrap:wrap}
 .grid2{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px}
 
-/* 按鈕：西班牙夕陽漸層、立體微投影、長輩好按之 52px+ 高度 */
-.btn{display:inline-flex;align-items:center;justify-content:center;gap:8px;min-height:52px;padding:0 20px;border-radius:var(--r-md);border:0;background:var(--primary-gradient);color:var(--on-primary);font-weight:800;font-size:18px;text-decoration:none;cursor:pointer;box-shadow:0 4px 14px rgba(216, 67, 21, 0.22);transition:transform .15s ease,box-shadow .15s ease}
+/* 按鈕：精裝書布封面質感、溫暖陶土墨色、長輩好按之 52px+ 高度 */
+.btn{display:inline-flex;align-items:center;justify-content:center;gap:8px;min-height:52px;padding:0 20px;border-radius:var(--r-md);border:0;background:var(--primary-gradient);color:var(--on-primary);font-weight:800;font-size:18px;text-decoration:none;cursor:pointer;box-shadow:0 3px 10px rgba(184, 83, 56, 0.22);transition:transform .15s ease,box-shadow .15s ease}
 .btn:active{transform:scale(0.98)}
 .btn.block{width:100%}
 .btn.ghost{background:var(--card);color:var(--primary);border:2px solid var(--primary);box-shadow:var(--shadow-sm)}
 .btn.small{min-height:46px;font-size:16px;padding:0 14px;border-radius:var(--r-sm)}
 .btn:disabled{opacity:.45;cursor:default;box-shadow:none}
 
-/* 標籤 Chips */
+/* 標籤 Chips：如書籤紙條 */
 .chip{display:inline-flex;align-items:center;padding:4px 12px;border-radius:999px;border:1px solid var(--line);background:var(--card);font-size:14.5px;font-weight:600;color:var(--muted)}
 .chip.good{color:var(--good);border-color:var(--good);background:var(--good-bg)}
 .chip.plan{color:var(--plan);border-color:var(--plan);background:var(--plan-bg)}
 .chip.warn{color:var(--warn);border-color:var(--warn);background:var(--warn-bg)}
 
-/* 列表與清單 */
+/* 列表與清單：經典書籍章節目錄感 */
 .list{background:var(--card);border-radius:var(--r-md);border:1px solid var(--line);box-shadow:var(--shadow);overflow:hidden;margin-bottom:14px}
 .list a.item,.list .item{display:flex;align-items:center;gap:14px;padding:14px 18px;min-height:64px;color:var(--fg);text-decoration:none;border-bottom:1px solid var(--line);transition:background .15s ease}
 .list a.item:hover{background:var(--card-hover)}
@@ -125,42 +125,42 @@ p{margin:0 0 10px}
 .item.locked{opacity:.55}
 .chev{width:18px;height:18px;flex:none;stroke:var(--muted);fill:none;stroke-width:2.2}
 
-/* 城市磁磚卡（City Tiles）：融入西班牙各區特色頂部邊條 */
+/* 城市卡（City Tiles）：如藏書票與微色書籤 */
 .city-tile{display:flex;flex-direction:column;justify-content:flex-end;min-height:118px;padding:16px;border-radius:var(--r-md);background:var(--card);border:1px solid var(--line);box-shadow:var(--shadow);color:var(--fg);text-decoration:none;position:relative;overflow:hidden;transition:transform .15s ease,box-shadow .15s ease}
 .city-tile:hover{transform:translateY(-2px);box-shadow:var(--shadow-lg)}
-.city-tile::before{content:'';position:absolute;top:0;left:0;right:0;height:5px;background:var(--primary-gradient)}
-.city-tile[href*="barcelona"]::before{background:linear-gradient(90deg, #0284C7, #38BDF8)}
-.city-tile[href*="cruise"]::before{background:linear-gradient(90deg, #1D4ED8, #06B6D4)}
-.city-tile[href*="sevilla"]::before{background:linear-gradient(90deg, #EA580C, #F59E0B)}
-.city-tile[href*="guadix"]::before{background:linear-gradient(90deg, #BE185D, #F43F5E)}
-.city-tile[href*="cordoba"]::before{background:linear-gradient(90deg, #B45309, #D97706)}
-.city-tile[href*="madrid"]::before{background:linear-gradient(90deg, #DC2626, #F59E0B)}
+.city-tile::before{content:'';position:absolute;top:0;left:0;right:0;height:4px;background:var(--primary)}
+.city-tile[href*="barcelona"]::before{background:#3D6780}
+.city-tile[href*="cruise"]::before{background:#2F5270}
+.city-tile[href*="sevilla"]::before{background:#B85338}
+.city-tile[href*="guadix"]::before{background:#8E4A5C}
+.city-tile[href*="cordoba"]::before{background:#9E6738}
+.city-tile[href*="madrid"]::before{background:#A23D35}
 .city-tile b{font-size:20px;font-weight:800;margin-bottom:2px}
 .city-tile span{color:var(--muted);font-size:14.5px}
 
-/* 首頁頂部主視覺：熱情安達魯西亞金色夕陽 */
-.hero{background:var(--primary-gradient);color:#FFFFFF;border-radius:var(--r-lg);padding:22px 20px;margin-bottom:16px;box-shadow:var(--shadow-lg);border:1px solid rgba(255,255,255,0.2)}
-.hero h1{color:#FFFFFF;margin-top:0}
-.hero .sub{color:#FFFFFF;opacity:.95;font-size:16px}
-.hero .btn{background:#FFFFFF;color:var(--primary);box-shadow:0 4px 12px rgba(0,0,0,0.15)}
+/* 首頁頂部主視覺：典雅溫暖精裝書書封感 */
+.hero{background:var(--primary-gradient);color:#FFFDF9;border-radius:var(--r-lg);padding:22px 20px;margin-bottom:16px;box-shadow:var(--shadow-lg);border:1px solid rgba(255,255,255,0.2)}
+.hero h1{color:#FFFDF9;margin-top:0}
+.hero .sub{color:#FFFDF9;opacity:.95;font-size:16px}
+.hero .btn{background:#FFFDF9;color:var(--primary);box-shadow:0 3px 10px rgba(0,0,0,0.12)}
 
 .section-label{font-weight:800;font-size:17px;margin-bottom:6px;color:var(--primary)}
 .reading{border-left:0}
-.reading p{margin-bottom:14px;line-height:1.65}
+.reading p{margin-bottom:14px;line-height:1.7}
 
-/* 故事閱讀折疊卡：大字清晰、長輩閱讀舒適 */
+/* 故事閱讀折疊卡：電子紙閱讀排版、大字清晰柔和 */
 details.read{background:var(--card);border-radius:var(--r-md);border:1px solid var(--line);box-shadow:var(--shadow);margin:0 0 14px;overflow:hidden}
 details.read summary{list-style:none;cursor:pointer;padding:16px 18px;min-height:56px;font-weight:800;font-size:18px;display:flex;align-items:center;justify-content:space-between;background:var(--card);transition:background .15s ease}
 details.read summary:hover{background:var(--card-hover)}
 details.read summary::-webkit-details-marker{display:none}
 details.read[open] summary{border-bottom:2px solid var(--line);color:var(--primary)}
-details.read .inner{padding:18px;font-size:17.5px;line-height:1.7}
+details.read .inner{padding:18px;font-size:17.5px;line-height:1.75}
 ul.facts{margin:0 0 14px;padding-left:22px}
 ul.facts li{margin-bottom:8px}
 
-/* 答題題目卡：選項加大、圓圈徽章、高對比防誤按 */
+/* 答題題目卡：習作本排版、圓圈徽章、高對比防誤按 */
 .q{background:var(--card);border-radius:var(--r-md);border:1px solid var(--line);box-shadow:var(--shadow);padding:18px;margin-bottom:16px}
-.q .qtext{font-weight:800;font-size:18.5px;line-height:1.5;margin:8px 0 16px;color:var(--fg)}
+.q .qtext{font-weight:800;font-size:18.5px;line-height:1.55;margin:8px 0 16px;color:var(--fg)}
 .q .opts{display:flex;flex-direction:column;gap:10px}
 .q .opt{text-align:left;min-height:56px;padding:12px 16px;border-radius:var(--r-sm);border:2px solid var(--line);background:var(--sunken);color:var(--fg);cursor:pointer;display:flex;gap:12px;align-items:center;font-size:17px;line-height:1.45;transition:all .15s ease}
 .q .opt:hover{border-color:var(--primary);background:var(--card-hover)}
@@ -170,7 +170,7 @@ ul.facts li{margin-bottom:8px}
 .q .opt.wrong{border-color:var(--bad);background:var(--bad-bg)}
 .q .opt.wrong .k{background:var(--bad);color:#fff;border-color:var(--bad)}
 .q .opt:disabled{cursor:default;opacity:1}
-.q .exp{margin-top:14px;padding:14px 16px;border-radius:var(--r-sm);background:var(--sunken);font-size:16.5px;line-height:1.6;border-left:4px solid var(--primary)}
+.q .exp{margin-top:14px;padding:14px 16px;border-radius:var(--r-sm);background:var(--sunken);font-size:16.5px;line-height:1.65;border-left:4px solid var(--primary)}
 .q .verdict{font-weight:800;font-size:18px;margin-bottom:6px}
 .q .verdict.ok{color:var(--good)} .q .verdict.no{color:var(--bad)}
 
@@ -208,7 +208,7 @@ label.field{display:block;margin-bottom:14px}
 label.field span{display:block;font-size:15.5px;font-weight:700;color:var(--fg);margin-bottom:6px}
 input.text,select.text,textarea.text{width:100%;min-height:54px;padding:12px 16px;border-radius:var(--r-sm);border:2px solid var(--line);background:var(--card);color:var(--fg);font-size:18px;transition:border-color .15s ease}
 input.text:focus,select.text:focus,textarea.text:focus{outline:none;border-color:var(--primary)}
-textarea.text{min-height:120px;line-height:1.5}
+textarea.text{min-height:120px;line-height:1.55}
 .toggle{display:flex;align-items:center;justify-content:space-between;gap:14px;min-height:58px;padding:10px 18px;border-bottom:1px solid var(--line)}
 .toggle:last-child{border-bottom:0}
 .toggle input{width:30px;height:30px;accent-color:var(--primary)}
@@ -221,14 +221,14 @@ textarea.text{min-height:120px;line-height:1.5}
 .secret{min-height:180px;border-radius:var(--r-lg);background:var(--primary-gradient);color:#fff;display:flex;align-items:center;justify-content:center;text-align:center;padding:24px;font-size:21px;font-weight:800;cursor:pointer;border:0;width:100%;box-shadow:var(--shadow-lg)}
 .secret.open{background:var(--card);color:var(--fg);border:2px solid var(--line);font-weight:700;box-shadow:var(--shadow)}
 
-/* 底部導覽列 Tab Bar：暖光透明質感、加粗好認圖標 */
-#tabbar{position:fixed;left:0;right:0;bottom:0;z-index:10;display:grid;grid-template-columns:repeat(5,minmax(0,1fr));padding:8px 4px calc(8px + env(safe-area-inset-bottom));background:color-mix(in oklab,var(--card) 94%,transparent);backdrop-filter:blur(20px);-webkit-backdrop-filter:blur(20px);border-top:1px solid var(--line);box-shadow:0 -4px 16px rgba(0,0,0,0.04)}
+/* 底部導覽列 Tab Bar：溫潤透紙質感、溫和護眼 */
+#tabbar{position:fixed;left:0;right:0;bottom:0;z-index:10;display:grid;grid-template-columns:repeat(5,minmax(0,1fr));padding:8px 4px calc(8px + env(safe-area-inset-bottom));background:color-mix(in oklab,var(--card) 95%,transparent);backdrop-filter:blur(16px);-webkit-backdrop-filter:blur(16px);border-top:1px solid var(--line);box-shadow:0 -2px 10px rgba(60,45,30,0.04)}
 #tabbar a{display:flex;flex-direction:column;align-items:center;gap:3px;font-size:13px;font-weight:600;color:var(--muted);text-decoration:none;min-height:52px;justify-content:center;transition:color .15s ease}
 #tabbar a.on{color:var(--primary);font-weight:800}
 #tabbar svg{width:26px;height:26px;fill:none;stroke:currentColor;stroke-width:2.2;stroke-linecap:round;stroke-linejoin:round}
 
 /* 提示泡泡 Toast */
-#toast{position:fixed;left:50%;bottom:calc(98px + env(safe-area-inset-bottom));transform:translateX(-50%);background:var(--fg);color:var(--bg);padding:14px 22px;border-radius:999px;font-weight:700;font-size:16px;z-index:20;max-width:90vw;text-align:center;box-shadow:0 8px 24px rgba(0,0,0,0.25)}
+#toast{position:fixed;left:50%;bottom:calc(98px + env(safe-area-inset-bottom));transform:translateX(-50%);background:var(--fg);color:var(--bg);padding:14px 22px;border-radius:999px;font-weight:700;font-size:16px;z-index:20;max-width:90vw;text-align:center;box-shadow:0 6px 20px rgba(0,0,0,0.22)}
 .gate{min-height:100vh;display:flex;flex-direction:column;justify-content:center;gap:18px;padding:24px;text-align:center}
 .gate h1{font-size:30px}
 .back{display:inline-flex;align-items:center;gap:6px;min-height:48px;text-decoration:none;font-size:17.5px;font-weight:700}
@@ -237,10 +237,10 @@ textarea.text{min-height:120px;line-height:1.5}
 .pill-switch button.on{background:var(--card);box-shadow:var(--shadow-sm);color:var(--primary)}
 .done-mark{color:var(--good);font-weight:800}
 
-/* v1.2：冷知識卡、讚、留言、任務按鈕 */
+/* 冷知識卡、讚、留言、任務按鈕 */
 .fact{border-bottom:1px solid var(--line);padding:14px 0}
 .fact:last-child{border-bottom:0}
-.fact .ftxt{margin-bottom:10px;font-size:17px;line-height:1.6}
+.fact .ftxt{margin-bottom:10px;font-size:17px;line-height:1.65}
 .like-btn{min-height:44px;padding:0 16px;border-radius:999px;border:2px solid var(--primary);background:transparent;color:var(--primary);font-weight:700;cursor:pointer;transition:all .15s ease}
 .like-btn.on{background:var(--primary);color:#fff}
 .task-note{margin:10px 0;font-size:16.5px}
@@ -249,7 +249,7 @@ textarea.text{min-height:120px;line-height:1.5}
 .cmts .cmt{font-size:15px;margin:6px 0;color:var(--muted)}
 .cmt-in{flex:1;min-width:0}
 
-/* v1.3：每日行程時間軸 */
+/* 每日行程時間軸 */
 .timeline{position:relative;margin-left:10px;padding-left:24px;border-left:3px solid var(--line)}
 .day{position:relative;margin:0 0 14px}
 .day summary{list-style:none;cursor:pointer;display:flex;flex-wrap:wrap;align-items:center;gap:10px;min-height:48px;padding:8px 0}
@@ -266,55 +266,55 @@ textarea.text{min-height:120px;line-height:1.5}
 .day[open] .plan-list{margin-top:6px}
 
 /* ==========================================================================
-   v1.5 / v1.6 西班牙新特色元件：
+   特色元件：
    • 連續簽到火苗
-   • 每日美味 Tapa 刮刮樂（專為長輩與弟弟設計）
+   • 每日美味 Tapa 刮刮樂（溫和紙質好運卡）
    • 全家合作 30 萬步里程碑
-   • 西班牙旅行大圖鑑（Pokédex）
+   • 西班牙旅行大圖鑑（Pokédex 自然手帳風）
    • 城市旗與傳奇故事
    • 復古拍立得記憶卡
    ========================================================================== */
 
 /* 連續簽到火苗 Streak */
-.flame-pill{display:inline-flex;align-items:center;gap:5px;padding:5px 12px;border-radius:999px;background:#FFF7ED;color:#C2410C;border:1px solid #FFEDD5;font-size:15px;font-weight:800;box-shadow:0 2px 6px rgba(234, 88, 12, 0.15)}
+.flame-pill{display:inline-flex;align-items:center;gap:5px;padding:5px 12px;border-radius:999px;background:#F9EFE6;color:#B85338;border:1px solid #EED9C7;font-size:15px;font-weight:800}
 
-/* 每日美味 Tapa 刮刮樂 */
-.scratch-box{position:relative;width:100%;min-height:230px;border-radius:var(--r-lg);overflow:hidden;background:var(--card);box-shadow:var(--shadow-lg);border:2px dashed #F59E0B;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:24px;text-align:center}
+/* 每日美味 Tapa 刮刮樂：如典雅牛皮紙／燙金彩券 */
+.scratch-box{position:relative;width:100%;min-height:230px;border-radius:var(--r-lg);overflow:hidden;background:var(--card);box-shadow:var(--shadow);border:2px dashed #C5964D;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:24px;text-align:center}
 .scratch-content{display:flex;flex-direction:column;align-items:center;justify-content:center;gap:12px;width:100%}
 .scratch-emoji{font-size:56px;line-height:1}
 .scratch-title{font-size:23px;font-weight:800;color:var(--primary)}
-.scratch-desc{font-size:16px;color:var(--muted);max-width:440px;line-height:1.6}
-.scratch-cover{position:absolute;inset:0;background:linear-gradient(135deg, #F59E0B 0%, #D97706 40%, #B45309 100%);display:flex;flex-direction:column;align-items:center;justify-content:center;color:#fff;cursor:pointer;z-index:2;transition:opacity .4s ease,visibility .4s;box-shadow:inset 0 0 20px rgba(0,0,0,0.1)}
+.scratch-desc{font-size:16px;color:var(--muted);max-width:440px;line-height:1.65}
+.scratch-cover{position:absolute;inset:0;background:linear-gradient(135deg, #C5964D 0%, #B8853D 50%, #9E6F2E 100%);display:flex;flex-direction:column;align-items:center;justify-content:center;color:#fff;cursor:pointer;z-index:2;transition:opacity .4s ease,visibility .4s}
 .scratch-cover.scratched{opacity:0;visibility:hidden;pointer-events:none}
-.scratch-cover .cover-txt{font-size:21px;font-weight:800;letter-spacing:1px;margin-top:10px;text-shadow:0 2px 6px rgba(0,0,0,0.25)}
+.scratch-cover .cover-txt{font-size:21px;font-weight:800;letter-spacing:1px;margin-top:10px;text-shadow:0 1px 4px rgba(0,0,0,0.25)}
 
 /* 全家合作里程碑進度條 */
 .milestone-card{background:var(--card);border-radius:var(--r-md);border:1px solid var(--line);box-shadow:var(--shadow);padding:18px;margin-bottom:16px;border-left:5px solid var(--good)}
 .progress-outer{background:var(--sunken);border-radius:999px;height:18px;overflow:hidden;margin:12px 0 8px;position:relative;border:1px solid var(--line)}
-.progress-inner{background:linear-gradient(90deg, #10B981 0%, #F59E0B 60%, #EA580C 100%);height:100%;border-radius:999px;transition:width .5s ease}
+.progress-inner{background:linear-gradient(90deg, #4B8358 0%, #C5964D 60%, #B85338 100%);height:100%;border-radius:999px;transition:width .5s ease}
 .progress-labels{display:flex;justify-content:space-between;font-size:14px;color:var(--muted);font-weight:700}
 
-/* 西班牙旅行大圖鑑 Pokédex */
+/* 西班牙旅行大圖鑑 Pokédex：手繪圖鑑紙牌風格 */
 .pokedex-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px}
 @media (min-width: 520px){.pokedex-grid{grid-template-columns:repeat(3,minmax(0,1fr))}}
 .poke-card{background:var(--card);border-radius:var(--r-md);box-shadow:var(--shadow-sm);border:1.5px solid var(--line);padding:14px 12px;display:flex;flex-direction:column;align-items:center;text-align:center;gap:8px;cursor:pointer;position:relative;transition:transform .15s ease,box-shadow .15s ease}
 .poke-card:hover{transform:translateY(-2px);box-shadow:var(--shadow)}
-.poke-card.locked{opacity:.65;filter:grayscale(85%);background:var(--sunken)}
-.poke-card.unlocked{border-color:var(--good);background:#F0FDF4;box-shadow:0 4px 14px rgba(22, 163, 74, 0.15)}
+.poke-card.locked{opacity:.65;filter:grayscale(80%);background:var(--sunken)}
+.poke-card.unlocked{border-color:var(--good);background:#F2F7F3;box-shadow:0 3px 12px rgba(62, 110, 73, 0.12)}
 .poke-icon{font-size:42px;line-height:1}
 .poke-name{font-weight:800;font-size:16px;line-height:1.2;color:var(--fg)}
 .poke-sub{font-size:13px;color:var(--muted)}
 .poke-thumb{width:100%;aspect-ratio:1/1;object-fit:cover;border-radius:8px;margin-top:6px;border:1px solid var(--line)}
 
-/* 城市旗與小眾故事 */
+/* 城市旗與小眾故事：手札書卡 */
 .flag-card{display:flex;align-items:center;gap:14px;padding:14px 16px;background:var(--card);border-radius:var(--r-sm);border:1.5px solid var(--line);box-shadow:var(--shadow-sm);margin-bottom:10px}
 .flag-badge{font-size:36px;line-height:1;width:48px;text-align:center}
 .flag-info{flex:1;min-width:0}
 .flag-title{font-weight:800;font-size:17px;color:var(--fg)}
-.flag-story{font-size:14px;color:var(--muted);margin-top:3px;line-height:1.5}
+.flag-story{font-size:14px;color:var(--muted);margin-top:3px;line-height:1.55}
 
-/* 復古拍立得 Polaroid 相框 */
-.polaroid{background:#FFFFFF;color:#1C1C1E;padding:16px 16px 28px;border-radius:8px;box-shadow:0 8px 26px rgba(44, 30, 20, 0.14);border:1px solid #F0EAE1;max-width:380px;margin:16px auto;text-align:center}
-.polaroid img{width:100%;aspect-ratio:1/1;object-fit:cover;display:block;border-radius:3px;background:#F3EFE6}
-.polaroid-caption{margin-top:14px;font-family:"Caveat","Comic Sans MS",cursive,sans-serif;font-size:22px;font-weight:700;color:#2C2623}
-.polaroid-date{font-size:13px;color:#786C65;margin-top:4px}
+/* 復古拍立得 Polaroid 相框：暖白棉紙質感 */
+.polaroid{background:#FFFDF9;color:#2C2621;padding:16px 16px 28px;border-radius:8px;box-shadow:0 6px 22px rgba(50, 40, 30, 0.12);border:1px solid #EAE4D8;max-width:380px;margin:16px auto;text-align:center}
+.polaroid img{width:100%;aspect-ratio:1/1;object-fit:cover;display:block;border-radius:3px;background:#ECE7DE}
+.polaroid-caption{margin-top:14px;font-family:"Caveat","Comic Sans MS",cursive,sans-serif;font-size:22px;font-weight:700;color:#2C2621}
+.polaroid-date{font-size:13px;color:#786F66;margin-top:4px}
