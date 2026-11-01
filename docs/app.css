@@ -156,9 +156,7 @@ textarea.text{min-height:120px}
 .plan-btns .btn{min-height:36px;padding:0 10px}
 .day[open] .plan-list{margin-top:4px}
 
-/* v1.5：雙語切換、每日 Tapa 刮刮樂、城市旗故事、全家步數里程碑、旅行大圖鑑與拍立得 */
-.top-header{display:flex;justify-content:space-between;align-items:center;padding:10px 16px;background:var(--card);border-bottom:1px solid var(--line);position:sticky;top:0;z-index:9}
-.lang-toggle-btn{display:inline-flex;align-items:center;gap:6px;padding:6px 14px;border-radius:999px;border:1px solid var(--line);background:var(--bg);color:var(--fg);font-size:14px;font-weight:700;cursor:pointer}
+/* v1.5：每日 Tapa 刮刮樂、城市旗故事、全家步數里程碑、旅行大圖鑑與拍立得 */
 .flame-pill{display:inline-flex;align-items:center;gap:4px;padding:4px 10px;border-radius:999px;background:var(--warn-bg);color:var(--warn);font-size:14px;font-weight:800}
 
 /* 每日美味 Tapa 刮刮樂 */
