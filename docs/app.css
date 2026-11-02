@@ -351,3 +351,44 @@ textarea.text{min-height:120px;line-height:1.55}
 .gate-chip-name{font-weight:700;font-size:13.5px;color:var(--fg);margin:2px 0}
 .gate-chip-desc{font-size:12px;color:var(--muted);line-height:1.35}
 
+/* ==========================================================================
+   防盜防扒安全提醒 & 卡片式單題挑戰（Flashcard Quiz Deck）
+   ========================================================================== */
+
+/* 歐洲防盜防扒安全提醒橫幅 */
+.safety-banner{background:#FDF5EB;border:1.5px solid #E6B988;border-radius:var(--r-md);padding:14px 16px;margin:12px 0 16px;box-shadow:var(--shadow-sm);border-left:5px solid #C87A2C}
+.safety-banner-header{display:flex;align-items:center;gap:8px;font-weight:800;font-size:16px;color:#9E5918;margin-bottom:6px}
+.safety-icon{font-size:20px;line-height:1}
+.safety-banner-body{font-size:14px;line-height:1.6;color:var(--fg)}
+.safety-check-item{background:rgba(255,255,255,0.75);border-radius:6px;padding:6px 10px;margin-top:6px;border:1px solid rgba(200,122,44,0.25);font-size:13.5px}
+
+/* 卡片式單題答題區（Flashcard Quiz Deck） */
+.quiz-deck{margin:18px 0 24px}
+.q-deck-header{display:flex;justify-content:space-between;align-items:flex-end;gap:10px;margin-bottom:8px}
+.q-deck-title-wrap h2{margin:0 0 2px;font-size:22px}
+.q-progress-badge{display:inline-flex;align-items:center;gap:4px;padding:4px 12px;border-radius:999px;background:var(--warn-bg);color:var(--warn);font-size:14.5px;font-weight:900;border:1.5px solid rgba(168,111,48,0.25);white-space:nowrap}
+.q-deck-bar-outer{background:var(--sunken);border-radius:999px;height:7px;overflow:hidden;margin-bottom:14px;border:1px solid var(--line)}
+.q-deck-bar-inner{background:linear-gradient(90deg, #A86F30 0%, #B85338 100%);height:100%;border-radius:999px;transition:width .3s ease}
+
+.q-card{background:var(--card);border-radius:var(--r-lg);border:1.5px solid var(--line);box-shadow:var(--shadow);padding:20px 18px;margin-bottom:12px;position:relative}
+.q-card .qtext{font-weight:800;font-size:19px;line-height:1.55;margin:10px 0 16px;color:var(--fg)}
+
+/* 答對即時讚美盒（實際的稱讚＋慶祝符號） */
+.praise-box{background:linear-gradient(135deg, #FCF8F2 0%, #F6ECE0 100%);border:1.5px solid #D8BC9D;border-radius:var(--r-md);padding:16px;margin:14px 0;box-shadow:0 4px 14px rgba(184,83,56,0.08);border-left:5px solid var(--primary)}
+.praise-title{font-size:18px;font-weight:900;color:var(--primary);margin-bottom:6px;display:flex;align-items:center;gap:6px;line-height:1.35}
+.praise-body{font-size:15px;line-height:1.65;color:var(--fg);font-weight:600}
+.praise-flavor{margin-top:8px;padding-top:8px;border-top:1px dashed rgba(184,83,56,0.25);font-size:14px;color:var(--primary);font-weight:700}
+
+/* 下一題按鈕 */
+.btn-next-step{width:100%;min-height:50px;font-size:17px;font-weight:800;margin-top:14px;display:flex;align-items:center;justify-content:center;gap:8px;border-radius:var(--r-md);background:var(--primary-gradient);color:#fff;border:0;box-shadow:0 4px 14px rgba(184,83,56,0.25);cursor:pointer;transition:transform .12s ease,box-shadow .12s ease}
+.btn-next-step:hover{transform:translateY(-1px);box-shadow:0 6px 18px rgba(184,83,56,0.32)}
+.btn-next-step:active{transform:translateY(1px)}
+
+/* 題目卡片翻頁導航 */
+.q-deck-nav{display:flex;justify-content:space-between;align-items:center;gap:10px;margin-top:10px}
+.q-dots-wrap{display:flex;gap:6px;align-items:center}
+.q-dot{width:10px;height:10px;border-radius:50%;background:var(--line);cursor:pointer;transition:all .2s ease}
+.q-dot.on{width:22px;border-radius:999px;background:var(--primary)}
+.q-dot.done{background:var(--good)}
+
+

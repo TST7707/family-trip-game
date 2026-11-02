@@ -1,6 +1,6 @@
 'use strict';
 /* 家族任務遊戲 v1.5.0 — Single-page app. Content comes from content.json */
-const APP_VERSION = '1.8.0';
+const APP_VERSION = '1.9.0';
 const TRIP_START = '2026-12-09';
 const TRIP_END = '2027-01-06';
 const RESET_DATE = '2026-12-07';
@@ -1234,7 +1234,123 @@ function doneMark(card) {
   return `<span class="chip ${n === qs.length ? 'good' : ''}">${n}/${qs.length}</span>`;
 }
 
-/* ---------- questions ---------- */
+/* ---------- SAFETY BANNER (歐洲防盜防扒重要安全提醒) ---------- */
+function safetyBannerHtml() {
+  return `<div class="safety-banner">
+    <div class="safety-banner-header">
+      <span class="safety-icon">🛡️</span>
+      <b>出發作答前重要安全提醒（歐洲防盜守則）</b>
+    </div>
+    <div class="safety-banner-body">
+      歐洲治安遠不如臺灣安全，當地警察通常不會受理或追查強盜、偷竊案件！<b>低頭看手機前，請全家務必確認：</b>
+      <div class="safety-check-item">✅ 目前位於<b>需要門票或點餐付費的封閉場域</b>（如已驗票入內的博物館展廳、已入座的付費餐廳或咖啡館）。<b>切勿在戶外路邊或街頭人潮中低頭看手機！</b></div>
+      <div class="safety-check-item">✅ 身體請盡量<b>背靠牆壁</b>，確保後方無死角，防止扒手從身後無聲順走手機或隨身包包！</div>
+    </div>
+  </div>`;
+}
+
+/* ---------- 7-DAY AUTHENTIC PRAISE MATRIX & SPOT FLAVORS (實際的稱讚與景點彩蛋) ---------- */
+function hashStr(s) {
+  let h = 0;
+  for (let i = 0; i < s.length; i++) h = ((h << 5) - h + s.charCodeAt(i)) | 0;
+  return Math.abs(h);
+}
+
+const PRAISE_CYCLES = [
+  {
+    title: '🌟 神級觀察力！細節完全逃不過你的法眼！',
+    praises: [
+      '太厲害了！你的眼睛比老鷹還敏銳，連藏在歷史細節裡的蛛絲馬跡都被你一眼識破！👏',
+      '觀察力滿分！這題考得這麼細，你竟然瞬間鎖定真相，全家最細心的觀察家非你莫屬！🔍',
+      '太強了！你這份敏銳的洞察力，如果回到古代，一定是宮廷裡最受器重的皇家鑒寶大師！✨'
+    ]
+  },
+  {
+    title: '👑 博學多聞！這份學識太讓人驚艷了！',
+    praises: [
+      '太有深度了！連幾百年前歐洲宮廷與老百姓的生活小秘密都難不倒你，全家的文化智庫就是你！📚',
+      '這題連很多歐洲在地導遊都不一定答得出來！你到底是怎麼知道的？記憶力簡直是神級的！💡',
+      '知識庫大爆發！才剛聽完故事就能融會貫通，你對歐洲歷史文化的理解力讓人由衷佩服！🎓'
+    ]
+  },
+  {
+    title: '🏆 關鍵一擊！為全家贏得無比驕傲的高分！',
+    praises: [
+      '太棒了！沉著、自信又精準，爸媽和弟弟都在為你熱烈鼓掌，這一題為全家拿下了超關鍵得分！💪',
+      '全家的幸運之星！你一出手就穩穩拿下這題，旅途的幸運女神今天完全站在你身後護航！🍀',
+      '太帥氣了！弟弟在一旁看得眼睛發亮，你就是全家最值得崇拜的解題大英雄！🥳'
+    ]
+  },
+  {
+    title: '🎨 藝術通靈！你完全讀懂了大師的心意！',
+    praises: [
+      '太絕妙了！你完全看穿了建築師與畫家藏在作品裡的美學暗號，美學品味天生就是大師級的！🏛️',
+      '靈魂共振！這道題的藝術密碼被你瞬間破解，如果高第和委拉斯奎茲在世，一定會找你乾杯擊掌！🍷',
+      '美學直覺太敏銳！在光影與色彩之間一眼看透本質，這趟西班牙之旅你的藝術靈魂徹底昇華了！✨'
+    ]
+  },
+  {
+    title: '⚓️ 探險王降臨！果斷又精準的判斷力！',
+    praises: [
+      '太帥氣了！你的血液裡根本流著古代麥哲倫與哥倫布的冒險天分，面對刁鑽難題果斷又神準！🧭',
+      '無所畏懼的機智！任何狡猾的干擾選項在你面前都無所遁形，這份敏銳太讓人安心了！⚔️',
+      '冒險家精神大放光彩！不僅背靠牆防守滴水不漏，腦袋還轉得比高鐵AVE還快，今晚值得加菜！🥩'
+    ]
+  },
+  {
+    title: '🌞 陽光普照！好心情與好手氣雙重爆發！',
+    praises: [
+      '哇塞太神了！這題答得既快又準，就像安達魯西亞的冬陽一樣明朗耀眼，整個旅途都被你點亮了！💃',
+      '幸運與實力的極致結合！你今天的手氣和直覺已經達到了宇宙級巔峰，全場掌聲停不下來！👏',
+      '太厲害了！你一定是吸收了地中海的滿滿天地靈氣，連這麼冷門的角度都能輕鬆拿下，佩服！🐚'
+    ]
+  },
+  {
+    title: '🎖️ 完美絕殺！首席軍師的傳奇級表現！',
+    praises: [
+      '大獲全勝！你就是全家旅行團的首席總參謀長，冷靜、精準、毫不猶豫，太令人心悅誠服了！👑',
+      '魔王題直接瓦解！這道題本來是設計來考倒大家的，結果在你面前撐不過一秒，請收下膝蓋！🙇‍♂️',
+      '傳奇級答題！這趟旅行有你在身旁解題，大家玩得既充實又放心，你是全西班牙最棒的探險家！🏰'
+    ]
+  }
+];
+
+const SPOT_FLAVORS = [
+  { match: /聖家堂|高第/, text: '安東尼·高第如果看見你答得這麼精準，一定會邀請你一起設計尚未完工的榮耀立面！⛪️' },
+  { match: /普拉多|委拉斯奎茲/, text: '委拉斯奎茲在《宮娥》畫布後面都要為你這神之一筆拍手叫好！🎨' },
+  { match: /蘇菲亞|格爾尼卡|畢卡索|達利/, text: '超現實主義與立體派的百年密碼都被你輕鬆破解，畢卡索和達利都要甘拜下風！🖼️' },
+  { match: /考古|MAN|埃爾切/, text: '這件萬年前的古代瑰寶被你一眼參透，你簡直就是現代伊比利半島的印第安納·瓊斯！🏺' },
+  { match: /托雷多|葛雷柯/, text: '托雷多千年古都的石板路上，今天又誕生了一位智勇雙全的聖殿騎士！🗡️' },
+  { match: /清真寺|哥多華/, text: '穿過八百根紅白馬蹄拱門，你的智慧在伊斯蘭繁星幾何中閃閃發光！🕌' },
+  { match: /阿爾罕布拉|格拉那達/, text: '格拉那達蘇丹皇宮的微風，正在為全家最博學多聞的你吹拂奏樂！🏰' },
+  { match: /塞維亞|吉拉達/, text: '塞維亞大教堂的橘花香氣與佛朗明哥熱烈掌聲，都在為你的勝利熱情狂歡！🍊' },
+  { match: /巴特略|米拉|屋頂/, text: '巨龍屋頂上的五彩陶瓦鱗片，正因為你的機智閃爍出繽紛光芒！🐉' },
+  { match: /波蓋利亞|市場|美食|火腿/, text: '這份敏銳太棒了！待會逛完市場一定要點一盤現炸熱吉拿棒犒賞自己！🍫' },
+];
+
+function getPraise(card, q) {
+  const seed = hashStr((card.id || '') + (q.qid || '') + (card.title || ''));
+  const dayIndex = (seed + (parseInt(today().replace(/-/g, ''), 10) || 0)) % 7;
+  const cycle = PRAISE_CYCLES[dayIndex];
+  const pText = cycle.praises[seed % cycle.praises.length];
+  const flavor = SPOT_FLAVORS.find((f) => f.match.test(card.title || ''));
+  return {
+    title: cycle.title,
+    body: pText,
+    flavor: flavor ? '💡 ' + flavor.text : ''
+  };
+}
+
+const WRONG_FEEDBACKS = [
+  '差一點點！這題真的太刁鑽、太考驗人了，連很多歷史學教授第一次看也答錯！不過現在你已經把這個冷知識牢牢記在腦海裡了，超有收穫！🌟',
+  '沒關係！這題本來就是魔王級陷阱題，你敢於挑戰的勇氣已經為全家贏得了尊敬！看懂解說我們就學會了！💪',
+  '別氣餒！連高第和哥雅當年創作時都改稿了好幾次呢！這題讓你認識了不一樣的西班牙，答錯也是珍貴的收穫，繼續前進！✨'
+];
+function getWrongFeedback(seed) {
+  return WRONG_FEEDBACKS[seed % WRONG_FEEDBACKS.length];
+}
+
+/* ---------- FLASHCARD QUIZ (卡片式單題答題系統) ---------- */
 function allQuestions(card) {
   const out = [];
   const add = (arr, sec) => arr.forEach((q, i) => out.push(Object.assign({ qid: card.id + '-' + sec + i, sec }, q)));
@@ -1249,20 +1365,100 @@ function qPoints(q) {
 }
 function quizHtml(card, sec, title) {
   const qs = allQuestions(card).filter((q) => q.sec === sec);
-  if (!qs.length) return `<h2>${title}</h2><p class="sub">初階版這一段沒有題目，切到「我要挑戰」可以玩更多。</p>`;
-  return `<h2 id="q-${sec}">${title}</h2>` + qs.map((q) => {
+  if (!qs.length) return `<div class="quiz-deck"><h2 id="q-${sec}">${esc(title)}</h2><p class="sub">初階版這一段沒有題目，切到「我要挑戰」可以玩更多。</p></div>`;
+
+  const key = 'ans:' + S.player;
+  const ansMap = LS.get(key, {});
+  // Find first unanswered question
+  let initIdx = qs.findIndex((q) => !ansMap[q.qid]);
+  if (initIdx < 0) initIdx = qs.length - 1; // if all answered, show last
+
+  const cardsHtml = qs.map((q, i) => {
     const tags = q.tags.map((t) => `<span class="chip ${t.includes('現場') ? 'warn' : t.includes('挑戰') || t.includes('長題') ? 'plan' : ''}">${esc(t)}</span>`).join(' ');
-    return `<div class="q" data-qid="${q.qid}"><div class="row">${tags}<span class="chip">${qPoints(q)} 分</span></div>
+    const isShown = (i === initIdx);
+    return `<div class="q-card" data-qid="${q.qid}" data-idx="${i}" style="${isShown ? '' : 'display:none'}">
+      <div class="row">
+        <div style="display:flex;gap:6px;align-items:center;flex-wrap:wrap">
+          ${tags}
+          <span class="chip warn">第 ${i + 1} / ${qs.length} 題</span>
+        </div>
+        <span class="chip good">+${qPoints(q)} 分</span>
+      </div>
       <div class="qtext">${esc(q.q)}</div>
-      ${q.kind === 'onsite' ? '<p class="sub">到現場找答案再作答，並拍照證明。</p>' : ''}
+      ${q.kind === 'onsite' ? '<p class="sub" style="color:var(--warn);font-weight:700">📍 到現場找答案再作答，並拍照證明。</p>' : ''}
       <div class="opts">${q.options.map((o) => `<button type="button" class="opt" data-k="${o.key}"><span class="k">${o.key}</span><span>${esc(o.text)}</span></button>`).join('')}</div>
-      <div class="res"></div></div>`;
+      <div class="res"></div>
+      <div class="q-card-footer" style="display:none">
+        <button type="button" class="btn-next-step" data-next-idx="${i + 1}">
+          ${i < qs.length - 1 ? `👉 前進下一題 (${i + 2}/${qs.length})` : `🎉 完成本區挑戰！領取全家積分`}
+        </button>
+      </div>
+    </div>`;
   }).join('');
+
+  const pct = Math.round(((initIdx + 1) / qs.length) * 100);
+
+  return `<div class="quiz-deck" id="deck-${sec}" data-sec="${sec}" data-total="${qs.length}">
+    ${safetyBannerHtml()}
+
+    <div class="q-deck-header">
+      <div class="q-deck-title-wrap">
+        <h2 id="q-${sec}">${esc(title)}</h2>
+        <span class="sub" style="font-size:13.5px">卡片式單題挑戰 • 答完即時揭曉稱讚</span>
+      </div>
+      <div class="q-progress-badge">
+        <span class="cur-q-num">${initIdx + 1}</span> / ${qs.length}
+      </div>
+    </div>
+
+    <div class="q-deck-bar-outer">
+      <div class="q-deck-bar-inner" style="width:${pct}%"></div>
+    </div>
+
+    <div class="q-cards-container">
+      ${cardsHtml}
+    </div>
+
+    <div class="q-deck-nav">
+      <button type="button" class="btn small ghost btn-prev-card" ${initIdx > 0 ? '' : 'disabled'}>← 上一題</button>
+      <div class="q-dots-wrap">
+        ${qs.map((_, i) => `<span class="q-dot ${i === initIdx ? 'on' : ''}" data-goto="${i}"></span>`).join('')}
+      </div>
+      <button type="button" class="btn small ghost btn-next-card" ${initIdx < qs.length - 1 ? '' : 'disabled'}>下一題 →</button>
+    </div>
+  </div>`;
 }
+
 function bindQuiz(card) {
   const qs = {};
   allQuestions(card).forEach((q) => { qs[q.qid] = q; });
   const key = 'ans:' + S.player;
+
+  // Deck switcher function
+  function switchDeckCard(deckEl, targetIdx) {
+    const cards = $$('.q-card', deckEl);
+    const total = cards.length;
+    if (targetIdx < 0 || targetIdx >= total) return;
+
+    cards.forEach((c, i) => { c.style.display = (i === targetIdx) ? '' : 'none'; });
+    const numEl = $('.cur-q-num', deckEl);
+    if (numEl) numEl.textContent = targetIdx + 1;
+    const barEl = $('.q-deck-bar-inner', deckEl);
+    if (barEl) barEl.style.width = Math.round(((targetIdx + 1) / total) * 100) + '%';
+
+    // Update dots
+    $$('.q-dot', deckEl).forEach((dot, i) => {
+      dot.classList.toggle('on', i === targetIdx);
+    });
+
+    // Update nav buttons
+    const btnPrev = $('.btn-prev-card', deckEl);
+    const btnNext = $('.btn-next-card', deckEl);
+    if (btnPrev) btnPrev.disabled = (targetIdx <= 0);
+    if (btnNext) btnNext.disabled = (targetIdx >= total - 1);
+  }
+
+  // Paint answered card
   const paint = (box, q, choice) => {
     $$('.opt', box).forEach((b) => {
       b.disabled = true;
@@ -1270,24 +1466,118 @@ function bindQuiz(card) {
       else if (b.dataset.k === choice) b.classList.add('wrong');
     });
     const ok = choice === q.answer;
-    $('.res', box).innerHTML = `<div class="exp"><div class="verdict ${ok ? 'ok' : 'no'}">${ok ? '答對了！' : '答案是 ' + q.answer}</div>
-      ${q.proof ? '<div><b>現場任務：</b>' + esc(q.proof) + '</div>' : ''}${esc(q.explain)}</div>`;
+    const seed = hashStr(q.qid);
+
+    let praiseHtml = '';
+    if (ok) {
+      const p = getPraise(card, q);
+      praiseHtml = `<div class="praise-box">
+        <div class="praise-title">${esc(p.title)}</div>
+        <div class="praise-body">${esc(p.body)}</div>
+        ${p.flavor ? `<div class="praise-flavor">${esc(p.flavor)}</div>` : ''}
+      </div>`;
+    } else {
+      const wrongMsg = getWrongFeedback(seed);
+      praiseHtml = `<div class="praise-box" style="border-left-color:var(--bad);background:#FDF5F5;border-color:#E8C5C3">
+        <div class="praise-title" style="color:var(--bad)">💡 差一點點！這題考得真的很細！</div>
+        <div class="praise-body">${esc(wrongMsg)}</div>
+      </div>`;
+    }
+
+    $('.res', box).innerHTML = `${praiseHtml}<div class="exp">
+      <div class="verdict ${ok ? 'ok' : 'no'}">${ok ? '🎉 答對了！' : '正確答案是【 ' + q.answer + ' 】'}</div>
+      ${q.proof ? '<div><b>現場任務：</b>' + esc(q.proof) + '</div>' : ''}${esc(q.explain)}
+    </div>`;
+
+    // Show footer button
+    const footer = $('.q-card-footer', box);
+    if (footer) footer.style.display = '';
+
+    // Mark dot done
+    const deckEl = box.closest('.quiz-deck');
+    if (deckEl) {
+      const idx = Number(box.dataset.idx);
+      const dot = $$('.q-dot', deckEl)[idx];
+      if (dot) dot.classList.add('done');
+    }
   };
-  $$('.q').forEach((box) => {
+
+  // Wire cards
+  $$('.q-card').forEach((box) => {
     const q = qs[box.dataset.qid];
     if (!q) return;
     const prev = LS.get(key, {})[q.qid];
-    if (prev) { paint(box, q, prev.c); return; }
-    $$('.opt', box).forEach((b) => b.onclick = () => {
-      const ans = LS.get(key, {});
-      if (ans[q.qid]) return;
-      ans[q.qid] = { c: b.dataset.k, ok: b.dataset.k === q.answer, ts: Date.now() };
-      LS.set(key, ans);
-      paint(box, q, b.dataset.k);
-      if (b.dataset.k === q.answer) award({ key: 'q|' + q.qid, points: qPoints(q), label: '答對：' + card.title, cardId: card.id });
+    if (prev) {
+      paint(box, q, prev.c);
+    }
+
+    $$('.opt', box).forEach((b) => {
+      b.onclick = () => {
+        const ans = LS.get(key, {});
+        if (ans[q.qid]) return;
+        const choice = b.dataset.k;
+        const isOk = (choice === q.answer);
+        ans[q.qid] = { c: choice, ok: isOk, ts: Date.now() };
+        LS.set(key, ans);
+        paint(box, q, choice);
+        if (isOk) {
+          award({ key: 'q|' + q.qid, points: qPoints(q), label: '答對：' + card.title, cardId: card.id });
+          toast('🎉 太棒了！答對獲得 +' + qPoints(q) + ' 分！', 2800);
+        }
+      };
+    });
+
+    // Wire next-step button
+    const nextBtn = $('.btn-next-step', box);
+    if (nextBtn) {
+      nextBtn.onclick = () => {
+        const nextIdx = Number(nextBtn.dataset.nextIdx);
+        const deckEl = box.closest('.quiz-deck');
+        if (!deckEl) return;
+        const total = Number(deckEl.dataset.total);
+        if (nextIdx < total) {
+          switchDeckCard(deckEl, nextIdx);
+          const nextCard = $$('.q-card', deckEl)[nextIdx];
+          if (nextCard) nextCard.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+        } else {
+          toast('🎉 本區題目已全數挑戰完畢！全家太厲害了！', 3500);
+        }
+      };
+    }
+  });
+
+  // Wire Deck navigation (prev / next buttons and dots)
+  $$('.quiz-deck').forEach((deckEl) => {
+    const btnPrev = $('.btn-prev-card', deckEl);
+    const btnNext = $('.btn-next-card', deckEl);
+
+    function currentIdx() {
+      const cards = $$('.q-card', deckEl);
+      return cards.findIndex((c) => c.style.display !== 'none');
+    }
+
+    if (btnPrev) {
+      btnPrev.onclick = () => {
+        const cur = currentIdx();
+        if (cur > 0) switchDeckCard(deckEl, cur - 1);
+      };
+    }
+    if (btnNext) {
+      btnNext.onclick = () => {
+        const cur = currentIdx();
+        const total = Number(deckEl.dataset.total);
+        if (cur < total - 1) switchDeckCard(deckEl, cur + 1);
+      };
+    }
+    $$('.q-dot', deckEl).forEach((dot) => {
+      dot.onclick = () => {
+        const target = Number(dot.dataset.goto);
+        switchDeckCard(deckEl, target);
+      };
     });
   });
 }
+
 
 /* ---------- tasks ---------- */
 function needsPhoto(text) { return /拍|照|票根|收據/.test(text); }
@@ -1671,6 +1961,7 @@ route('/tapa', () => {
 
   view(`${back('#/', '首頁')}<h1>今日美味 Tapa 刮刮樂</h1>
     <p class="sub">為爸媽和弟弟量身設計的美食與好運小事！</p>
+    ${safetyBannerHtml()}
 
     <div class="scratch-box" id="sbox">
       <div class="scratch-content">
@@ -1789,6 +2080,7 @@ route('/flags', async () => {
 
   view(`${back('#/', '首頁')}<h1>城市旗幟與傳奇故事</h1>
     <p class="sub">西班牙與地中海 30 款標誌性旗幟與紋章圖鑑！每天解鎖一面旗幟的深度故事，走在街頭看見真實旗幟就拍照上傳打卡！</p>
+    ${safetyBannerHtml()}
     <div class="card" style="display:flex;justify-content:space-around;text-align:center;padding:14px;margin-bottom:16px">
       <div><div class="sub">連續打卡進度</div><div style="font-size:26px;font-weight:900;color:var(--primary)">🔥 ${streak} / 30 天</div></div>
       <div style="border-left:1px solid var(--line)"></div>
@@ -1836,6 +2128,7 @@ route('/pokedex', async () => {
 
   view(`${back('#/', '首頁')}<h1>西班牙旅行大圖鑑</h1>
     <p class="sub">30 款西班牙標誌性事物，看見就拍照打卡！</p>
+    ${safetyBannerHtml()}
     <div style="margin-bottom:14px;display:flex;gap:10px">
       <button class="btn ghost block" id="btn-polaroid" type="button">📸 產生今日回憶拍立得</button>
     </div>
@@ -2093,6 +2386,7 @@ const SECRET_TASKS = [
 ];
 route('/tools', () => {
   view(`<h1>遊戲間</h1><p class="sub">景點小遊戲和各種小任務都在這裡。分數會記在玩的人名下。</p>
+    ${safetyBannerHtml()}
     <div class="list">
       <a class="item" href="#/tapa"><div class="t"><b>🍢 今日美味 Tapa 刮刮樂</b><span>每天刮開一道美味好運小事（最適合全家）</span></div>${CHEV}</a>
       <a class="item" href="#/pokedex"><div class="t"><b>📖 西班牙旅行大圖鑑</b><span>30 款西班牙經典圖鑑收集＋復古拍立得</span></div>${CHEV}</a>
@@ -2116,7 +2410,7 @@ const WHEEL_DEFAULT = [
 ];
 route('/tool/wheel', () => {
   const def = LS.get('wheel2', WHEEL_DEFAULT);
-  view(`${back('#/tools', '遊戲間')}<h1>命運之輪</h1>
+  view(`${back('#/tools', '遊戲間')}${safetyBannerHtml()}<h1>命運之輪</h1>
     <div class="wheel-wrap"><canvas id="wh" width="640" height="640" aria-label="命運之輪"></canvas></div>
     <button class="btn block" id="spin">轉！</button>
     <div id="res" class="center" style="margin:16px 0"></div>
@@ -2180,7 +2474,7 @@ function guessTool(kind) {
   const isPrice = kind === 'price';
   const fam = S.family.length ? S.family : [S.player];
   const late = cutoffPassed();
-  view(`${back('#/tools', '遊戲間')}<h1>${isPrice ? '物價猜猜猜' : '步數猜猜猜'}</h1>
+  view(`${back('#/tools', '遊戲間')}${safetyBannerHtml()}<h1>${isPrice ? '物價猜猜猜' : '步數猜猜猜'}</h1>
     <p class="sub">${isPrice ? '先不要看標價。手機輪流傳，每個人點自己的名字、偷偷輸入猜的價格（歐元）。' : '進景點前，每個人點自己的名字、偷偷輸入猜的步數。'}</p>
     ${cutoffText() ? `<p class="sub">每天下好離手的截止時間：台灣時間 ${esc(cutoffText())}</p>` : ''}
     ${late ? '<div class="card"><b>今天的截止時間已經過了，這次先不能再猜。</b></div>' : ''}
@@ -2232,7 +2526,7 @@ function guessTool(kind) {
 route('/tool/price', () => { guessTool('price'); return 'tools'; });
 route('/tool/steps', () => { guessTool('steps'); return 'tools'; });
 route('/tool/secret', () => {
-  view(`${back('#/tools', '遊戲間')}<h1>神秘任務</h1>
+  view(`${back('#/tools', '遊戲間')}${safetyBannerHtml()}<h1>神秘任務</h1>
     <p class="sub">填一個你今天喜歡的數字（1 到 ${SECRET_TASKS.length} 之間，或任何數字都可以），就會抽到一個小任務。</p>
     <label class="field"><span>你今天喜歡的數字</span><input class="text" id="no" inputmode="numeric"></label>
     <button class="btn block" id="sec" type="button">領取任務</button>
