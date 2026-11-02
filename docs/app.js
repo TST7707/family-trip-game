@@ -94,6 +94,9 @@ const DB = (() => {
     qDel: (id) => run('queue', 'readwrite', (s) => s.delete(id)),
     pokeGet: (k) => run('pokedex', 'readonly', (s) => s.get(k)),
     pokePut: (k, v) => run('pokedex', 'readwrite', (s) => s.put(v, k)),
+    flagGet: (id) => run('pokedex', 'readonly', (s) => s.get('flag:' + id)),
+    flagPut: (id, v) => run('pokedex', 'readwrite', (s) => s.put(v, 'flag:' + id)),
+    flagDel: (id) => run('pokedex', 'readwrite', (s) => s.delete('flag:' + id)),
   };
 })();
 
@@ -362,39 +365,256 @@ const TAPAS_LIST = [
   { id: 30, icon: '👨‍👩‍👧‍👦', name: '全家 7 人圍在一起笑嘻嘻大合照', desc: '找個好風景，7 個人擠在一起對著鏡頭大喊「¡Patata!」（拍下最棒的笑容）！' }
 ];
 
-/* ---------- 30 REGIONAL/CITY FLAGS & STORIES ---------- */
+/* ---------- 30 REGIONAL/CITY FLAGS, LORE & SVGS ---------- */
 const FLAGS_LIST = [
-  { id: 1, badge: '🏴󠁥󠁳󠁣󠁴󠁿', city: '巴塞隆納', title: '聖佐治十字與加泰隆尼亞條紋', story: '紅十字是守護聖人聖佐治標誌；四道紅紋相傳是西元9世紀法蘭克國王將受傷伯爵的血抹在金盾上的由來。' },
-  { id: 2, badge: '📐', city: '擴建區 (Eixample)', title: '切角十字路口幾何旗', story: '工程師塞爾達首創將街角削切45度，讓陽光和空氣照進每間工人房屋，開創了現代都市規劃。' },
-  { id: 3, badge: '🚩', city: '加泰隆尼亞', title: 'Senyera 金黃紅紋旗', story: '歐洲最古老的旗幟之一，歷經數百年統治與語言壓制，依然是每逢九月十一日陽台上必掛的驕傲符號。' },
-  { id: 4, badge: '⚓', city: '巴塞隆納港', title: '地中海海事導航旗', story: '1493年哥倫布第一次自美洲歸來在此港接見天主教雙王，港口高柱至今依舊堅定指著蔚藍大海。' },
-  { id: 5, badge: '🏛️', city: '凱旋門', title: '世界博覽會迎賓紅磚徽', story: '這座凱旋門不是為了慶祝戰爭屠殺，而是世界博覽會的大門，象徵巴塞隆納向全世界敞開懷抱。' },
-  { id: 6, badge: '🌳', city: '蘭布拉大道', title: '舊河道變身的花神旗', story: 'Rambla在阿拉伯語意為「乾涸沙河」，中世紀排洪的溝渠，如今成為全球最具生命力的漫步林蔭道。' },
-  { id: 7, badge: '🎰', city: '聖誕大樂透', title: '加的斯希望金幣旗', story: '1812年西班牙抗擊拿破崙戰爭時誕生，這是一場「自願繳納的稅」，讓全國街坊鄰居一起分享好運。' },
-  { id: 8, badge: '⛵', city: '法國馬賽', title: '天藍十字十字軍港旗', story: '純潔白底配上一抹天藍色十字，源自11世紀十字軍東征時期艦隊從這個地中海古港揚帆的徽記。' },
-  { id: 9, badge: '🦁', city: '義大利熱那亞', title: '聖喬治紅十字海上霸王旗', story: '曾威震地中海的海上共和國，連英國海軍為了借用其威名避開海盜，都曾年年向熱那亞付租旗費。' },
-  { id: 10, badge: '🌋', city: '義大利那不勒斯', title: '維蘇威金黃與緋紅雙色旗', story: '代表火山烈火、陽光海岸與古老波旁王室，那不勒斯的顏色千百年來始終如歌聲般奔放熱烈。' },
-  { id: 11, badge: '🦵', city: '西西里巴勒摩', title: '三曲腿美杜莎神聖三芒旗', story: '中央是蛇髮美杜莎頭像，放射出三條奔馳的人腿，象徵西西里島三個海角交匯的千年古希臘符號。' },
-  { id: 12, badge: '🌙', city: '突尼西亞', title: '迦太基紅底白新月五星旗', story: '傳承迦太基帝國的榮光與鄂圖曼地中海海權的記憶，紅底象徵捍衛獨立的勇氣，白月象徵和平。' },
-  { id: 13, badge: '🚢', city: '地中海巡航', title: '海平線航海家雙六分儀徽', story: '地中海孕育了古希臘、羅馬與阿拉伯文明，在無垠海浪上看夕陽，是全家最安詳的冒險時刻。' },
-  { id: 14, badge: '🏰', city: '蒙特惠克山', title: '猶太山要塞俯瞰城旗', story: '矗立海角的制高點，曾見證內戰烽火與1992巴塞隆納奧運的點火射箭神蹟。' },
-  { id: 15, badge: '🏛️', city: '哥德區', title: '奧古斯都羅馬石柱老徽', story: '隱身在小巷民宅中四根兩千年羅馬神廟圓柱，默默看著巴塞隆納從羅馬殖民村演變成世界都會。' },
-  { id: 16, badge: '🎗️', city: '塞維亞', title: 'NO8DO 傳奇忠誠繩結紋章', story: '中間是羊毛線結（madeja），讀音No-madeja-do（她未曾棄我而去），國王感念塞維亞忠心的暗號！' },
-  { id: 17, badge: '🗼', city: '塞維亞大教堂', title: '吉拉達青銅命運女神風向旗', story: '原本是穆斯林喚拜樓的斜坡供騎馬上頂，頂端如今立著象徵信仰勝利的青銅風向女神巨雕。' },
-  { id: 18, badge: '🍊', city: '安達魯西亞平安夜', title: '冬日苦橙與佛朗明哥紅旗', story: '塞維亞街頭上萬株結滿金黃苦橙的果樹，在平安夜教堂彌撒鐘聲下散發安達魯西亞獨有的香氣。' },
-  { id: 19, badge: '🌊', city: '瓜達幾維河', title: '麥哲倫環球航行黃金塔旗', story: '1519年麥哲倫艦隊就是從這條河解纜啟程，開展人類史上第一次環球遠航的壯舉。' },
-  { id: 20, badge: '⛰️', city: '瓜迪斯 (Guadix)', title: '紅土高原白煙囪窯洞之徽', story: '這片大地如千瘡百孔的月球表面，千百年來人們鑿洞而居，冬暖夏涼常年保持18度恆溫。' },
-  { id: 21, badge: '🍒', city: '格拉那達', title: '成熟開裂紅石榴市旗', story: '西班牙語Granada就是「石榴」，成熟綻放的石榴代表伊比利半島最後一顆收復的伊斯蘭明珠。' },
-  { id: 22, badge: '🕌', city: '阿爾罕布拉宮', title: '桃金孃水池穆斯林幾何紅徽', story: '阿拉伯語意為「紅色城堡」，精緻如蕾絲的石膏灰泥雕花，見證了奈斯爾王朝最後的詩意輓歌。' },
-  { id: 23, badge: '🦁', city: '哥多華', title: '綠白相間之上的昂首紅獅', story: '安達魯西亞的綠白旗幟源自和平與希望，昂首咆哮的紅獅則是中世紀抵抗風霜的英勇守衛。' },
-  { id: 24, badge: '⛩️', city: '哥多華清真寺', title: '紅白雙層馬蹄石拱之印', story: '856根大理石柱頂起紅白相間的雙層拱券，在基督教堂嵌入其中後，成為全世界獨一無二的文明交響曲。' },
-  { id: 25, badge: '🐻', city: '馬德里', title: '黑熊抱野草莓樹與大熊七星旗', story: '深紅底色上有大熊座七顆銀星，中間一隻站立擁抱野草莓樹的黑熊，是馬德里700年的吉祥象徵。' },
-  { id: 26, badge: '🎨', city: '普拉多美術館', title: '宮廷畫家委拉斯蓋茲金冠旗', story: '《侍女》畫中畫家胸前佩戴的紅色十字騎士徽章，是西班牙藝術走進世界顛峰的金色冠冕。' },
-  { id: 27, badge: '🏛️', city: '塞哥維亞', title: '羅馬萬年花崗岩水道橋徽', story: '20,400塊花崗岩不用一滴水泥，靠力學完美咬合兩千年，至今依然驕傲橫跨在小鎮廣場上。' },
-  { id: 28, badge: '⚔️', city: '托雷多', title: '查理五世雙頭金鷹帝國盾', story: '三文化共存的古都，大馬士革金絲鋼劍削鐵如泥，雙頭鷹象徵東方與西方權力一體兩面。' },
-  { id: 29, badge: '👑', city: '西班牙王宮', title: '波旁王朝白百合與皇家兵器旗', story: '歐洲最大的現存王宮之一，擁有3,418間房間，皇家兵器庫收藏了神聖羅馬帝國查理五世的精鋼戰甲。' },
-  { id: 30, badge: '⭐', city: '三王節 (Reyes Magos)', title: '東方三博士伯利恆之星旗', story: '1月5日夜晚全西班牙不夜之城！三位國王騎著高頭駿馬灑下甜甜糖果，開啟新一年的平安與幸福。' }
+  {
+    id: 1, city: '巴塞隆納', title: '聖佐治十字與加泰隆尼亞令旗市旗',
+    origin: '左上與右下為守護聖人聖佐治（Sant Jordi）的白底紅十字；右上與左下為加泰隆尼亞的四道紅紋。紅十字代表抵禦外敵的虔誠勇氣，四道紅紋則代表中世紀加泰隆尼亞與亞拉岡王國傳承逾千年的自治王權。',
+    spotGuide: '聖雅各廣場（Plaça de Sant Jaume）的巴塞隆納市政廳主樓頂、老城巡邏警車車門徽章、以及巴塞隆納足球俱樂部（FC Barcelona）隊徽左上角，皆能親眼看見此官方標誌！',
+    trivia: '相傳西元897年巴塞隆納伯爵「多毛者吉弗雷」英勇抗擊諾曼海盜重傷瀕死，法蘭克國王查理二世前來慰問，將手掌浸入伯爵胸口汩汩鮮血，在金黃色純金盾牌上一抹劃出四道血手印，封為這片土地永恆的榮譽徽章！'
+  },
+  {
+    id: 2, city: '擴建區 (Eixample)', title: '塞爾達切角幾何街區旗',
+    origin: '象徵工程師塞爾達（Ildefons Cerdà）於1859年開創現代都市規劃（Urbanismo）的八角形切角街區。這面旗幟代表著「陽光、空氣與階級平等」，主張無論貧富，每個人都該享有採光與通風的花園庭院。',
+    spotGuide: '漫步米拉之家、巴特婁之家周邊，低頭看人行道幾何六角地磚，或抬頭觀察每個十字路口的45度切角建築，整座擴建區就是這面旗幟的真實立體模型！',
+    trivia: '塞爾達削切街角45度，在1859年汽車尚未發明的時代，是為了讓未來的蒸汽路面電車轉彎半徑更順暢，並讓每個路口都變成寬敞明亮的八角小廣場，方便街坊鄰居聚在街角曬太陽聊天！'
+  },
+  {
+    id: 3, city: '加泰隆尼亞', title: 'Senyera 金黃紅紋旗',
+    origin: '純金黃底配上四道鮮紅水平條紋，是歐洲至今仍在官方使用的最古老旗幟之一（最早文獻可追溯至1150年）。它代表加泰隆尼亞民族深厚的憲政傳統、法典制度與語言文化自豪。',
+    spotGuide: '走在巴塞隆納任何街道抬頭望，老百姓民宅陽台上掛滿這面旗幟；加泰隆尼亞自治區政府大樓、蘭布拉大道書報攤與重大慶典上隨處可見。',
+    trivia: '在佛朗哥獨裁統治時期（1939–1975），這面旗幟曾被嚴格禁止懸掛。加泰隆尼亞人想出妙計：把巴塞隆納足球隊的紅藍條紋球衣當成象徵，諾坎普球場也因此成為唯一能公開宣洩民族驕傲的避難所！'
+  },
+  {
+    id: 4, city: '巴塞隆納港', title: '海事領事館導航旗 (Consolat de Mar)',
+    origin: '深邃地中海藍底配上海軍金色船錨，源自中世紀巴塞隆納海洋領事館（Consolat de Mar）的榮光。它是西地中海歷史最悠久的海事公會，曾掌控從直布羅陀到黎凡特的黃金海上貿易網絡。',
+    spotGuide: '在貝爾港（Port Vell）碼頭桅杆、港務局大樓、水上巡邏艇、以及海洋聖母聖殿（Santa María del Mar）外牆古代海員公會浮雕上均能看到。',
+    trivia: '巴塞隆納於13世紀編纂的《海洋領事法典》是全球最早的海事商法典籍。當年港口法規極為嚴苛：若引航員因疏忽導致商船觸礁擱淺，船長有權在全體船員見證下當場將該領航員斬首示眾！'
+  },
+  {
+    id: 5, city: '凱旋門與城堡公園', title: '1888 世博會迎賓紅磚旗',
+    origin: '溫暖的新摩爾式（Neo-Mudéjar）紅磚色與金色雙翼，象徵巴塞隆納邁向近代工業與藝術顛峰的里程碑。這座凱旋門不是為了慶祝戰爭屠殺，而是世界博覽會的大門，象徵向全球文明張開懷抱。',
+    spotGuide: '沿著路易斯·孔帕尼斯大道（Passeig de Lluís Companys）走向凱旋門，正立面頂部石雕銘刻著「巴塞隆納歡迎各國（Barcelona rep les nacions）」。',
+    trivia: '據傳建築大師艾菲爾最初在設計巴黎鐵塔前，曾優先向巴塞隆納市議會提案在1888世博會建造這座鐵塔，但被市議會以「造型過於古怪且鋼架昂貴」為由婉拒，轉而建造了這座典雅的紅磚凱旋門！'
+  },
+  {
+    id: 6, city: '蘭布拉大道', title: '舊河道變身的花神紋章旗',
+    origin: '黃綠交織的花卉波浪圖紋。蘭布拉在阿拉伯語（Ramla）原意為「乾涸沙河」，中世紀原是城牆外排洪的雨水溝渠，18世紀拆牆後蛻變為全世界最繽紛浪漫的花卉漫步大道。',
+    spotGuide: '漫步蘭布拉大道中段的花攤（Flors de la Rambla）、米羅在地面鋪設的圓形彩色馬賽克地磚旁、以及百年波蓋利亞市場入口挑高拱門上方。',
+    trivia: '大文豪海明威與西班牙詩人羅卡曾讚嘆：「蘭布拉是世界上唯一一條我希望永遠走不到盡頭的街道。」在19世紀，蘭布拉賣花的老闆娘是全城最受尊敬的市民，紳士貴族路過都必須脫帽行禮！'
+  },
+  {
+    id: 7, city: '聖誕慶典', title: '聖誕大樂透「大胖子」吉慶金幣旗',
+    origin: '深緋紅底色映襯著巨大純金樂透滾輪與傾瀉而出的金幣，代表全世界總獎金最高、歷史逾兩百年的西班牙聖誕彩券「El Gordo」（大胖子樂透）。',
+    spotGuide: '每年12月在西班牙城鎮漫步，只要看見彩券行門口排了幾百公尺人龍、櫥窗貼滿彩券號碼與綠袍幸運小女巫（Doña Manolita），就是它的駐地！',
+    trivia: '這張彩券誕生於1812年西班牙抗擊拿破崙戰爭的加的斯議會，為了籌措抗法軍費，被譽為「全天下唯一無人抱怨的自願稅」。開獎時由馬德里孤兒院孩童以獨特童聲唱號，成為全西全民年度狂歡！'
+  },
+  {
+    id: 8, city: '法國馬賽', title: '天藍十字十字軍港旗',
+    origin: '純潔白底配上一道澄澈天藍色十字（Croix d\'azur sur fond blanc），純淨如普羅旺斯晴空與地中海浪花。源自11世紀十字軍東征時期，馬賽艦隊開拔前往黎凡特所佩戴的軍徽。',
+    spotGuide: '郵輪靠泊馬賽舊港（Vieux-Port），眺望岸邊碼頭燈塔、守護聖母聖殿（Notre-Dame de la Garde）山頂、以及馬賽市政廳正面旗桿上隨風飄揚。',
+    trivia: '馬賽是法國現存最古老的城市（西元前600年由希臘水手建立）。法國國歌《馬賽曲》便是1792年馬賽志願軍自南方向巴黎長征五百公里時一路高唱的戰歌，這座古港的血液裡刻滿了反叛與自由！'
+  },
+  {
+    id: 9, city: '義大利熱那亞', title: '聖喬治紅十字海上霸王旗',
+    origin: '純白底色配上醒目鮮紅正十字（Crux de San Zorzo），是中世紀威震西地中海的海上霸主「熱那亞海洋共和國」的驕傲圖騰。',
+    spotGuide: '郵輪抵達熱那亞港口，在舊港燈塔（Lanterna）、總督宮門楣雕刻、以及聖羅倫佐大教堂正立面大理石浮雕上，處處可見此紅十字。',
+    trivia: '大家都以為英格蘭的聖喬治紅十字旗是英國原創，其實是1190年英國國王理查一世為了讓英國船隊在地中海航行時免受穆斯林與海盜襲擊，向熱那亞共和國付費「承租」其旗幟護身，英國每年還得按時向熱那亞繳納保護租金！'
+  },
+  {
+    id: 10, city: '義大利那不勒斯', title: '維蘇威金黃與緋紅雙色旗',
+    origin: '上黃下紅雙色旗自13世紀沿用至今。金黃象徵坎帕尼亞平原燦爛陽光與肥沃火山土壤，鮮紅代表維蘇威火山熔岩與那不勒斯人血液中的奔放熱情。',
+    spotGuide: '郵輪駛入那不勒斯灣，岸邊新堡（Castel Nuovo）、平民表決廣場、甚至是傳統披薩店烤爐上的彩繪磁磚上，都能見到這抹鮮亮雙色。',
+    trivia: '舉世聞名的瑪格麗特披薩便誕生於此！1889年義大利王后瑪格麗特造訪那不勒斯，披薩大師布蘭迪以番茄（紅）、莫札瑞拉起司（白）與羅勒葉（綠）烤出義大利國旗三色，王后讚不絕口，從此披薩風靡全球！'
+  },
+  {
+    id: 11, city: '西西里島巴勒摩', title: '三曲腿美杜莎神聖三芒旗 (Trinacria)',
+    origin: '紅黃對角切面中央嵌著古希臘三曲腿符號（Triskelion）：中央為蛇髮美杜莎頭像，向外延伸出三條奔馳的人腿，分別指向西西里島的三個海角（佩洛羅、帕西羅與利利貝奧）。',
+    spotGuide: '在巴勒摩街頭的彩繪陶盤、傳統民俗彩繪馬車（Carretto Siciliano）、以及西西里自治區政府各大歷史建物外牆隨處可尋。',
+    trivia: '美杜莎頭部兩旁長出的羽毛代表時間流轉，麥穗則是羅馬帝國統治時期西西里島作為「帝國大糧倉」的富庶豐收象徵；三條腿順時針奔馳，代表四季輪迴與地中海永不熄滅的生命力！'
+  },
+  {
+    id: 12, city: '突尼西亞', title: '迦太基紅底白新月五星旗',
+    origin: '深紅底色中央一枚純白圓盤，環抱著紅色新月與五角星。起源於1831年突尼斯貝伊侯賽因二世統治時期，紅底紀念抗擊外敵的烈士熱血，白月與星象徵和平與伊斯蘭傳統。',
+    spotGuide: '突尼斯老城麥地那（Medina）石拱門、藍白小鎮西迪布賽義德（Sidi Bou Said）白色拱門與蔚藍窗櫺旁、以及迦太基遺址海岸高處高高飄揚。',
+    trivia: '藍白小鎮西迪布賽義德被譽為地中海最夢幻小鎮，當年突尼斯政府特地頒布法令：全鎮所有房屋牆面必須粉刷純白，門窗一律塗成專屬地中海鈷藍色，塗抹任何其他顏色都屬違法行為！'
+  },
+  {
+    id: 13, city: '地中海巡航', title: '航海風向羅盤星旗 (Rosa de los Vientos)',
+    origin: '深藍海浪底色上八個金銀雙色箭頭構成的航海風向羅盤，是古代腓尼基、希臘與熱那亞航海家征服無垠地中海的生存星盤。',
+    spotGuide: '在郵輪甲板指南針觀景台、港口水文站立牌、以及巴塞隆納貝爾港海事博物館的古代航海羊皮紙海圖上皆能見其精密刻度。',
+    trivia: '古代地中海水手用八個方位為風命名：東北風叫「希臘風（Greco）」、東南風叫「敘利亞風（Scirocco）」、西北風叫「大師之風（Maestrale）」。經驗豐富的老舵手只需聞風中的濕氣與泥土味，便知航向何方！'
+  },
+  {
+    id: 14, city: '蒙特惠克山', title: '猶太山要塞俯瞰城旗',
+    origin: '金黃與湛藍海平線上巍峨矗立的三座要塞石塔。蒙特惠克山高踞海港173公尺之上，在加泰隆尼亞語意為「猶太山」，自古便是扼守海陸要道的軍事巨壁。',
+    spotGuide: '搭乘蒙特惠克纜車登頂城堡砲台，俯瞰整個巴塞隆納貨櫃海港與老城區天際線，城堡正中心高聳旗桿每日迎風升起此旗。',
+    trivia: '1792年法國天文學家梅尚在蒙特惠克要塞頂端觀測星象測量子午線長度，推算出「一公尺」等於地球北極到赤道距離的千萬分之一，現代公制「公尺（Meter）」就是誕生在這座城堡上！'
+  },
+  {
+    id: 15, city: '哥德區', title: '奧古斯都羅馬柱古殖民徽 (Barcino)',
+    origin: '深紅底色刻印著四根羅馬科林斯式神廟石柱與月桂冠。西元前15年羅馬皇帝奧古斯都在此設立殖民古城「巴爾奇諾（Barcino）」，是巴塞隆納兩千年的城市之根。',
+    spotGuide: '隱身在哥德區天堂街（Carrer del Paradís 10號）加泰隆尼亞登山會庭院內，四根保存完好的兩千年神廟巨柱直插天井，令人震撼。',
+    trivia: '這四根神殿石柱深埋在中世紀民宅牆體中近一千年，直到19世紀老屋改建拆除隔間時，工人才驚愕發現自家客廳牆壁裡居然嵌著兩千年前羅馬大理石巨柱！'
+  },
+  {
+    id: 16, city: '塞維亞', title: 'NO8DO 傳奇忠誠市旗 (Bandera de Sevilla)',
+    origin: '深緋紅底色中央閃耀著金色字符：字母「NO」、金色毛線結（Madeja）、以及字母「DO」。連起來讀作「No-madeja-do」，諧音西語「No me ha dejado」（她未曾棄我而去）。',
+    spotGuide: '塞維亞街頭最神奇的尋寶！市政廳、復古鑄鐵路燈基座、警車標記、公車站牌、甚至腳底下的下水道人孔蓋上，100% 都能看見這串字符！',
+    trivia: '1282年卡斯提爾國王阿方索十世（智者阿方索）遭親生兒子叛亂篡位，全西班牙各大城相繼背叛，唯獨塞維亞市民誓死保衛國王。老國王臨終前熱淚盈眶，將這句密碼賜為塞維亞永恆市徽！'
+  },
+  {
+    id: 17, city: '塞維亞大教堂', title: '吉拉達風向女神旗 (El Giraldillo)',
+    origin: '聳立在塞維亞大教堂鐘樓頂端、重達1.2噸的青銅風向女神雕像。它原是12世紀摩爾清真寺的喚拜樓，頂端加建文藝復興鐘樓與青銅雕像，隨風旋轉（Girar）因而得名。',
+    spotGuide: '大教堂聖克里斯多福門口放置了一尊 1:1 等身復刻青銅雕像供遊客觸摸拍照；抬頭仰望104公尺高空雲端處則是真品。',
+    trivia: '吉拉達鐘樓內部完全沒有樓梯台階，而是由35道寬敞平緩的斜坡盤旋而上！這是為了讓當年中世紀穆斯林教士不必徒步爬梯，而是每天騎著毛驢直接騎到百米塔頂播報祈禱時間！'
+  },
+  {
+    id: 18, city: '安達魯西亞', title: '綠白相間之旗 (Verde, Blanca y Verde)',
+    origin: '綠、白、綠三條水平條紋，中央為海格力斯降伏兩隻雄獅的國徽。綠色象徵安達魯西亞廣袤無垠的橄欖樹田與希望，白色代表純潔與和平，由安達魯西亞國父因凡特於1918年確立。',
+    spotGuide: '塞維亞西班牙廣場（Plaza de España）圓弧長廊中央、聖十字區白牆民宅中庭花園、以及隆達天生橋頭均有懸掛。',
+    trivia: '徽章中海格力斯腳踩兩根石柱，代表直布羅陀海峽兩側的「海格力斯之柱」，柱上纏繞拉丁銘文「Plus Ultra」（向更遠方前進），是西班牙大航海時代打破古代「世界盡頭」禁忌的開拓精神！'
+  },
+  {
+    id: 19, city: '瓜達幾維河', title: '黃金塔與環球航行啟航旗 (Torre del Oro)',
+    origin: '深藍波浪上坐落著十二面體的金色防禦塔。塔身原覆蓋著金色釉面磁磚，在陽光照射下如黃金般璀璨耀眼，是瓜達幾維河守護塞維亞海門的要塞。',
+    spotGuide: '漫步塞維亞瓜達幾維河畔林蔭步道，黃金塔就矗立在河岸轉角處，現在館內為海事博物館。',
+    trivia: '1519年8月10日，麥哲倫率領五艘帆船就是從黃金塔下的碼頭拔錨啟航展開環球航行！三年後僅剩「維多利亞號」載著18位倖存水手回到黃金塔，完成了人類史上第一次環繞地球的偉大壯舉！'
+  },
+  {
+    id: 20, city: '瓜迪斯 (Guadix)', title: '紅土高原白煙囪窯洞旗',
+    origin: '雪白內華達山脈下，千溝萬壑的赤褐色紅土高原，探出一支支圓柱形雪白煙囪。這是安達魯西亞最奇幻的人居地景，記錄了摩爾人避難與安土重遷的智慧。',
+    spotGuide: '走入瓜迪斯窯洞區（Barrio de las Cuevas），站在觀景台遠眺，數百根雪白煙囪從地下鑽出地面，宛如童話小人國。',
+    trivia: '瓜迪斯至今仍有兩千多戶居民長年住在地下窯洞中！由於紅土質地黏韌且具有極佳隔熱性，室外夏天高達40度酷暑或冬天下雪結冰，室內一年四季始終維持在攝氏18–20度天然恆溫！'
+  },
+  {
+    id: 21, city: '格拉那達', title: '成熟開裂紅石榴市旗 (Bandera de Granada)',
+    origin: '左緋紅、右翡翠綠對半垂直分割，中央是一顆裂開露出鮮紅寶石果實的加冕石榴（Granada 在西語就是石榴之意），象徵收復失地運動最後一顆收回的伊斯蘭明珠。',
+    spotGuide: '在新廣場（Plaza Nueva）、阿爾拜辛區石板路街角柱、路燈基座、甚至是街頭鐵鑄人行路樁頂端，全是一顆顆精巧立體石榴！',
+    trivia: '西班牙現行國徽最下方底部那一顆小小的金黃裂口石榴，正是天主教雙王在1492年攻克格拉那達後特地加進西班牙國徽的，象徵伊比利半島八百年收復失地運動（Reconquista）最後一塊完整拼圖！'
+  },
+  {
+    id: 22, city: '格拉那達', title: '阿爾罕布拉奈斯爾王朝旗 (Estandarte Nazarí)',
+    origin: '深赤紅底色橫貫金色斜紋，上書安達魯斯古典阿拉伯書法：«ولا غالب إلا الله»（除真主外，別無勝者），是格拉那達王國最後的王室旗幟。',
+    spotGuide: '踏進阿爾罕布拉宮桃金孃中庭與獅子庭院，仔細觀察石膏雕花牆面、彩色磁磚腰線、以及木雕天花板，這句經文重複雕刻了上萬次！',
+    trivia: '奈斯爾王朝開國君主穆罕默德一世攻下格拉那達時，百姓夾道歡呼稱他為「偉大的征服者」，國王謙遜搖頭回答道：「除真主外，別無勝者。」從此這句話成為王室信條，刻滿整座王宮！'
+  },
+  {
+    id: 23, city: '哥多華', title: '加冕昂首紅獅市旗 (Bandera de Córdoba)',
+    origin: '純白旗底上一隻頭戴金冠、昂首咆哮的直立紅獅（León rampante），象徵基督徒軍隊自摩爾人手中光復古都時的英勇與王室特許特權。',
+    spotGuide: '在哥多華羅馬古橋頭、古城牆防衛門、百花巷入口陶罐牆面、以及哥多華市政廳頂部均可見其威嚴身影。',
+    trivia: '哥多華在西元10世紀是全歐洲最大、最富庶繁華的都會，擁有百萬人口、三千座公共浴室與全歐最大的皇家圖書館（藏書四十萬冊，當時巴黎最大圖書館僅數千冊），其文明之光照亮了中世紀黑暗歐洲！'
+  },
+  {
+    id: 24, city: '哥多華', title: '清真寺雙層馬蹄石拱旗 (Mezquita)',
+    origin: '白色石灰岩與紅色燒磚交替砌成的馬蹄形雙層拱券圖紋。靈感汲取自古羅馬水道橋力學結構，創造出支撐極高挑穹頂的建築奇蹟。',
+    spotGuide: '踏進大清真寺主殿，眼前856根斑岩、碧玉與大理石柱排列如無邊無際的石柱森林，紅白相間的馬蹄石拱令人嘆為觀止。',
+    trivia: '16世紀查理五世皇帝批准在清真寺正中心硬生生插入一座文藝復興基督教堂，但他親自前來視察完工成果時卻後悔萬分，嘆息道：「你們摧毀了世間絕無僅有的奇蹟，建造了一座在任何地方都能建的普通教堂！」'
+  },
+  {
+    id: 25, city: '馬德里', title: '大熊七星緋紅旗 (Bandera de Madrid)',
+    origin: '高貴深緋紅底色上排列著七顆純銀色五角星（上四下三）。七顆星代表大熊星座（北斗七星），象徵馬德里坐落於卡斯提爾北境瓜達拉馬山脈下的天象方位。',
+    spotGuide: '在太陽門廣場的「黑熊與野草莓樹」青銅雕像旁、馬德里市政警車車門、以及各大公車站牌立柱上都能看到這七顆銀星！',
+    trivia: '古代馬德里周邊山林裡曾有大量野生棕熊棲息，市徽上的黑熊站立擁抱一棵結滿紅色果實的野草莓樹（Madroño）。這棵樹的果實發酵後含有微量天然酒精，因此古時馬德里常有棕熊偷吃果實醉倒在草地上的趣味傳聞！'
+  },
+  {
+    id: 26, city: '普拉多博物館', title: '宮廷畫家委拉斯蓋茲聖雅各騎士旗',
+    origin: '墨黑底色襯托著深紅色佩劍與百合花雕飾的佩劍十字。西班牙三大騎士團之一「聖雅各騎士團」的崇高榮譽徽章。',
+    spotGuide: '在普拉多博物館內欣賞委拉斯蓋茲傳世國寶《宮女》（Las Meninas），注意畫中站在大畫架前的畫家本人，其胸口長袍上那枚鮮紅耀眼的十字。',
+    trivia: '在17世紀西班牙，平民畫家地位卑微，委拉斯蓋茲一生渴望獲頒貴族階級的聖雅各十字勳章，直到晚年才如願。相傳在畫家逝世後，西班牙國王腓力四世親自拿起畫筆，在《宮女》真跡畫像上親手為過世的愛卿補畫上這枚紅色十字勳章！'
+  },
+  {
+    id: 27, city: '塞哥維亞', title: '羅馬萬年水道橋藍盾旗 (Bandera de Segovia)',
+    origin: '天藍色盾牌上雕刻著銀白色的雙層羅馬花崗岩水道橋與城堡。水道橋是這座世界遺產古城兩千年的生命之源與靈魂圖騰。',
+    spotGuide: '抵達阿索格霍廣場（Plaza del Azoguejo），高達28公尺的水道橋巍峨矗立眼前；在當地百年烤乳豬名店 Candido 的餐盤徽章上也能看到。',
+    trivia: '這座建於西元1世紀的水道橋總共用了20,400塊巨大花崗岩石塊，最不可思議的是——整座宏偉工程「沒有使用一滴泥漿或水泥灰粉」，全憑羅馬工程師神乎其技的重力精準咬合，屹立兩千年不倒，直到20世紀中葉仍在為小鎮引水灌溉！'
+  },
+  {
+    id: 28, city: '托雷多', title: '查理五世雙頭金鷹帝國盾 (Bandera de Toledo)',
+    origin: '神聖羅馬帝國皇帝查理五世賜予古都托雷多的皇家市旗，象徵托雷多作為日不落帝國世界權力中心的巔峰歲月。雙頭鷹一頭注視東方、一頭注視西方。',
+    spotGuide: '托雷多比薩格拉新門（Puerta Nueva de Bisagra）巨型石雕大門正中央、大馬士革刀劍工藝品工坊櫥窗、市政廳正立面懸掛。',
+    trivia: '托雷多自中世紀便以鍛造全世界最銳利的大馬士革金銀鑲嵌鋼劍聞名。羅馬軍團的短劍、查理五世的精鋼盔甲、甚至《魔戒》與好萊塢史詩電影中的騎士寶劍，許多都是特地委託托雷多老工匠以古法打造！'
+  },
+  {
+    id: 29, city: '西班牙王宮', title: '波旁王朝皇家旗 (Estandarte Real de España)',
+    origin: '匯聚卡斯提爾（城堡）、雷昂（紅獅）、亞拉岡（紅黃四紋）、納瓦拉（金鏈金字塔）與格拉那達（石榴），核心嵌波旁王朝三朵金百合，象徵伊比利半島各大王國合而為一的壯麗歷史。',
+    spotGuide: '走訪馬德里西班牙王宮（Palacio Real de Madrid）與武器廣場，當國王在宮內時，主樓穹頂最高處便會升起這面皇家旗幟。',
+    trivia: '納瓦拉王國的「金鏈」徽章源自1212年托洛薩拉斯納瓦斯大戰（Las Navas de Tolosa），納瓦拉國王桑喬七世親率騎士殺入摩爾人軍帳，用巨劍斬斷穆斯林親衛隊拴住哈里發帳篷的粗壯防禦鐵鏈，從此金鏈被榮耀地刻入西班牙王室血脈！'
+  },
+  {
+    id: 30, city: '三王節 (Reyes Magos)', title: '東方三博士伯利恆之星旗',
+    origin: '深邃夜空藍底色，中央綻放著指引東方三博士尋找聖嬰的八角金芒星，下方是代表梅爾基奧、加斯帕與巴爾塔沙的三頂珠寶王冠。',
+    spotGuide: '1月5日夜晚馬德里與塞維亞街頭「三王節大遊行（Cabalgata de Reyes）」的花車主帆、街邊彩燈裝飾、以及麵包店國王蛋糕盒蓋上。',
+    trivia: '1月5日夜晚是西班牙小朋友一年中最興奮的夜晚！睡前孩子們會在陽台擺好乾草和水給三位國王的駱駝解渴，並把擦得乾乾淨淨的鞋子擺在客廳。第二天醒來，鞋子裡就會塞滿三位國王送來的玩具或糖果；如果這一年不乖，國王就會送來黑漆漆的「煤炭糖（Carbón dulce）」！'
+  }
 ];
+
+function getFlagSvg(id) {
+  switch (id) {
+    case 1:
+      return `<svg viewBox="0 0 120 80"><rect width="60" height="40" fill="#fff"/><rect y="15" width="60" height="10" fill="#C5221F"/><rect x="25" width="10" height="40" fill="#C5221F"/><rect x="60" width="60" height="40" fill="#FDD835"/><path d="M66 0v40h7V0zm14 0v40h7V0zm14 0v40h7V0zm14 0v40h7V0z" fill="#C5221F"/><rect y="40" width="60" height="40" fill="#FDD835"/><path d="M6 40v40h7V40zm14 40v-40h7v40zm14 40v-40h7v40zm14 40v-40h7v40z" fill="#C5221F"/><rect x="60" y="40" width="60" height="40" fill="#fff"/><rect x="60" y="55" width="60" height="10" fill="#C5221F"/><rect x="85" y="40" width="10" height="40" fill="#C5221F"/></svg>`;
+    case 2:
+      return `<svg viewBox="0 0 120 80"><rect width="120" height="80" fill="#F5EFEB"/><path d="M8 8h24l6 6v14l-6 6H8l-6-6V14zm44 0h24l6 6v14l-6 6H52l-6-6V14zm44 0h24l6 6v14l-6 6H96l-6-6V14zm-88 44h24l6 6v14l-6 6H8l-6-6V58zm44 0h24l6 6v14l-6 6H52l-6-6V58zm44 0h24l6 6v14l-6 6H96l-6-6V58z" fill="#C66247"/><circle cx="20" cy="23" r="5" fill="#4B8358"/><circle cx="64" cy="23" r="5" fill="#4B8358"/><circle cx="108" cy="23" r="5" fill="#4B8358"/><circle cx="20" cy="67" r="5" fill="#4B8358"/><circle cx="64" cy="67" r="5" fill="#4B8358"/><circle cx="108" cy="67" r="5" fill="#4B8358"/></svg>`;
+    case 3:
+      return `<svg viewBox="0 0 120 80"><rect width="120" height="80" fill="#FDD835"/><rect y="9" width="120" height="9" fill="#C5221F"/><rect y="27" width="120" height="9" fill="#C5221F"/><rect y="45" width="120" height="9" fill="#C5221F"/><rect y="63" width="120" height="9" fill="#C5221F"/></svg>`;
+    case 4:
+      return `<svg viewBox="0 0 120 80"><rect width="120" height="80" fill="#1565C0"/><path d="M60 14a7 7 0 1 0 0 14 7 7 0 0 0 0-14zm0 18v34m-20-14c4 12 16 18 20 18s16-6 20-18m-28-12h16" stroke="#FFD54F" stroke-width="4.5" fill="none" stroke-linecap="round"/></svg>`;
+    case 5:
+      return `<svg viewBox="0 0 120 80"><rect width="120" height="80" fill="#F57C00"/><path d="M30 70V28l12-8h36l12 8v42H74V48c0-8-6-14-14-14s-14 6-14 14v22z" fill="#B71C1C"/><rect x="42" y="22" width="36" height="5" fill="#FFE082"/><circle cx="60" cy="30" r="4" fill="#FFE082"/></svg>`;
+    case 6:
+      return `<svg viewBox="0 0 120 80"><rect width="120" height="80" fill="#FFF8E1"/><path d="M0 40c30-15 60 15 120 0v40H0z" fill="#2E7D32"/><circle cx="60" cy="30" r="10" fill="#E91E63"/><circle cx="50" cy="26" r="6" fill="#FFC107"/><circle cx="70" cy="26" r="6" fill="#FFC107"/><circle cx="60" cy="18" r="6" fill="#FFC107"/><circle cx="60" cy="30" r="4" fill="#fff"/></svg>`;
+    case 7:
+      return `<svg viewBox="0 0 120 80"><rect width="120" height="80" fill="#880E4F"/><circle cx="60" cy="36" r="22" fill="#FFA000" stroke="#FFD54F" stroke-width="3"/><path d="M60 14v44M38 36h44m-6-15-32 30m0-30 32 30" stroke="#FFE082" stroke-width="1.5"/><rect x="52" y="58" width="16" height="12" fill="#FFA000"/><circle cx="48" cy="68" r="4" fill="#FFD54F"/><circle cx="60" cy="72" r="4" fill="#FFD54F"/><circle cx="72" cy="68" r="4" fill="#FFD54F"/></svg>`;
+    case 8:
+      return `<svg viewBox="0 0 120 80"><rect width="120" height="80" fill="#FFFFFF"/><rect y="30" width="120" height="20" fill="#29B6F6"/><rect x="50" width="20" height="80" fill="#29B6F6"/></svg>`;
+    case 9:
+      return `<svg viewBox="0 0 120 80"><rect width="120" height="80" fill="#FFFFFF"/><rect y="30" width="120" height="20" fill="#D32F2F"/><rect x="50" width="20" height="80" fill="#D32F2F"/></svg>`;
+    case 10:
+      return `<svg viewBox="0 0 120 80"><rect width="60" height="80" fill="#FFD600"/><rect x="60" width="60" height="80" fill="#D50000"/></svg>`;
+    case 11:
+      return `<svg viewBox="0 0 120 80"><path d="M0 0h120L0 80z" fill="#D50000"/><path d="M120 0v80H0z" fill="#FFD600"/><circle cx="60" cy="40" r="10" fill="#FFA000"/><path d="M60 30c-6-16 10-24 16-16M68 46c14 8 16 26 6 28M48 46c-12 10-24-4-20-14" stroke="#D50000" stroke-width="4.5" fill="none" stroke-linecap="round"/><circle cx="60" cy="40" r="5" fill="#FFE082"/></svg>`;
+    case 12:
+      return `<svg viewBox="0 0 120 80"><rect width="120" height="80" fill="#E53935"/><circle cx="60" cy="40" r="20" fill="#fff"/><path d="M60 26a14 14 0 1 0 8 25.5 11 11 0 1 1-8-25.5z" fill="#E53935"/><polygon points="65,34 67,39 72,39 68,42 70,47 65,44 60,47 62,42 58,39 63,39" fill="#E53935"/></svg>`;
+    case 13:
+      return `<svg viewBox="0 0 120 80"><rect width="120" height="80" fill="#0D47A1"/><circle cx="60" cy="40" r="28" stroke="#FFE082" stroke-dasharray="3 3" fill="none"/><polygon points="60,14 64,36 60,40" fill="#FFD54F"/><polygon points="60,14 56,36 60,40" fill="#FFF59D"/><polygon points="60,66 64,44 60,40" fill="#FFF59D"/><polygon points="60,66 56,44 60,40" fill="#FFD54F"/><polygon points="34,40 56,36 60,40" fill="#FFF59D"/><polygon points="34,40 56,44 60,40" fill="#FFD54F"/><polygon points="86,40 64,36 60,40" fill="#FFD54F"/><polygon points="86,40 64,44 60,40" fill="#FFF59D"/><circle cx="60" cy="40" r="3.5" fill="#FFD54F"/></svg>`;
+    case 14:
+      return `<svg viewBox="0 0 120 80"><rect width="120" height="48" fill="#FDD835"/><rect y="48" width="120" height="32" fill="#1E88E5"/><path d="M36 48V26h12v6h6v-6h12v6h6v-6h12v22z" fill="#B71C1C"/><rect x="42" y="32" width="6" height="8" fill="#FDD835"/><rect x="72" y="32" width="6" height="8" fill="#FDD835"/><rect x="56" y="38" width="8" height="10" fill="#212121"/></svg>`;
+    case 15:
+      return `<svg viewBox="0 0 120 80"><rect width="120" height="80" fill="#7F0000"/><polygon points="26,22 60,10 94,22" fill="#FFD54F"/><rect x="28" y="22" width="64" height="4" fill="#FFE082"/><rect x="34" y="26" width="6" height="38" fill="#FFF9C4"/><rect x="50" y="26" width="6" height="38" fill="#FFF9C4"/><rect x="64" y="26" width="6" height="38" fill="#FFF9C4"/><rect x="80" y="26" width="6" height="38" fill="#FFF9C4"/><rect x="26" y="64" width="68" height="6" fill="#FFD54F"/></svg>`;
+    case 16:
+      return `<svg viewBox="0 0 120 80"><rect width="120" height="80" fill="#880E4F"/><text x="24" y="52" fill="#FFD54F" font-family="-apple-system,sans-serif" font-size="28" font-weight="900">NO</text><path d="M60 28c-6-10-14 0-4 12s14 4 4 12-14 0-4-12z" stroke="#FFD54F" stroke-width="4" fill="none"/><text x="76" y="52" fill="#FFD54F" font-family="-apple-system,sans-serif" font-size="28" font-weight="900">DO</text></svg>`;
+    case 17:
+      return `<svg viewBox="0 0 120 80"><rect width="120" height="80" fill="#C28242"/><rect x="44" y="32" width="32" height="48" fill="#794628"/><rect x="48" y="22" width="24" height="10" fill="#9C5B32"/><polygon points="52,22 60,12 68,22" fill="#794628"/><circle cx="60" cy="8" r="3" fill="#FFE082"/><path d="M60 8l10-4m-10 4l-6 6" stroke="#FFE082" stroke-width="1.8"/></svg>`;
+    case 18:
+      return `<svg viewBox="0 0 120 80"><rect width="120" height="26.6" fill="#007A3D"/><rect y="26.6" width="120" height="26.6" fill="#FFFFFF"/><rect y="53.3" width="120" height="26.6" fill="#007A3D"/><rect x="48" y="28" width="24" height="24" fill="#007A3D" rx="3"/><circle cx="60" cy="38" r="5" fill="#FFD54F"/><rect x="52" y="32" width="3" height="14" fill="#fff"/><rect x="65" y="32" width="3" height="14" fill="#fff"/></svg>`;
+    case 19:
+      return `<svg viewBox="0 0 120 80"><rect width="120" height="80" fill="#0277BD"/><path d="M22 66V32l6-4h16l6 4v34zm6-38h16v-6l-3-2h-10l-3 2z" fill="#FFA000"/><path d="M68 64c8 4 28 4 36-2l-4-10H64z" fill="#5D4037"/><path d="M78 52V30l16 4v18zm14 0V34l12 4v14z" fill="#FFF9C4"/><rect x="0" y="66" width="120" height="14" fill="#01579B"/></svg>`;
+    case 20:
+      return `<svg viewBox="0 0 120 80"><rect width="120" height="80" fill="#E0F2F1"/><polygon points="20,50 60,18 100,50" fill="#90A4AE"/><polygon points="45,30 60,18 75,30" fill="#FFFFFF"/><path d="M0 48c40 0 60-6 120 0v32H0z" fill="#A14429"/><rect x="54" y="34" width="12" height="16" fill="#FFFFFF" rx="2"/><circle cx="60" cy="34" r="7" fill="#FFFFFF"/></svg>`;
+    case 21:
+      return `<svg viewBox="0 0 120 80"><rect width="60" height="80" fill="#B71C1C"/><rect x="60" width="60" height="80" fill="#1B5E20"/><circle cx="60" cy="42" r="14" fill="#FFA000"/><polygon points="56,26 60,22 64,26 68,23 60,18 52,23" fill="#FFD54F"/><path d="M60 42l4 4-4 4-4-4z" fill="#B71C1C"/><circle cx="60" cy="42" r="2" fill="#fff"/></svg>`;
+    case 22:
+      return `<svg viewBox="0 0 120 80"><rect width="120" height="80" fill="#C62828"/><polygon points="0,0 24,0 120,64 120,80 96,80 0,16" fill="#FFD54F"/><text x="40" y="44" fill="#7F0000" font-family="serif" font-size="10" font-weight="700" transform="rotate(33 60 40)">ولا غالب إلا الله</text></svg>`;
+    case 23:
+      return `<svg viewBox="0 0 120 80"><rect width="120" height="80" fill="#FFFFFF"/><path d="M52 58c-4-8 2-14 8-16 0-8 6-12 12-14 2 4-2 8-2 10 6 2 8 8 4 12 4 4 2 10-4 12 4 4 2 8-2 8s-10-4-16-12z" fill="#C62828"/><polygon points="68,26 72,22 76,26 80,22 74,18" fill="#FFD54F"/></svg>`;
+    case 24:
+      return `<svg viewBox="0 0 120 80"><rect width="120" height="80" fill="#FFF9C4"/><path d="M30 70V44c0-16 14-26 30-26s30 10 30 26v26h-8V44c0-12-10-20-22-20s-22 8-22 20v26z" fill="#C62828"/><path d="M38 44c0-12 10-20 22-20s22 8 22 20h-8c0-8-6-14-14-14s-14 6-14 14z" fill="#FFF8E1"/><rect x="26" y="44" width="8" height="26" fill="#E0E0E0"/><rect x="86" y="44" width="8" height="26" fill="#E0E0E0"/></svg>`;
+    case 25:
+      return `<svg viewBox="0 0 120 80"><rect width="120" height="80" fill="#B71C1C"/><g fill="#FFFFFF"><polygon points="30,22 32,27 38,27 33,31 35,36 30,33 25,36 27,31 22,27 28,27"/><polygon points="50,22 52,27 58,27 53,31 55,36 50,33 45,36 47,31 42,27 48,27"/><polygon points="70,22 72,27 78,27 73,31 75,36 70,33 65,36 67,31 62,27 68,27"/><polygon points="90,22 92,27 98,27 93,31 95,36 90,33 85,36 87,31 82,27 88,27"/><polygon points="40,48 42,53 48,53 43,57 45,62 40,59 35,62 37,57 32,53 38,53"/><polygon points="60,48 62,53 68,53 63,57 65,62 60,59 55,62 57,57 52,53 58,53"/><polygon points="80,48 82,53 88,53 83,57 85,62 80,59 75,62 77,57 72,53 78,53"/></g></svg>`;
+    case 26:
+      return `<svg viewBox="0 0 120 80"><rect width="120" height="80" fill="#212121"/><path d="M60 14c-4 6-10 6-6 12h8c4-6-2-6-2-12zm-22 22c6-4 6-10 12-6v8c-6 4-6-2-12-2zm44 0c-6-4-6-10-12-6v8c6 4 6-2 12-2zM56 36h8v24l-4 12-4-12z" fill="#D32F2F"/></svg>`;
+    case 27:
+      return `<svg viewBox="0 0 120 80"><rect width="120" height="80" fill="#1565C0"/><rect x="20" y="44" width="80" height="8" fill="#ECEFF1"/><rect x="20" y="64" width="80" height="8" fill="#ECEFF1"/><path d="M26 44v28h8V44zm16 0v28h8V44zm16 0v28h8V44zm16 0v28h8V44zm16 0v28h8V44z" fill="#CFD8DC"/><path d="M52 24h16v14H52z" fill="#ECEFF1"/></svg>`;
+    case 28:
+      return `<svg viewBox="0 0 120 80"><rect width="120" height="80" fill="#C2185B"/><path d="M60 30c-8-12-18-10-22-4 4 6 10 4 10 10-10-2-18 8-16 16 8 8 16 0 18-6v16h20V46c2 6 10 14 18 6 2-8-6-18-16-16 0-6 6-4 10-10-4-6-14-8-22 4z" fill="#212121"/><polygon points="40,20 44,16 48,20 44,24" fill="#FFD54F"/><polygon points="72,20 76,16 80,20 76,24" fill="#FFD54F"/><circle cx="60" cy="48" r="6" fill="#C2185B" stroke="#FFD54F" stroke-width="2"/></svg>`;
+    case 29:
+      return `<svg viewBox="0 0 120 80"><rect width="120" height="20" fill="#AA151B"/><rect y="20" width="120" height="40" fill="#F1BF00"/><rect y="60" width="120" height="20" fill="#AA151B"/><rect x="30" y="30" width="16" height="20" fill="#AA151B" rx="2"/><circle cx="38" cy="36" r="3" fill="#F1BF00"/><rect x="25" y="32" width="2" height="16" fill="#757575"/><rect x="49" y="32" width="2" height="16" fill="#757575"/><polygon points="34,26 38,23 42,26" fill="#F1BF00"/></svg>`;
+    case 30:
+      return `<svg viewBox="0 0 120 80"><rect width="120" height="80" fill="#1A237E"/><polygon points="60,10 63,26 78,20 67,31 82,38 67,42 75,56 61,48 58,62 55,48 42,56 49,42 35,38 49,31 40,20 54,26" fill="#FFD54F"/><circle cx="60" cy="36" r="4" fill="#FFF9C4"/><circle cx="36" cy="64" r="5" fill="#FFA000"/><circle cx="60" cy="64" r="5" fill="#FFE082"/><circle cx="84" cy="64" r="5" fill="#FFA000"/></svg>`;
+    default:
+      return `<svg viewBox="0 0 120 80"><rect width="120" height="80" fill="#ECE7DE"/><text x="60" y="46" font-size="28" text-anchor="middle">🚩</text></svg>`;
+  }
+}
 
 /* ---------- 30 POKEDEX COLLECTIBLES (旅行大圖鑑) ---------- */
 const POKEDEX_ITEMS = [
@@ -901,27 +1121,105 @@ route('/tapa', () => {
   return 'tools';
 });
 
-/* ---------- ROUTE: /flags (城市旗與小眾故事) ---------- */
-route('/flags', () => {
+/* ---------- ROUTE: /flags (城市旗幟與傳奇故事・街頭打卡) ---------- */
+route('/flags', async () => {
   const streak = getStreak();
-  const rows = FLAGS_LIST.map((f, i) => {
-    const unlocked = i < streak;
-    return `<div class="flag-card ${unlocked ? '' : 'locked'}" style="${unlocked ? '' : 'opacity:.5'}">
-      <div class="flag-badge">${f.badge}</div>
-      <div class="flag-info">
-        <div style="display:flex;justify-content:space-between;align-items:center">
-          <span class="flag-title">${esc(f.title)}</span>
-          <span class="chip ${unlocked ? 'good' : ''}">${unlocked ? '已點亮' : '第 ' + (i + 1) + ' 天'}</span>
-        </div>
-        <div class="sub" style="font-size:12px;margin:2px 0">${esc(f.city)}</div>
-        <div class="flag-story">${unlocked ? esc(f.story) : '連續登入打卡至第 ' + (i + 1) + ' 天解鎖此旗幟小眾傳奇故事。'}</div>
-      </div>
-    </div>`;
-  }).join('');
+  let capturedCount = 0;
 
-  view(`${back('#/', '首頁')}<h1>城市旗與小眾故事</h1>
-    <p class="sub">目前連續打卡 🔥 <b>${streak}</b> 天，已收集 <b>${Math.min(streak, 30)} / 30</b> 面城市旗幟與傳奇故事。</p>
-    <div class="stack">${rows}</div>`);
+  const rows = await Promise.all(FLAGS_LIST.map(async (f, i) => {
+    const unlocked = i < streak;
+    const blob = await DB.flagGet(f.id);
+    const hasPhoto = !!blob;
+    if (hasPhoto) capturedCount++;
+
+    let photoHtml = '';
+    if (hasPhoto) {
+      const u = URL.createObjectURL(blob);
+      photoHtml = `
+        <div class="flag-visual-box">
+          <div class="flag-visual-label">📸 我的街頭實拍</div>
+          <div class="flag-user-frame has-photo">
+            <img src="${u}" alt="街頭實拍：${esc(f.title)}">
+            <span class="flag-captured-badge">✅ 街頭已捕獲！</span>
+          </div>
+          <label class="btn small ghost" style="margin-top:8px;width:100%;cursor:pointer">
+            🔄 更換照片
+            <input type="file" accept="image/*" class="flag-file-input" data-id="${f.id}" hidden>
+          </label>
+        </div>`;
+    } else {
+      photoHtml = `
+        <div class="flag-visual-box">
+          <div class="flag-visual-label">📸 街頭尋寶打卡</div>
+          <div class="flag-user-frame">
+            <div class="flag-empty-hint">在建築、陽台或街頭看見它？拍下照片解鎖打卡！</div>
+          </div>
+          <label class="btn small" style="margin-top:8px;width:100%;cursor:pointer">
+            📷 街頭捕獲上傳 (+20分)
+            <input type="file" accept="image/*" class="flag-file-input" data-id="${f.id}" hidden>
+          </label>
+        </div>`;
+    }
+
+    const loreHtml = unlocked ? `
+      <div class="flag-lore">
+        <div class="flag-lore-sec"><b>📜 紋章由來：</b>${esc(f.origin)}</div>
+        <div class="flag-lore-sec"><b>🔍 街頭尋寶：</b>${esc(f.spotGuide)}</div>
+        <div class="flag-lore-sec"><b>💡 奇聞冷知識：</b>${esc(f.trivia)}</div>
+      </div>` : `
+      <div class="flag-lore" style="opacity:.65">
+        <div class="flag-lore-sec">🔒 <b>第 ${i + 1} 天解鎖：</b>連續登入打卡至第 ${i + 1} 天，即可解鎖此旗幟完整的歷史傳奇、街頭尋寶攻略與奇聞冷知識。</div>
+      </div>`;
+
+    return `<div class="flag-card ${unlocked ? '' : 'locked'}">
+      <div class="flag-header">
+        <div class="flag-title-wrap">
+          <span class="chip" style="font-size:12px;font-weight:700;margin-bottom:4px">第 ${f.id} 面旗幟</span>
+          <div class="flag-title">${esc(f.title)}</div>
+          <div class="flag-city">📍 ${esc(f.city)}</div>
+        </div>
+        <div style="display:flex;flex-direction:column;align-items:flex-end;gap:4px">
+          <span class="chip ${unlocked ? 'good' : ''}">${unlocked ? '🔥 今日已點亮' : '第 ' + (i + 1) + ' 天解鎖'}</span>
+          ${hasPhoto ? '<span class="chip good" style="font-size:12px">✅ 實拍已收錄</span>' : ''}
+        </div>
+      </div>
+
+      <div class="flag-visual-grid">
+        <div class="flag-visual-box">
+          <div class="flag-visual-label">📖 官方真實圖鑑</div>
+          <div class="flag-guide-frame">
+            ${getFlagSvg(f.id)}
+          </div>
+          <div class="sub" style="font-size:11.5px;margin-top:6px;color:var(--muted)">依循此官方紋章在街頭尋寶</div>
+        </div>
+        ${photoHtml}
+      </div>
+
+      ${loreHtml}
+    </div>`;
+  }));
+
+  view(`${back('#/', '首頁')}<h1>城市旗幟與傳奇故事</h1>
+    <p class="sub">西班牙與地中海 30 款標誌性旗幟與紋章圖鑑！每天解鎖一面旗幟的深度故事，走在街頭看見真實旗幟就拍照上傳打卡！</p>
+    <div class="card" style="display:flex;justify-content:space-around;text-align:center;padding:14px;margin-bottom:16px">
+      <div><div class="sub">連續打卡進度</div><div style="font-size:26px;font-weight:900;color:var(--primary)">🔥 ${streak} / 30 天</div></div>
+      <div style="border-left:1px solid var(--line)"></div>
+      <div><div class="sub">街頭實拍捕獲</div><div style="font-size:26px;font-weight:900;color:var(--good)">📸 ${capturedCount} / 30 面</div></div>
+    </div>
+    <div class="stack">${rows.join('')}</div>`);
+
+  $$('.flag-file-input').forEach((input) => {
+    input.onchange = async () => {
+      const f = input.files && input.files[0];
+      if (!f) return;
+      const id = input.dataset.id;
+      await DB.flagPut(id, f);
+      award({ key: 'flag|' + id, points: 20, label: '街頭捕獲旗幟：' + FLAGS_LIST[id - 1].title });
+      toast('🎉 成功在街頭打卡旗幟：' + FLAGS_LIST[id - 1].title + '！+20 分');
+      location.hash = '#/flags';
+    };
+  });
+
   return 'tools';
 });
 

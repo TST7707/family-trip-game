@@ -278,12 +278,24 @@ textarea.text{min-height:120px;line-height:1.55}
 .poke-sub{font-size:13px;color:var(--muted)}
 .poke-thumb{width:100%;aspect-ratio:1/1;object-fit:cover;border-radius:8px;margin-top:6px;border:1px solid var(--line)}
 
-/* 城市旗與小眾故事：手札書卡 */
-.flag-card{display:flex;align-items:center;gap:14px;padding:14px 16px;background:var(--card);border-radius:var(--r-sm);border:1.5px solid var(--line);box-shadow:var(--shadow-sm);margin-bottom:10px}
-.flag-badge{font-size:36px;line-height:1;width:48px;text-align:center}
-.flag-info{flex:1;min-width:0}
-.flag-title{font-weight:800;font-size:17px;color:var(--fg)}
-.flag-story{font-size:14px;color:var(--muted);margin-top:3px;line-height:1.55}
+/* 城市旗幟圖鑑與街頭實拍打卡 */
+.flag-card{background:var(--card);border-radius:var(--r-md);border:1px solid var(--line);box-shadow:var(--shadow);padding:18px;margin-bottom:16px}
+.flag-header{display:flex;justify-content:space-between;align-items:flex-start;gap:10px;margin-bottom:12px;flex-wrap:wrap}
+.flag-title-wrap{flex:1;min-width:0}
+.flag-title{font-weight:800;font-size:18px;color:var(--fg);margin-top:2px}
+.flag-city{font-size:14px;color:var(--primary);font-weight:700;margin-top:2px}
+.flag-visual-grid{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin:12px 0 16px}
+.flag-visual-box{display:flex;flex-direction:column;align-items:center;background:var(--sunken);border-radius:var(--r-sm);border:1px solid var(--line);padding:10px;text-align:center;position:relative}
+.flag-visual-label{font-size:12.5px;font-weight:700;color:var(--muted);margin-bottom:6px}
+.flag-guide-frame{width:100%;aspect-ratio:3/2;border-radius:6px;overflow:hidden;box-shadow:0 2px 6px rgba(0,0,0,0.12);border:1px solid rgba(0,0,0,0.1);display:flex;align-items:center;justify-content:center;background:#fff}
+.flag-guide-frame svg{width:100%;height:100%;display:block}
+.flag-user-frame{width:100%;aspect-ratio:3/2;border-radius:6px;overflow:hidden;background:var(--card);border:1.5px dashed var(--line);display:flex;align-items:center;justify-content:center;position:relative}
+.flag-user-frame.has-photo{border:1.5px solid var(--good)}
+.flag-user-frame img{width:100%;height:100%;object-fit:cover;display:block}
+.flag-captured-badge{position:absolute;bottom:4px;left:4px;right:4px;background:rgba(62,110,73,0.92);color:#fff;font-size:11px;font-weight:700;padding:2px 4px;border-radius:4px;text-align:center}
+.flag-empty-hint{font-size:12px;color:var(--muted);padding:8px;line-height:1.4}
+.flag-lore{background:var(--card-hover);border-radius:var(--r-sm);border:1px solid var(--line);padding:14px;font-size:15px;line-height:1.65;display:flex;flex-direction:column;gap:10px}
+.flag-lore-sec b{color:var(--primary);display:inline-block;margin-right:4px;font-weight:800}
 
 /* 復古拍立得 Polaroid 相框：暖白棉紙質感 */
 .polaroid{background:#FFFDF9;color:#2C2621;padding:16px 16px 28px;border-radius:8px;box-shadow:0 6px 22px rgba(50, 40, 30, 0.12);border:1px solid #EAE4D8;max-width:380px;margin:16px auto;text-align:center}
