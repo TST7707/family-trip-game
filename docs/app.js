@@ -1,6 +1,6 @@
 'use strict';
 /* 家族任務遊戲 v1.5.0 — Single-page app. Content comes from content.json */
-const APP_VERSION = '1.9.0';
+const APP_VERSION = '1.9.1';
 const TRIP_START = '2026-12-09';
 const TRIP_END = '2027-01-06';
 const RESET_DATE = '2026-12-07';
@@ -692,13 +692,21 @@ const AIRPORTS_DATA = [
     role: '跨洲樞紐轉機站',
     theme: '沙漠超級方舟與 24 小時不夜城世界十字路口',
     lore: `
-      <p>杜拜本土原油儲量在阿拉伯聯合大公國僅佔不足 5%，早在 1980 年代，杜拜統治者馬克圖姆家族便洞悉「石油終會採盡，但地理位置永存」。波斯灣恰好座落於全球 8 小時航程的幾何同心圓中心——以此為圓心畫一個圓，便能覆蓋歐洲、亞洲與非洲超過 50 億人口。杜拜憑藉國家資本主義模式全力扶持阿聯酋航空，開創了舉世無雙的「軸輻式航空網絡（Hub-and-Spoke）」，將一座昔日依賴採珍珠與海灣帆船的小漁港，蛻變為哪怕不需要最終目的地、純靠「中轉流動（Transit）」便能產生天文數字產值的全球心臟。</p>
-      <p>法國著名人類學家馬克·歐傑（Marc Augé）曾提出著名的「非場所（Non-place）」概念：機場是超現代性最具代表性的非場所，這裡沒有固定身分、沒有傳統鄉土，只有 24 小時不熄滅的登機廣播、免稅店金光璀璨的純金金條、中東椰棗與來自印度、巴基斯坦、菲律賓的多民族流動勞動力。走在杜拜航廈深邃的大理石長廊上，每一位擦肩而過的旅客都在前往地球的不同角落，這是一場真實上演的全球化微縮劇場。</p>
+      <p>我們轉機的杜拜機場 Terminal 3 航廈是由法國傳奇機場建築大師保羅·安德魯（Paul Andreu，戴高樂機場與北京國家大劇院建築師）與阿聯酋工程團隊操刀，建築面積高達 171 萬平方公尺——相當於超過 <b>15 座台北大巨蛋體育館</b>（或逾 40 座室內比賽球場草坪），亦相當於超過 <b>160 座國定古蹟台南地方法院</b>園區基地（或近 400 座台南地院主體建築）。在 2008 年落成時，它一舉超越美國五角大廈，成為當時<b>全球單一樓地板面積最大的建築物</b>。外觀模擬波斯灣沙漠流動的沙丘與巨型貝殼，採用大跨度雙曲面鋼構流線穹頂；航廈深入地下 20 公尺，擁有三層立體旅客與行李分流捷運系統；在炎夏氣溫高達 48°C 的極端氣候下，建築內部採用高效微氣候地冷循環——透過在厚重大理石地板下密集埋設數百公里低溫冷水盤管（地板輻射水冷），並將低速出風口全數隱於離地面僅 1 至 2 公尺的柱底與踢腳線（微氣候置換通風），專注冷卻人體活動的生活高度，讓受熱空氣自然上升至 30 公尺高的穹頂排出，結合地下 20 公尺深層土壤的天然隔熱屏障與 Low-E 鍍膜玻璃，並點綴室內棕櫚綠洲與人工水幕瀑布的水氣蒸騰，創造了沙漠中不可思議的 23°C 科技綠洲。</p>
+
+      <p>杜拜本土原油儲量在阿拉伯聯合大公國僅佔不足 5%，早在 1980 年代，杜拜的統治者家族馬克圖姆家族便洞悉<b>「石油終會採盡，但地理位置永存」</b>。因為波斯灣恰好座落於全球 8 小時航程的幾何同心圓中心，以機場所在地為圓心畫一個圓，便能覆蓋歐洲、亞洲與非洲超過 50 億人口。杜拜憑藉國家資本主義模式全力扶持阿聯酋航空，開創了舉世無雙的「軸輻式航空網絡（Hub-and-Spoke）」，將一座昔日依賴採珍珠與海灣帆船的小漁港，蛻變為哪怕不需要最終目的地、純靠「中轉流動（Transit）」便能產生天文數字產值的全球心臟。某種意義上，當時的目標正是讓整座城市變得與它的機場難分彼此<sup>[註1]</sup>。</p>
+
+      <p>法國人類學家馬克·歐傑曾提出「非場所（Non-place）」概念：機場是超現代性最具代表性的非場所，這裡沒有固定身分、沒有傳統鄉土，只有 24 小時不熄滅的登機廣播、免稅店金光璀璨的純金金條、中東椰棗與來自南亞的多民族流動勞動力。走在航廈深邃的大理石長廊上，每一位擦肩而過的旅客都在前往地球的不同角落；在午夜時分抵達第三航廈，你所瞥見的，正是新全球經濟那顆跳動最劇烈、永不停歇的心跳脈搏<sup>[註2]</sup>。這座巨大的鋼構方舟既是這座城市遞給世界最奢華的名片與握手，也是一場真實上演的全球化微縮劇場——在凌晨三點喧囂的過渡大廳裡，沒有人真正屬於這裡，卻也沒有任何人是外人<sup>[註3]</sup>；在這個為接下來的數小時而設計的封閉穹頂下，國籍與階級的界線悄然撫平，機場已然成為當代人類所擁有的唯一真正具備世界主義的超大型城邦<sup>[註4]</sup>。</p>
+
+      <div style="margin-top:16px;padding:12px 14px;background:var(--sunken);border-radius:var(--r-sm);border:1px solid var(--line);font-size:13.5px;line-height:1.6;color:var(--muted)">
+        <b style="color:var(--fg)">📝 文學註釋與經典出處：</b><br>
+        • <sup>[註1]</sup> <i>“Dubai's undeclared mission is to make itself indistinguishable from its airport.”</i> —— 約瑟夫·奧尼爾（Joseph O'Neill），長篇小說《狗》（<i>The Dog</i>, 2014）。<br>
+        • <sup>[註2]</sup> <i>“To arrive at midnight at Terminal 3 of Dubai International Airport... is to glimpse the pulsing, non-stop flow of the new global economy.”</i> —— 格雷格·林賽（Greg Lindsay）＆ 約翰·卡薩達（John D. Kasarda），都市專著《航空大都市：即將到來的機場時代》（<i>Aerotropolis: The Way We'll Live Next</i>, 2011）。<br>
+        • <sup>[註3]</sup> <i>“Airports say a lot about a place because they are both a city's business card and its handshake... In the transit lounge at 3 a.m., no one belongs here, yet no one is an outsider.”</i> —— 皮科·愛爾（Pico Iyer），旅行哲學名著《全球靈魂：時差、購物中心與尋家之旅》（<i>The Global Soul: Jet Lag, Shopping Malls, and the Search for Home</i>, 2000）。<br>
+        • <sup>[註4]</sup> <i>“Airports have become the only truly cosmopolitan cities we have... erasing class and national distinctions and subsuming them within the unitary global culture of the departure lounge.”</i> —— J. G. 巴拉德（J. G. Ballard），文化評論隨筆〈機場：21 世紀真正的城市〉（<i>"Airports: The True Cities of the 21st Century"</i>, 1997）。
+      </div>
     `,
-    architecture: `
-      <b>🏛️ 建築與空間特色：</b>
-      Terminal 3 航廈由法國傳奇機場建築大師保羅·安德魯（Paul Andreu，戴高樂機場與北京國家大劇院建築師）與阿聯酋工程團隊操刀，單體建築面積高達 171 萬平方公尺（相當於 240 座標準足球場，落成時為全球最大單體建築物）。外觀模擬波斯灣沙漠流動的沙丘與巨型貝殼，採用大跨度雙曲面鋼構流線穹頂；航廈深入地下 20 公尺，擁有三層立體旅客與行李分流捷運系統；在炎夏氣溫高達 48°C 的極端氣候下，建築內部採用高效微氣候地冷循環，並點綴室內棕櫚綠洲與人工水幕瀑布，創造了沙漠中不可思議的科技綠洲。
-    `
+    architecture: ''
   },
   {
     id: 'bcn',
@@ -711,6 +719,16 @@ const AIRPORTS_DATA = [
     theme: '波菲的純白花崗岩天光聖殿與加泰隆尼亞門戶',
     lore: `
       <p>漫步走出 BCN T1 航廈的那一刻，撲面而來的是澄澈明朗的陽光與清爽的地中海空氣。這座於 2009 年落成的現代化航廈，背後隱含著加泰隆尼亞自治區與西班牙中央政府數十年來的政治經濟角力。巴塞隆納商界與自治政府長年積極爭取機場獨立管理權，渴望跳過馬德里中轉，直接開闢直飛亞洲與美洲的洲際航線，以鞏固巴塞隆納作為南歐生物醫藥、數位設計與科技新創中心的野心；然而中央 Aena（西班牙國營機場管理局）則傾向將長途跨大西洋樞紐鎖定在馬德里，將巴塞隆納定位為歐洲廉航點對點與地中海客運門戶。因此，T1 航廈不僅是交通設施，更是加泰隆尼亞人向世界展現文化品格與自主雄心的象徵之門。</p>
+
+      <p><b>🚩 加泰隆尼亞的文化尊嚴密碼：</b><br>
+      為什麼巴塞隆納的自我認同如此深厚？中世紀時，加泰隆尼亞曾是稱霸地中海的海上強權，擁有比馬德里更早成熟的民主議會與海洋法典；1714 年 9 月 11 日主權遭波旁軍隊奪走後，他們將戰敗日訂為民族節（La Diada），用三百年的抗爭將「語言即祖國」刻入骨髓。這份傲骨在機場隨處可見：機場正式名稱以流亡 40 年歸來的自治政府主席「何塞普·塔拉德利亞斯」命名；航廈所有指標第一順位永遠是加泰隆尼亞語，其次才是西班牙語；建築大師波菲更刻意摒棄馬德里式的厚重宮廷感，用通透的白瓷與純淨天光，向世界宣告這是一座向海而生、熱愛自由的古老民族。</p>
+
+      <div style="margin-top:14px;padding:12px 14px;background:#F0F6FA;border-radius:var(--r-sm);border:1.5px solid #BDD5EA;color:var(--fg)">
+        <b style="color:#205284">🛂 歐洲最新數位邊境 EES 通關須知（重要行前心理準備）：</b><br>
+        歐盟已全面實施全新數位出入境系統（EES），徹底廢除人工蓋護照印章，改採高科技數位建檔。此政策旨在精準杜絕 90 天免簽逾期停留，並透過生物特徵防範護照偽造。<br>
+        • <b>採樣流程</b>：於自助機台（Kiosk）先掃描護照照片頁，接著<b>脫下口罩、帽子與眼鏡</b>直視鏡頭拍攝 3D 臉部特徵，最後依螢幕指示將<b>右手四指平貼在發綠光的感應板上壓指紋</b>（放平、勿懸空或過度用力摩擦），隨後前往海關櫃檯完成覆核。<br>
+        • <b>排隊警示與家人應對</b>：初次數位建檔耗時較長，若遇多架跨洲大飛機同時抵達，非歐盟排隊人龍可能長達 1 至 2 小時。請家人<b>在飛機降落前先上洗手間</b>，排隊時備妥英文行程單與保險單，由熟悉英語的家人陪同長輩集體過關，放平心態，從容迎接地中海陽光！
+      </div>
     `,
     architecture: `
       <b>🏛️ 建築與空間特色：</b>
@@ -2325,10 +2343,11 @@ async function renderAirports(activeId = 'tpe') {
         ${airport.lore}
       </div>
 
-      <!-- Architecture Highlight Card -->
-      <div style="background:var(--card-hover);border-radius:var(--r-sm);border:1px solid var(--line);padding:14px;font-size:15px;line-height:1.65;color:var(--fg)">
+      <!-- Architecture Highlight Card (if separate) -->
+      ${airport.architecture ? `
+      <div style="background:var(--card-hover);border-radius:var(--r-sm);border:1px solid var(--line);padding:14px;font-size:15px;line-height:1.65;color:var(--fg);margin-top:14px">
         ${airport.architecture}
-      </div>
+      </div>` : ''}
     </div>
   `);
 
