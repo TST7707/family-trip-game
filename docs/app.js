@@ -1,6 +1,6 @@
 'use strict';
 /* 家族任務遊戲 v1.5.0 — Single-page app. Content comes from content.json */
-const APP_VERSION = '1.5.0';
+const APP_VERSION = '1.8.0';
 const TRIP_START = '2026-12-09';
 const TRIP_END = '2027-01-06';
 const RESET_DATE = '2026-12-07';
@@ -320,10 +320,11 @@ function render() {
 function view(html) {
   recordLogin();
   const topNav = `<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px;gap:8px;flex-wrap:wrap">
-    <div style="display:flex;gap:8px;align-items:center">
+    <div style="display:flex;gap:6px;align-items:center;flex-wrap:wrap">
       <a class="chip" href="#/flags" style="font-weight:700;color:var(--warn);background:var(--warn-bg)">🔥 連續打卡 ${getStreak()} 天</a>
       <a class="chip" href="#/tapa" style="font-weight:700">🍢 每日Tapa</a>
       <a class="chip" href="#/pokedex" style="font-weight:700">📖 大圖鑑</a>
+      <a class="chip" href="#/airports" style="font-weight:700">✈️ 四大機場</a>
     </div>
     <a class="btn small ghost" href="itinerario.html" target="_blank" style="min-height:36px;font-size:13px;padding:0 10px;border-color:var(--primary);color:var(--primary)">🇪🇸 西文行程（同事專用）</a>
   </div>`;
@@ -650,6 +651,443 @@ const POKEDEX_ITEMS = [
   { id: 30, icon: '👨‍👩‍👧‍👦', name: '全家 7 人全員到齊的燦爛笑容', desc: '我們全家人在西班牙旅途中的大合照！' }
 ];
 
+/* ---------- AIRPORTS DATA (四大國際機場手帳：建築、總體經濟與文化觀察) ---------- */
+const AIRPORTS_DATA = [
+  {
+    id: 'tpe',
+    code: 'TPE',
+    name: '臺灣桃園國際機場',
+    nameEn: 'Taiwan Taoyuan International Airport',
+    flag: '🇹🇼',
+    terminal: '第二航廈 / 第一航廈',
+    role: '啟程出發站（2026/12/08–12/09）',
+    theme: '候機門文化主題巡禮與全家啟程合照',
+    lore: `
+      <p>從 17 世紀大航海時代的「福爾摩沙」作為東亞海上轉口貿易樞紐，到 1979 年由軍民共用轉型為現代化民航門戶，這座島嶼在地理經濟上始終扮演著海空關鍵十字路口。如今，桃園機場不僅支撐著全球超過六成的先進半導體高價值空中冷鏈與精密物流，更在航廈空間設計上演繹了獨特的「在地文化敘事」。</p>
+      <p>不同於多數國際航空樞紐冰冷標準化的玻璃鋼骨與單調免稅店，桃園機場第二航廈將各登機門打造成微型生活劇場與文化博物館。對於即將展開 30 天跨洲長途旅行的家庭而言，候機室不僅僅是登機前的等待空間，更是一道充滿儀式感的「過渡空間（Liminal Space）」——透過熟悉的夜市紅燈籠、茶席香氣與偶戲工藝，在跨越時區與文化邊界前，為全家人注入安心與溫暖的期待。</p>
+    `,
+    architecture: `
+      <b>🏛️ 建築與空間特色：</b>
+      桃園機場第二航廈巨大的雙曲面懸吊桁架屋頂象徵「飛鷹展翼」，大跨度無柱挑高空間打破了出入境的壓迫感。各特色主題候機室（Gate Lounges）以「一門一景」為核心，融合了台灣傳統竹編、金工、剪黏與現代多媒體光雕，讓旅客在踏出國門前的最後一哩路，沉浸於島嶼多元族群的生活記憶。
+    `,
+    gates: [
+      { id: 'C3', name: 'C3 街頭夜市', desc: '懷舊紅燈籠、經典台灣小吃霓虹燈箱與復古彈珠台' },
+      { id: 'C4', name: 'C4 偶戲掌中乾坤', desc: '精緻木雕布袋戲彩樓戲台，展現生旦淨末丑戲偶工藝' },
+      { id: 'C5', name: 'C5 客家花布與藍染', desc: '深邃靛藍大菁染布，搭配傳統富貴花布燈籠藝術' },
+      { id: 'C6', name: 'C6 臺灣茶香文化', desc: '高山茶萎凋竹簍、品茗茶席陶壺與茶山梯田光影' },
+      { id: 'C7', name: 'C7 金馬電影之光', desc: '經典膠卷放映機、電影聚光燈與台灣新浪潮光影' },
+      { id: 'C8', name: 'C8 寶島好山好水', desc: '中央山脈與玉山意象，台灣黑熊與島嶼特有種生態' },
+      { id: 'D2', name: 'D2 臺灣原住民文化', desc: '十六族幾何圖騰織紋、百步蛇神話雕刻與木舟意象' },
+      { id: 'D3', name: 'D3 嬉遊記與傳統書法', desc: '張炳煌大師行草書法、西遊文學意境與文房四寶' },
+      { id: 'D7', name: 'D7 科技矽島', desc: '高科技半導體矽晶圓光雕、流動光纖與數位脈動' },
+    ]
+  },
+  {
+    id: 'dxb',
+    code: 'DXB',
+    name: '阿拉伯聯合大公國 杜拜國際機場',
+    nameEn: 'Dubai International Airport',
+    flag: '🇦🇪',
+    terminal: '第三航廈 (Terminal 3)',
+    role: '跨洲樞紐轉機站',
+    theme: '沙漠超級方舟與 24 小時不夜城世界十字路口',
+    lore: `
+      <p>杜拜本土原油儲量在阿拉伯聯合大公國僅佔不足 5%，早在 1980 年代，杜拜統治者馬克圖姆家族便洞悉「石油終會採盡，但地理位置永存」。波斯灣恰好座落於全球 8 小時航程的幾何同心圓中心——以此為圓心畫一個圓，便能覆蓋歐洲、亞洲與非洲超過 50 億人口。杜拜憑藉國家資本主義模式全力扶持阿聯酋航空，開創了舉世無雙的「軸輻式航空網絡（Hub-and-Spoke）」，將一座昔日依賴採珍珠與海灣帆船的小漁港，蛻變為哪怕不需要最終目的地、純靠「中轉流動（Transit）」便能產生天文數字產值的全球心臟。</p>
+      <p>法國著名人類學家馬克·歐傑（Marc Augé）曾提出著名的「非場所（Non-place）」概念：機場是超現代性最具代表性的非場所，這裡沒有固定身分、沒有傳統鄉土，只有 24 小時不熄滅的登機廣播、免稅店金光璀璨的純金金條、中東椰棗與來自印度、巴基斯坦、菲律賓的多民族流動勞動力。走在杜拜航廈深邃的大理石長廊上，每一位擦肩而過的旅客都在前往地球的不同角落，這是一場真實上演的全球化微縮劇場。</p>
+    `,
+    architecture: `
+      <b>🏛️ 建築與空間特色：</b>
+      Terminal 3 航廈由法國傳奇機場建築大師保羅·安德魯（Paul Andreu，戴高樂機場與北京國家大劇院建築師）與阿聯酋工程團隊操刀，單體建築面積高達 171 萬平方公尺（相當於 240 座標準足球場，落成時為全球最大單體建築物）。外觀模擬波斯灣沙漠流動的沙丘與巨型貝殼，採用大跨度雙曲面鋼構流線穹頂；航廈深入地下 20 公尺，擁有三層立體旅客與行李分流捷運系統；在炎夏氣溫高達 48°C 的極端氣候下，建築內部採用高效微氣候地冷循環，並點綴室內棕櫚綠洲與人工水幕瀑布，創造了沙漠中不可思議的科技綠洲。
+    `
+  },
+  {
+    id: 'bcn',
+    code: 'BCN',
+    name: '西班牙 巴塞隆納埃爾普拉特機場',
+    nameEn: 'Josep Tarradellas Barcelona-El Prat Airport',
+    flag: '🇪🇸',
+    terminal: '第一航廈 (Terminal 1 - T1)',
+    role: '歐洲抵達站（2026/12/09 抵達）',
+    theme: '波菲的純白花崗岩天光聖殿與加泰隆尼亞門戶',
+    lore: `
+      <p>漫步走出 BCN T1 航廈的那一刻，撲面而來的是澄澈明朗的陽光與清爽的地中海空氣。這座於 2009 年落成的現代化航廈，背後隱含著加泰隆尼亞自治區與西班牙中央政府數十年來的政治經濟角力。巴塞隆納商界與自治政府長年積極爭取機場獨立管理權，渴望跳過馬德里中轉，直接開闢直飛亞洲與美洲的洲際航線，以鞏固巴塞隆納作為南歐生物醫藥、數位設計與科技新創中心的野心；然而中央 Aena（西班牙國營機場管理局）則傾向將長途跨大西洋樞紐鎖定在馬德里，將巴塞隆納定位為歐洲廉航點對點與地中海客運門戶。因此，T1 航廈不僅是交通設施，更是加泰隆尼亞人向世界展現文化品格與自主雄心的象徵之門。</p>
+    `,
+    architecture: `
+      <b>🏛️ 建築與空間特色：</b>
+      T1 航廈由加泰隆尼亞後現代主義傳奇建築大師里卡多·波菲（Ricardo Bofill）親手設計。航廈輪廓自空中鳥瞰宛如一柄筆直指向地中海的「巨劍（La Espada）」或一隻優雅展翅的大白鷹。波菲刻意捨棄傳統機場常見的低矮壓抑通道，以長達 500 公尺的巨大拱形中庭「La Plaza」貫穿核心；室內地面全面鋪設高反光純白拋光花崗岩地磚，搭配通透的雙層超白低輻射玻璃帷幕。地中海清澈熾烈的自然光線自天花板幾何天窗與四壁傾瀉而下，光線在白色花崗岩上柔和漫射，營造出如希臘古神廟般聖潔、開闊而明亮的非凡空間感。
+    `
+  },
+  {
+    id: 'mad',
+    code: 'MAD',
+    name: '西班牙 馬德里巴拉哈斯機場',
+    nameEn: 'Adolfo Suárez Madrid-Barajas Airport',
+    flag: '🇪🇸',
+    terminal: '第四航廈 (Terminal 4 / T4S)',
+    role: '離境返台站（2027/01/06 賦歸）',
+    theme: '理察·羅傑斯的波浪竹林天幕與彩虹鋼樹森林',
+    lore: `
+      <p>MAD T4 航廈誕生於西班牙加入歐元區後的黃金年代（2000–2006）。當時西班牙經歷了近代史上最迅猛的基礎建設狂潮，全國高鐵（AVE）路網與這座世界級航空樞紐相繼拔地而起，西班牙藉此向世界宣告其脫離過往專制與封閉、自信躋身現代歐洲核心大國的決心。這座航廈每年吞吐逾七千萬人次，是連通歐洲與拉丁美洲最重要的歷史與語言空中橋樑。</p>
+      <p>普立茲克建築獎得主理察·羅傑斯將高科技建築（High-Tech Architecture）融入了深刻的人性關懷：他認為機場通常充滿了離別的不安、安檢的繁複與長途跋涉的疲倦，因此建築師的使命是用「空間的流動感與溫暖質感」來安撫人的心靈。當你準備告別西班牙、抬頭仰望起伏的波浪竹頂與溫暖的彩虹光譜時，離別不再只是倉促的告別，而是一段優雅而平靜的歸途序曲。</p>
+    `,
+    architecture: `
+      <b>🏛️ 建築與空間特色：</b>
+      T4 航廈由英國高科技建築巨匠理察·羅傑斯（Richard Rogers，龐畢度中心與千禧巨蛋建築師）與西班牙建築師安東尼奧·拉梅拉（Antonio Lamela）聯手打造，2006年落成時便毫無懸念奪得英國皇家建築師學會最高榮譽「史特林建築獎（Stirling Prize）」。航廈最令人屏息的是長達 1.2 公里的波浪起伏天花板，由超過 20 萬平方公尺的純天然可持續毛竹板條精密鋪設，視覺如同風吹起伏的金色麥浪，並具備優異的天然吸音功能；支撐天頂的「雙叉鋼樹柱」塗有精心設計的彩虹色譜——由西側的明黃、金黃逐漸漸變至橘紅、品紅，再過渡為蔚藍與深翠綠，成為世界上最直覺、最具美感的航廈色彩導航系統；中央深邃的挑空「峽谷（Canyons）」天井將高原明亮陽光引導直穿三層樓板，讓地下層的行李轉盤亦沐浴在日光之中。
+    `
+  }
+];
+
+/* ---------- MUSEUM MASTERPIECES (各間博物館與古蹟鎮館之寶清單與展廳) ---------- */
+const MUSEUM_MASTERPIECES = {
+  'madrid-s3': [
+    {
+      id: 'prado-1',
+      titleZh: '《宮娥》',
+      titleEs: 'Las Meninas',
+      artist: '委拉斯奎茲 (Diego Velázquez)',
+      sala: 'Sala 12 (普拉多核心中殿)',
+      desc: '西方繪畫史上最具魔力的自反性視角！畫家本人正站在巨大畫布前直視著我們（觀者），背景小鏡子映出西班牙國王腓力四世與王后；小公主瑪格麗特立於中央，被宮女、侏儒與忠犬環繞。這幅畫打破了傳統畫布的界線，讓觀看者瞬間擁有了「國王與王后的視角」。'
+    },
+    {
+      id: 'prado-2',
+      titleZh: '《1808年5月3日的馬德里槍殺》',
+      titleEs: 'El 3 de mayo en Madrid',
+      artist: '哥雅 (Francisco Goya)',
+      sala: 'Sala 64',
+      desc: '現代政治批判與反戰繪畫的開山之作。拿破崙佔領軍行刑隊如同一架冰冷無情的殺人機器背對觀眾，而地上的一盞四方地燈將刺目白光投射在一位穿白襯衫的起義市民身上。他高張雙臂如同受難的基督，眼神燃燒著憤怒與絕望。'
+    },
+    {
+      id: 'prado-3',
+      titleZh: '《農神吞噬其子》',
+      titleEs: 'Saturno devorando a su hijo',
+      artist: '哥雅 (Francisco Goya)',
+      sala: 'Sala 67 (黑色繪畫展廳)',
+      desc: '哥雅晚年因嚴重耳聾與政治幻滅隱居馬德里郊外「聾人屋」，在自家客廳牆上親手繪製的 14 幅「黑色繪畫」中最震撼的一幅。時間之神農神雙目暴突、狂亂撕咬著自己親生孩子的身軀，象徵時間吞噬一切與專制暴政的殘酷。'
+    },
+    {
+      id: 'prado-4',
+      titleZh: '《人間樂園》',
+      titleEs: 'El jardín de las delicias',
+      artist: '波希 (Hieronymus Bosch)',
+      sala: 'Sala 56A',
+      desc: '北方文藝復興超現實三聯畫極品。左翼為伊甸園與奇幻動植物；中央大畫描繪成百上千赤身裸體的人類在巨型草莓、漿果與透明水泡中放縱肉慾；右翼則是荒誕可怖的音樂地獄，罪人被巨型樂器折磨、鳥頭惡魔將人吞下並排入糞坑。每一平方公分都蘊含驚人細節。'
+    },
+    {
+      id: 'prado-5',
+      titleZh: '《下十字架》',
+      titleEs: 'El descendimiento de la cruz',
+      artist: '魏登 (Rogier van der Weyden)',
+      sala: 'Sala 58',
+      desc: '法蘭德斯繪畫的情感顛峰。畫家將十位等身人物壓縮在猶如金色木雕神龕的淺層空間中，耶穌垂下的蒼白軀體與聖母瑪利亞昏厥倒地的身形，呈現精準平行的優美折線。畫中人物眼角晶瑩透明的淚珠與天鵝絨布紋極度寫實。'
+    },
+    {
+      id: 'prado-6',
+      titleZh: '《手撫胸膛的騎士》',
+      titleEs: 'El caballero de la mano en el pecho',
+      artist: '葛雷柯 (El Greco)',
+      sala: 'Sala 8B',
+      desc: '西班牙黃金時代紳士名譽與虔誠信仰的永恆化身。黑衣騎士胸前佩戴細緻白色褶領，右手修長指尖輕觸心口，眼神清澈深邃，彷彿在天主與國王面前許下永恆的騎士忠誠誓言。'
+    },
+    {
+      id: 'prado-7',
+      titleZh: '《米爾伯格的查理五世騎馬像》',
+      titleEs: 'Carlos V en Mühlberg',
+      artist: '提香 (Tiziano)',
+      sala: 'Sala 27',
+      desc: '開創「日不落帝國」的神聖羅馬帝國皇帝查理五世戰勝新教聯盟後的紀念肖像。提香以夕陽暗紅與金屬反光交織的沉著色調，將皇帝塑造成孤獨沈穩的「基督教騎士帝王」，其身上的鍛鋼戰甲至今仍珍藏於馬德里王宮皇家軍械庫！'
+    },
+    {
+      id: 'prado-8',
+      titleZh: '《受胎告知》',
+      titleEs: 'La Anunciación',
+      artist: '安吉利柯修士 (Fra Angelico)',
+      sala: 'Sala 56B',
+      desc: '義大利文藝復興早期最純淨的光明之作。大天使加百列身披飾有金星的粉紅長袍，向坐在精緻透視涼廊下的瑪利亞傳遞受胎喜訊；涼廊左側則是亞當夏娃被逐出伊甸園，象徵基督的降生將救贖人類的原罪。'
+    }
+  ],
+  'madrid-s4': [
+    {
+      id: 'reina-1',
+      titleZh: '《格爾尼卡》',
+      titleEs: 'Guernica',
+      artist: '畢卡索 (Pablo Picasso)',
+      sala: 'Sala 205.10 (或 206 號主展廳)',
+      desc: '20 世紀反戰藝術的最高神聖圖騰。1937年納粹空軍狂轟濫炸巴斯克無辜古鎮格爾尼卡，畢卡索在巴黎憤而創作這幅長達 7.7 公尺、寬 3.5 公尺的黑白巨幅油畫。仰天悲號的母親懷抱死嬰、被長矛穿透痛苦哀嘶的戰馬、狂怒的公牛與孤懸如炸彈的電燈泡，以立體主義裂解形式凝固了人類苦難。'
+    },
+    {
+      id: 'reina-2',
+      titleZh: '《大自慰者》',
+      titleEs: 'El gran masturbador',
+      artist: '達利 (Salvador Dalí)',
+      sala: 'Sala 205.13',
+      desc: '達利超現實主義的心理自畫像。畫面中央巨大的蠟黃軟化人形側臉緊貼大地，長睫毛緊閉；下巴攀爬著達利自幼極度恐懼的蝗蟲，腹部還爬滿象徵腐朽的黑蟻。上方浮現愛人卡拉的頭像，混合著對性的恐懼、迷戀與弗洛伊德精神分析。'
+    },
+    {
+      id: 'reina-3',
+      titleZh: '《窗邊的少女》',
+      titleEs: 'Figura en una ventana',
+      artist: '達利 (Salvador Dalí)',
+      sala: 'Sala 205.14',
+      desc: '達利 21 歲年輕時的經典具象代表作，畫中模特兒是他的親妹妹安娜·瑪麗亞。少女倚在卡達克斯臨海的窗櫺前，背對觀者凝視窗外靜謐深邃的地中海微波與遠山。柔和的藍白光影與裙褶布紋，流露出古典主義與維梅爾式的寧靜詩意。'
+    },
+    {
+      id: 'reina-4',
+      titleZh: '《蝸牛、女人、花與星星》',
+      titleEs: 'Caracol, mujer, flor, estrella',
+      artist: '米羅 (Joan Miró)',
+      sala: 'Sala 206.03',
+      desc: '加泰隆尼亞超現實大師米羅的符號魔法。米羅將大自然簡化為純淨的原色斑塊、黑色墨線、星芒與生物有機體。米羅說：「我追求的是一種純粹的詩意，讓畫布上的星星像音樂一樣呼吸。」'
+    }
+  ],
+  'madrid-s8': [
+    {
+      id: 'man-1',
+      titleZh: '《埃爾切夫人》',
+      titleEs: 'Dama de Elche',
+      artist: '古代伊比利雕刻家（西元前 4 世紀）',
+      sala: 'Sala 13 (伊比利文化廳)',
+      desc: '西元前 4 世紀伊比利本土半島文明的永恆瑰寶。這座石灰石半身像頭戴極其繁複對稱的巨大車輪形空心髮髻（Rodetes），胸前垂掛三串精緻項鍊與護身符。背面有一個直徑 18 公分平整凹槽，推測是一座兼具貴族骨灰甕或大地女神化身的祭祀神像。'
+    },
+    {
+      id: 'man-2',
+      titleZh: '《瓜拉薩爾寶藏之雷卡斯溫特許願王冠》',
+      titleEs: 'Corona votiva de Recesvinto (Tesoro de Guarrazar)',
+      artist: '西哥德宮廷金匠（西元 7 世紀）',
+      sala: 'Sala 23 (西哥德文化廳)',
+      desc: '7 世紀西哥德王國定都托雷多時期的國寶級金工顛峰。純金打造的懸吊式許願王冠，運用極致掐絲工藝鑲嵌打磨透光的紅石榴石與藍寶石，王冠下緣垂吊著 22 個純金拉丁字母「RECCESVINTHVS REX OFFERET」（雷卡斯溫特國王奉獻），在光線映照下如燃燒的火炬。'
+    },
+    {
+      id: 'man-3',
+      titleZh: '《阿爾塔米拉萬年史前洞窟壁畫（等身復刻窟）》',
+      titleEs: 'Cueva de Altamira (Reproducción)',
+      artist: '舊石器時代史前獵人（約 15,000 年前）',
+      sala: 'Sala Subterránea (地下特展廳)',
+      desc: '距今約 15,000 年的舊石器時代晚期遺產，被譽為「史前西斯汀禮拜堂」。史前獵人巧妙利用天然岩石凸起的肌肉紋理，以木炭與紅赭石礦物顏料繪製出栩栩如生的多色野牛、奔馬與母鹿，生動呈現野牛蜷伏、蓄力衝撞的狂野生命力。'
+    },
+    {
+      id: 'man-4',
+      titleZh: '《薩莫拉象牙圓盒》',
+      titleEs: 'Bote de Zamora',
+      artist: '哥多華哈里發宮廷象牙大師（西元 964 年）',
+      sala: 'Sala 26 (伊斯蘭與安達魯斯文化廳)',
+      desc: '西元 964 年西班牙哥多華倭馬亞哈里發王朝為哈里發寵妃蘇布（Subh）定制的象牙微雕珍寶。整塊整根天然象牙圓筒雕刻著繁複的藤蔓花紋、孔雀、羚羊與古庫法體阿拉伯銘文，是安達魯斯伊斯蘭宮廷微雕工藝的無上傑作。'
+    }
+  ],
+  'madrid-s2': [
+    {
+      id: 'palacio-1',
+      titleZh: '《寶座廳天頂畫：西班牙君主榮光》',
+      titleEs: 'Salón del Trono - Techo de Tiepolo',
+      artist: '提埃坡羅 (Giambattista Tiepolo)',
+      sala: 'Salón del Trono (寶座廳)',
+      desc: '威尼斯洛可可最後大師提埃坡羅受西班牙國王卡洛斯三世邀請所繪的史詩天頂壁畫。畫面烘托出西班牙君主制在美洲、歐洲、非洲與亞洲四大洲的威儀，廳內兩張鍍金雄獅護衛的深紅天鵝絨寶座更見證了自哈布斯堡至波旁王朝的興衰。'
+    },
+    {
+      id: 'palacio-2',
+      titleZh: '《皇家軍械庫：查理五世與腓力二世戰甲》',
+      titleEs: 'Real Armería de Madrid',
+      artist: '文藝復興頂級鍛鋼盔甲大師',
+      sala: 'Ala de la Real Armería (皇家軍械庫展翼)',
+      desc: '與維也納皇家軍械庫齊名、全球現存最華麗完備的文藝復興宮廷鍛鋼軍械庫。展出查理五世騎馬閱兵時穿戴的全套金銀蝕刻雕花板甲、以及腓力二世的童年精鋼盔甲與奧斯曼帝國繳獲的華麗馬具。'
+    },
+    {
+      id: 'palacio-3',
+      titleZh: '《大宴會廳與史特拉底瓦里皇家四重奏提琴》',
+      titleEs: 'Comedor de Gala y Cuarteto Palatino',
+      artist: '史特拉底瓦里 (Antonio Stradivari)',
+      sala: 'Comedor de Gala & Capilla Real',
+      desc: '可同時容納 140 位貴賓入席的長達 40 公尺國宴大廳，頭頂懸掛 15 盞巨型水晶吊燈；王宮更典藏全球絕無僅有、完整保存的一套由製琴宗師史特拉底瓦里親手打造的「皇家四重奏」弦樂器。'
+    }
+  ],
+  'madrid-s6': [
+    {
+      id: 'toledo-1',
+      titleZh: '《奧爾加斯伯爵的葬禮》',
+      titleEs: 'El entierro del Conde de Orgaz',
+      artist: '葛雷柯 (El Greco)',
+      sala: 'Iglesia de Santo Tomé (聖多美教堂聖母受胎禮拜堂)',
+      desc: '西班牙文藝復興最偉大的祭壇畫。畫面上方是葛雷柯特有的冷色調拉長形體天國，基督與聖母準備迎接伯爵靈魂；下方則是莊嚴肅穆的人間葬禮，聖史蒂芬與聖奧古斯丁奇蹟般降臨親自為善施的伯爵下葬，身後一整排身穿黑袍配白色褶領的托雷多名流（葛雷柯本人與小兒子亦隱身其中）。'
+    },
+    {
+      id: 'toledo-2',
+      titleZh: '《托雷多大教堂：阿爾費純金銀聖體顯聖容架》',
+      titleEs: 'Custodia procesional de Enrique de Arfe',
+      artist: '恩里克·德·阿爾費 (Enrique de Arfe)',
+      sala: 'Catedral de Toledo - Sala del Tesoro (珍寶館)',
+      desc: '高達 3 公尺、重達 200 公斤的哥德式微縮大教堂純金銀聖體聖血架。使用超過 18 公斤純金與 183 公斤純銀，據傳其中所用的第一批純金來自哥倫布自新大陸帶回獻給伊莎貝拉女王的貢金。'
+    },
+    {
+      id: 'toledo-3',
+      titleZh: '《托雷多大教堂：大理石奇蹟透光天井透鏡》',
+      titleEs: 'El Transparente',
+      artist: '納西索·托梅 (Narciso Tomé)',
+      sala: 'Catedral de Toledo - Girola (主祭壇後方環形迴廊)',
+      desc: '巴洛克雕刻大師在哥德式昏暗教堂後殿開鑿天井引入自然天光的鬼斧神工之作。彩色大理石、純金飛瀑與雲朵中探出身軀的天使雕像與透天光束完美融合，創造出令人屏息的神聖視覺奇蹟。'
+    }
+  ],
+  'barcelona-s1': [
+    {
+      id: 'sagrada-1',
+      titleZh: '《誕生立面》',
+      titleEs: 'Fachada del Nacimiento',
+      artist: '安東尼·高第 (Antoni Gaudí)',
+      sala: '東側誕生立面（高第生前親自監督完成，UNESCO 世界遺產）',
+      desc: '如同大自然植物與岩石自由生長出的石雕森林。細細尋找生命之樹綠柏樹、聖家避難埃及、彈奏各式樂器的加泰隆尼亞天使合唱團，甚至有在地的蝸牛、青蛙、雞冠花與常春藤，象徵萬物對救世主降生的歡欣敬拜。'
+    },
+    {
+      id: 'sagrada-2',
+      titleZh: '《受難立面》',
+      titleEs: 'Fachada de la Pasión',
+      artist: '蘇比拉克 (Josep Maria Subirachs)',
+      sala: '西側受難立面',
+      desc: '與誕生立面的圓融繁複形成鮮明對比，蘇比拉克以稜角如斧劈般剛烈冰冷的幾何骨感雕像，刻畫最後晚餐、彼得三次不認主與基督受刑。立面上嵌有一座 4x4 的「神秘幻方」，無論橫、豎、對角加總皆為耶穌受難年齡「33」。'
+    },
+    {
+      id: 'sagrada-3',
+      titleZh: '《雙曲面雙螺旋樹狀巨柱與森林光廊》',
+      titleEs: 'Bosque de columnas e hiperboloides',
+      artist: '安東尼·高第 (Antoni Gaudí)',
+      sala: '聖堂中殿核心',
+      desc: '高第發明的自然結構柱，柱腳為多角形，向上旋轉分岔為八角與圓形樹枝，支撐雙曲面拋物線天頂；上午東側透過藍色與綠色冷調彩繪花窗灑落晨曦，下午西側透過橘色、紅色與金黃色暖調花窗傾瀉夕陽，整座教堂內部就是一座光影流轉的神聖自然森林。'
+    }
+  ],
+  'barcelona-s5': [
+    {
+      id: 'batllo-1',
+      titleZh: '《巨龍脊背彩釉陶鱗屋頂》',
+      titleEs: 'Lomo del Dragón',
+      artist: '安東尼·高第 (Antoni Gaudí)',
+      sala: '頂樓露台屋頂',
+      desc: '高第以加泰隆尼亞守護聖人聖佐治屠龍傳奇為靈感。屋頂呈現如同恐龍或巨龍背脊的起伏弧線，彩色釉面陶瓦片隨著陽光折射閃爍五彩珠光，高聳的蒜頭形四臂白石十字架煙囪象徵聖佐治深深刺入惡龍心臟的長矛。'
+    },
+    {
+      id: 'batllo-2',
+      titleZh: '《漸層蔚藍海洋中庭天井》',
+      titleEs: 'Patio de Luces',
+      artist: '安東尼·高第 (Antoni Gaudí)',
+      sala: '中央採光通風天井',
+      desc: '高第為了讓五層樓的公寓採光完全均勻，在天井由上至下鋪設了由深鈷藍、天藍到珍珠白共五種色階的立體彩磚。頂層陽光最強處使用深藍吸光，底層陰暗處使用純白反光，同時窗戶尺寸上小下大，讓任何一個樓層仰望天井都如同沉潛於勻稱透亮的海底世界。'
+    }
+  ],
+  'barcelona-s2': [
+    {
+      id: 'mila-1',
+      titleZh: '《武士頭盔煙囪天台》',
+      titleEs: 'Azotea de los Guerreros',
+      artist: '安東尼·高第 (Antoni Gaudí)',
+      sala: '頂樓奇幻天台',
+      desc: '28 座造型如同戴著鐵面具與頭盔的中世紀騎士守衛煙囪，高低起伏錯落於波浪地表上，被後世科幻電影《星際大戰》帝國風暴兵頭盔視為靈感來源。'
+    },
+    {
+      id: 'mila-2',
+      titleZh: '《鯨魚胸腔 270 道拋物線磚拱閣樓》',
+      titleEs: 'Desván del Espacio Gaudí',
+      artist: '安東尼·高第 (Antoni Gaudí)',
+      sala: '頂層閣樓展廳',
+      desc: '高第僅以最樸實的紅磚，砌造出 270 道由低到高連續漸變的懸鏈線拋物線拱門，走在其中彷彿穿梭在一頭巨鯨骨骼的胸腔之中，純粹依靠重力與幾何完成的無柱通透空間。'
+    }
+  ],
+  'barcelona-s11': [
+    {
+      id: 'picasso-1',
+      titleZh: '《科學與慈善》',
+      titleEs: 'Ciencia y Caridad',
+      artist: '畢卡索 (Pablo Picasso，15歲作品)',
+      sala: 'Sala 11',
+      desc: '畢卡索年僅 15 歲時展現的驚人古典寫實天才！畫中醫生（由畢卡索父親擔任模特兒）手握病人脈搏象徵現代醫學「科學」，修女懷抱嬰兒遞上茶水象徵宗教「慈善」，技法純熟至極，令人難以相信出自一位少年之手。'
+    },
+    {
+      id: 'picasso-2',
+      titleZh: '《宮娥連作系列》',
+      titleEs: 'Serie Las Meninas (58 cuadros)',
+      artist: '畢卡索 (Pablo Picasso)',
+      sala: 'Salas de Las Meninas (連作專題大廳)',
+      desc: '1957 年畢卡索在坎城別墅閉關數月，向普拉多委拉斯奎茲的《宮娥》致敬並進行顛覆性重構。58 幅連作將古典構圖拆解為幾何色塊、黑白剪影與立體派線條，甚至將畫中的名犬換成自己的愛犬臘腸狗 Lump！'
+    },
+    {
+      id: 'picasso-3',
+      titleZh: '《初領聖體》',
+      titleEs: 'Primera Comunión',
+      artist: '畢卡索 (Pablo Picasso，14歲作品)',
+      sala: 'Sala 3',
+      desc: '畢卡索 14 歲在巴塞隆納美術學校就讀時的代表作。畫中妹妹蘿拉身穿潔白純真的蕾絲長袍跪在祭壇前，父親在一旁虔誠祈禱，燭光與白紗的處理極富宗教肅穆感。'
+    }
+  ],
+  'cordoba-s1': [
+    {
+      id: 'mezquita-1',
+      titleZh: '《紅白雙層馬蹄形拱券森林》',
+      titleEs: 'Bosque de Arcos de Herradura',
+      artist: '哥多華倭馬亞王朝伊斯蘭建築師',
+      sala: '主祈禱大廳',
+      desc: '856 根從古羅馬神廟與西哥德建築回收的大理石、花崗岩與碧玉圓柱，支撐起紅白相間的雙層馬蹄形拱門。上層半圓拱增加高度採光，下層馬蹄拱穩定結構，視覺無限延伸，營造出天地一體的永恆靜謐。'
+    },
+    {
+      id: 'mezquita-2',
+      titleZh: '《米哈拉布祈禱壁龕與拜占庭金箔馬賽克》',
+      titleEs: 'Mihrab de la Mezquita',
+      artist: '拜占庭帝國馬賽克宮廷大師',
+      sala: '南側聖壁中心 (Mihrab)',
+      desc: '哈里發哈卡姆二世於 10 世紀修建的八角形內室祈禱壁龕。壁龕入口馬蹄拱門由拜占庭皇帝君士坦丁七世親自遣送頂級馬賽克工匠與數萬枚純金箔玻璃磚鑲嵌，金色古庫法體《古蘭經》銘文在陽光下熠熠生輝。'
+    }
+  ],
+  'sevilla-s1': [
+    {
+      id: 'sevilla-catedral-1',
+      titleZh: '《哥倫布靈柩抬棺青銅雕像》',
+      titleEs: 'Tumba de Cristóbal Colón',
+      artist: '阿圖羅·梅利達 (Arturo Mélida)',
+      sala: '大教堂南門右側（聖克里斯多福大壁畫前）',
+      desc: '四位身披華麗王袍的西班牙古王國國王（卡斯提爾、萊昂、亞拉岡、納瓦拉）抬著航海家哥倫布的棺槨。哥倫布生前曾發誓「死後絕不踏上西班牙領土半步」，因此雕像設計四位國王高高抬起棺木懸空離地，象徵其遺體不沾西班牙泥土。'
+    },
+    {
+      id: 'sevilla-catedral-2',
+      titleZh: '《主祭壇萬尊純金木雕巨型屏風》',
+      titleEs: 'Retablo Mayor de la Catedral',
+      artist: '丹卡特 (Pierre Dancart) 等法蘭德斯大師',
+      sala: '主祭壇 (Capilla Mayor)',
+      desc: '全球天主教大教堂中規模最大的祭壇屏風！由法蘭德斯大師丹卡特等工匠歷經 80 年手工雕刻，高達 20 公尺、包含 45 個聖經故事浮雕組與上千尊精細小木雕，全幅貼滿從新大陸美洲運回的純金金箔。'
+    }
+  ],
+  'sevilla-s2': [
+    {
+      id: 'sevilla-alcazar-1',
+      titleZh: '《少女中庭穆德哈爾透雕拱門》',
+      titleEs: 'Patio de las Doncellas',
+      artist: '格拉那達摩爾手工藝巨匠',
+      sala: '王宮核心下層中庭',
+      desc: '基督教國王佩德羅一世聘請格拉那達摩爾化工匠打造的穆德哈爾式顛峰之作。細長精緻的多葉透雕拱門、下凹式倒影長形水池與左右下沉式橘樹花園，將伊斯蘭的水木靈性與西班牙宮廷完美融合。'
+    },
+    {
+      id: 'sevilla-alcazar-2',
+      titleZh: '《使節廳金色旋轉穹頂》',
+      titleEs: 'Cúpula del Salón de Embajadores',
+      artist: '安達魯斯木雕幾何大師',
+      sala: '王宮正殿使節廳',
+      desc: '1427年完工的木雕半球型藻井穹頂，飾以璀璨奪目的金箔與幾何蜂巢幾何星芒，象徵浩瀚旋轉的夜空宇宙，是歐洲現存最宏偉的伊斯蘭木作藝術之一。'
+    }
+  ],
+  'guadix-s3': [
+    {
+      id: 'alhambra-1',
+      titleZh: '《獅子庭院與十二白大理石噴泉獅》',
+      titleEs: 'Patio de los Leones',
+      artist: '納斯爾王朝蘇丹穆罕默德五世宮廷工匠',
+      sala: '獅子宮核心庭院',
+      desc: '蘇丹穆罕默德五世於 14 世紀打造的伊斯蘭庭園極致。124 根白色大理石纖細圓柱如椰棗林般環繞庭院，中央水泉由十二隻古代大理石雕獅托起，四道大理石導水渠象徵《古蘭經》中的天國四河（水、乳、酒、蜜）流向四方。'
+    },
+    {
+      id: 'alhambra-2',
+      titleZh: '《雙姐妹廳鐘乳石蜂巢藻井》',
+      titleEs: 'Sala de Dos Hermanas - Muqarnas',
+      artist: '納斯爾王朝幾何石膏雕刻大師',
+      sala: '獅子宮北側內殿',
+      desc: '頂部由超過 5,000 個微型石膏蜂巢（Muqarnas）層疊拼砌而成的八角星形穹頂。白晝時陽光透過穹頂底部的十六扇小天窗斜射入內，光影在層疊的鐘乳石折角上如流水般流轉，宛如凝固於時空中的神聖幾何星河。'
+    }
+  ]
+};
+
+
 /* ---------- onboarding ---------- */
 route('/onboard', () => {
   view(`<h1>西班牙＋豪華遊輪之旅要開始了！</h1>
@@ -706,6 +1144,19 @@ route('/', () => {
       <div style="flex:1">
         <b style="color:var(--fg);font-size:17px">今日美味 Tapa 刮刮樂</b>
         <p class="sub" style="margin:2px 0 0">每天為全家刮出一道暖心西班牙美食或好運！</p>
+      </div>
+      ${CHEV}
+    </a>
+
+    <!-- 啟程飛行與四大國際機場手帳 -->
+    <a class="card" href="#/airports" style="display:flex;align-items:center;gap:14px;text-decoration:none;border-left:4px solid var(--primary);margin-bottom:14px">
+      <div style="font-size:36px">✈️</div>
+      <div style="flex:1">
+        <div style="display:flex;gap:6px;align-items:center">
+          <b style="color:var(--fg);font-size:17px">啟程飛行與四大國際機場手帳</b>
+          <span class="chip" style="font-size:11px">建築與文化</span>
+        </div>
+        <p class="sub" style="margin:2px 0 0">桃園候機室全家合照、杜拜轉機極致建築、巴塞隆納與馬德里天光巡禮</p>
       </div>
       ${CHEV}
     </a>
@@ -881,7 +1332,7 @@ function likeCount(id) {
   const others = (META.likes[id] || []).filter((n) => n !== S.player).length;
   return others + (LS.get('likes', {})[id] ? 1 : 0);
 }
-route('/card/:id', (id) => {
+route('/card/:id', async (id) => {
   const card = CARD[id];
   if (!card) { location.hash = '#/'; return; }
   if (!isUnlocked(card)) { view(`${back('#/city/' + card.city, CITY[card.city].name)}<h1>還沒解鎖</h1><p>這張城市卡 ${fmtDate(cardDate(card))} 才會解鎖。</p>`); return 'home'; }
@@ -899,7 +1350,70 @@ route('/card/:id', (id) => {
     }
     html += quizHtml(card, 'b', '加分題');
   } else {
-    html += `<button type="button" class="btn ghost block" data-jump="q-p" style="margin-bottom:12px">不想讀？直接跳到題目</button>
+    // Spot card
+    const masterpieces = MUSEUM_MASTERPIECES[card.id];
+    let spotMode = LS.get('spot_mode:' + card.id, 'free');
+    let huntHtml = '';
+
+    if (masterpieces && masterpieces.length) {
+      const checkedCount = masterpieces.filter((m) => LS.get('art:' + card.id + ':' + m.id, false)).length;
+      const pct = Math.round((checkedCount / masterpieces.length) * 100);
+
+      // Mode switch buttons
+      html += `<div class="spot-mode-toggle">
+        <button type="button" class="spot-mode-btn ${spotMode === 'free' ? 'on' : ''}" data-smode="free">🌿 自由參觀隨心逛</button>
+        <button type="button" class="spot-mode-btn ${spotMode === 'hunt' ? 'on' : ''}" data-smode="hunt">🎯 鎮館之寶尋寶打卡 <span class="badge" id="hunt-badge-count">${checkedCount}/${masterpieces.length}</span></button>
+      </div>`;
+
+      // Build hunt mode view
+      const itemsHtml = await Promise.all(masterpieces.map(async (m) => {
+        const isChecked = !!LS.get('art:' + card.id + ':' + m.id, false);
+        const photoKey = 'artphoto:' + card.id + ':' + m.id;
+        const photoBlob = await DB.get(photoKey);
+        let photoThumb = '';
+        if (photoBlob) {
+          const u = URL.createObjectURL(photoBlob);
+          photoThumb = `<img class="hunt-photo-thumb" src="${u}" alt="${esc(m.titleZh)}">`;
+        }
+        return `<div class="hunt-item ${isChecked ? 'checked' : ''}" id="art-item-${m.id}">
+          <div class="hunt-item-top">
+            <div>
+              <div class="hunt-item-title">${esc(m.titleZh)}</div>
+              <div class="hunt-item-es">${esc(m.titleEs)}</div>
+              ${m.artist ? `<div class="hunt-item-artist">🎨 ${esc(m.artist)}</div>` : ''}
+            </div>
+            <span class="sala-badge">📍 ${esc(m.sala)}</span>
+          </div>
+          <div class="hunt-item-desc">${m.desc}</div>
+          <div class="hunt-item-actions">
+            <button type="button" class="hunt-check-btn ${isChecked ? 'checked' : ''}" data-art-toggle="${m.id}">
+              <span class="hunt-check-box">${isChecked ? '✓' : ''}</span>
+              <span class="hunt-check-label">${isChecked ? '已找到親眼目睹！' : '我找到了！點擊打勾'}</span>
+            </button>
+            <label class="btn small ghost" style="cursor:pointer">
+              ${photoBlob ? '換一張照片' : '📷 拍下真跡 / 合影 (+20分)'}
+              <input type="file" accept="image/*" class="hunt-photo-input" data-art-id="${m.id}" hidden>
+            </label>
+          </div>
+          <div id="art-photo-box-${m.id}">${photoThumb}</div>
+        </div>`;
+      }));
+
+      huntHtml = `<div class="hunt-box" id="hunt-view" style="${spotMode === 'hunt' ? '' : 'display:none'}">
+        <div class="hunt-progress-wrap">
+          <div class="hunt-progress-header">
+            <b>🏆 鎮館之寶尋寶進度</b>
+            <span class="chip ${checkedCount === masterpieces.length ? 'good' : 'warn'}" id="hunt-progress-chip">${checkedCount} / ${masterpieces.length} 件 (${pct}%)</span>
+          </div>
+          <div class="progress-outer"><div class="progress-inner" id="hunt-progress-bar" style="width:${pct}%"></div></div>
+          <p class="sub" style="margin:6px 0 0">走進各展間尋找鎮館名作，每找到一件打勾可獲 10 分！全部找齊再獲 50 分全制霸大獎！</p>
+        </div>
+        <div class="hunt-list">${itemsHtml.join('')}</div>
+      </div>`;
+    }
+
+    const casualHtml = `<div id="casual-view" style="${spotMode === 'hunt' && masterpieces ? 'display:none' : ''}">
+      <button type="button" class="btn ghost block" data-jump="q-p" style="margin-bottom:12px">不想讀？直接跳到題目</button>
       <details class="read" open><summary>景點冷知識 <span class="sub">點一下收起來，覺得特別有趣就按讚</span></summary><div class="inner reading">
       ${card.facts.length ? card.facts.map((f, i) => {
         const fid = factId(card, i);
@@ -908,20 +1422,21 @@ route('/card/:id', (id) => {
           <button type="button" class="like-btn${on ? ' on' : ''}" data-like="${fid}" aria-pressed="${on}">👍 讚 <span>${likeCount(fid)}</span></button></div>`;
       }).join('') : ''}
       ${card.story.map((p) => `<p>${p}</p>`).join('')}</div></details>
-      <p><b>準備好挑戰今天的任務了嗎？</b></p>`;
-    html += quizHtml(card, 'p', '出發前的題目');
-    if (card.game && card.hasGame) {
-      const tool = TOOL_FOR.find(([k]) => card.game.name.includes(k));
-      html += `<div class="gamebox"><h3>景點小遊戲：${esc(card.game.name)}</h3><p>${card.game.rules}</p>
-        ${tool ? `<a class="btn small" href="#/tool/${tool[1]}">打開${esc(tool[0])}工具</a>` : ''}</div>`;
-    }
-    if (card.tasks.length) {
-      html += `<h2>現場任務</h2><div class="stack">${card.tasks.map((t, i) => `<div class="card task-box" data-task="${i}"><p>${t}</p>
+      <p><b>準備好挑戰今天的任務了嗎？</b></p>
+      ${quizHtml(card, 'p', '出發前的題目')}
+      ${card.game && card.hasGame ? (() => {
+        const tool = TOOL_FOR.find(([k]) => card.game.name.includes(k));
+        return `<div class="gamebox"><h3>景點小遊戲：${esc(card.game.name)}</h3><p>${card.game.rules}</p>
+          ${tool ? `<a class="btn small" href="#/tool/${tool[1]}">打開${esc(tool[0])}工具</a>` : ''}</div>`;
+      })() : ''}
+      ${card.tasks.length ? `<h2>現場任務</h2><div class="stack">${card.tasks.map((t, i) => `<div class="card task-box" data-task="${i}"><p>${t}</p>
         <input class="text task-note" placeholder="寫下細節（選填，例如名字、地點）">
-        <div class="tc"></div></div>`).join('')}</div>`;
-    }
-    html += `<a class="btn ghost block" href="#/grid/${card.id}/S">開一個這個景點的九宮格</a>`;
-    html += quizHtml(card, 'q', '收尾 3 題');
+        <div class="tc"></div></div>`).join('')}</div>` : ''}
+      <a class="btn ghost block" href="#/grid/${card.id}/S">開一個這個景點的九宮格</a>
+      ${quizHtml(card, 'q', '收尾 3 題')}
+    </div>`;
+
+    html += (huntHtml + casualHtml);
   }
   view(html);
   bindQuiz(card);
@@ -938,6 +1453,78 @@ route('/card/:id', (id) => {
     DB.qPut({ id: 'l:' + fid, type: 'like', factId: fid, player: S.player, on: !!m[fid] }).then(flush);
   });
   if (card.type !== 'city') {
+    // Mode toggle buttons
+    $$('[data-smode]').forEach((btn) => {
+      btn.onclick = () => {
+        const mode = btn.dataset.smode;
+        LS.set('spot_mode:' + card.id, mode);
+        $$('[data-smode]').forEach((b) => b.classList.toggle('on', b.dataset.smode === mode));
+        const huntView = $('#hunt-view');
+        const casualView = $('#casual-view');
+        if (huntView) huntView.style.display = mode === 'hunt' ? '' : 'none';
+        if (casualView) casualView.style.display = mode === 'hunt' ? 'none' : '';
+      };
+    });
+
+    // Masterpiece check toggles
+    $$('[data-art-toggle]').forEach((btn) => {
+      btn.onclick = () => {
+        const aid = btn.dataset.artToggle;
+        const key = 'art:' + card.id + ':' + aid;
+        const was = !!LS.get(key, false);
+        const isNow = !was;
+        LS.set(key, isNow);
+        btn.classList.toggle('checked', isNow);
+        $('.hunt-check-box', btn).textContent = isNow ? '✓' : '';
+        $('.hunt-check-label', btn).textContent = isNow ? '已找到親眼目睹！' : '我找到了！點擊打勾';
+        const itemEl = $('#art-item-' + aid);
+        if (itemEl) itemEl.classList.toggle('checked', isNow);
+
+        const masterpieces = MUSEUM_MASTERPIECES[card.id];
+        if (isNow) {
+          const mObj = masterpieces.find((m) => m.id === aid);
+          award({ key: 'art|' + card.id + '|' + aid, points: 10, label: '鎮館之寶：' + (mObj ? mObj.titleZh : aid) });
+          toast('🎉 親眼見證 ' + (mObj ? mObj.titleZh : aid) + '！+10 分');
+        }
+
+        // Update progress bar & count
+        const curChecked = masterpieces.filter((m) => LS.get('art:' + card.id + ':' + m.id, false)).length;
+        const curPct = Math.round((curChecked / masterpieces.length) * 100);
+        const chipEl = $('#hunt-progress-chip');
+        if (chipEl) {
+          chipEl.textContent = `${curChecked} / ${masterpieces.length} 件 (${curPct}%)`;
+          chipEl.className = 'chip ' + (curChecked === masterpieces.length ? 'good' : 'warn');
+        }
+        const barEl = $('#hunt-progress-bar');
+        if (barEl) barEl.style.width = curPct + '%';
+        const badgeCount = $('#hunt-badge-count');
+        if (badgeCount) badgeCount.textContent = `${curChecked}/${masterpieces.length}`;
+
+        if (curChecked === masterpieces.length && isNow) {
+          award({ key: 'art_all|' + card.id, points: 50, label: card.title + ' 鎮館之寶全制霸！' });
+          toast('🏆 太神了！' + card.title + ' 鎮館之寶全數打卡達成！+50 分大獎！', 3500);
+        }
+      };
+    });
+
+    // Masterpiece photo inputs
+    $$('.hunt-photo-input').forEach((input) => {
+      input.onchange = async () => {
+        const file = input.files && input.files[0];
+        if (!file) return;
+        const aid = input.dataset.artId;
+        await DB.put('artphoto:' + card.id + ':' + aid, file);
+        const masterpieces = MUSEUM_MASTERPIECES[card.id];
+        const mObj = masterpieces.find((m) => m.id === aid);
+        award({ key: 'art_photo|' + card.id + '|' + aid, points: 20, label: '名畫真跡拍照：' + (mObj ? mObj.titleZh : aid) });
+        toast('🎉 拍下真跡留念！+20 分');
+        // Update preview immediately
+        const u = URL.createObjectURL(file);
+        const pBox = $('#art-photo-box-' + aid);
+        if (pBox) pBox.innerHTML = `<img class="hunt-photo-thumb" src="${u}" alt="${esc(mObj ? mObj.titleZh : aid)}">`;
+      };
+    });
+
     $$('.task-box').forEach((box) => {
       const i = Number(box.dataset.task);
       taskControl(box, {
@@ -948,6 +1535,7 @@ route('/card/:id', (id) => {
   }
   return card.type === 'city' && todayCard() === card ? 'today' : 'home';
 });
+
 
 /* ---------- nine-grid ---------- */
 function gridTheme(card, key) {
@@ -1287,6 +1875,189 @@ route('/pokedex', async () => {
   return 'tools';
 });
 
+/* ---------- RENDER AIRPORTS (四大國際機場手帳：建築、總體經濟與文化觀察) ---------- */
+async function renderAirports(activeId = 'tpe') {
+  activeId = activeId || 'tpe';
+  const airport = AIRPORTS_DATA.find((a) => a.id === activeId) || AIRPORTS_DATA[0];
+
+  // Navigation tabs
+  const tabsHtml = AIRPORTS_DATA.map((a) => {
+    const on = a.id === airport.id;
+    return `<a class="airport-pill ${on ? 'on' : ''}" href="#/airports/${a.id}">${a.flag} ${a.code}</a>`;
+  }).join('');
+
+  // TPE Gate selection state
+  const savedGateId = LS.get('tpe_gate_theme', 'C3');
+  const savedGateCustom = LS.get('tpe_gate_custom', '');
+
+  // Photos from DB
+  const departureBlob = await DB.get('photo:tpe_departure');
+  const airportBlob = activeId !== 'tpe' ? await DB.get('photo:airport:' + activeId) : null;
+
+  let departurePhotoHtml = '';
+  if (departureBlob) {
+    const u = URL.createObjectURL(departureBlob);
+    departurePhotoHtml = `
+      <div class="polaroid" style="margin:14px auto 8px">
+        <img src="${u}" alt="桃園機場啟程全家合照">
+        <div class="polaroid-caption">啟程出發！¡Vamos! ✈️</div>
+        <div class="polaroid-date">📍 桃園國際機場 • ${fmtDate(TRIP_START)}</div>
+      </div>
+    `;
+  }
+
+  let airportPhotoHtml = '';
+  if (airportBlob) {
+    const u = URL.createObjectURL(airportBlob);
+    airportPhotoHtml = `
+      <div class="polaroid" style="margin:14px auto 8px">
+        <img src="${u}" alt="${esc(airport.name)}">
+        <div class="polaroid-caption">${esc(airport.code)} 旅途足跡 📸</div>
+        <div class="polaroid-date">📍 ${esc(airport.name)}</div>
+      </div>
+    `;
+  }
+
+  // TPE specific gate chips & interactive upload
+  let gateSelectionHtml = '';
+  if (airport.id === 'tpe') {
+    const gateChips = airport.gates.map((g) => {
+      const on = g.id === savedGateId;
+      return `<button type="button" class="gate-chip-item ${on ? 'on' : ''}" data-gate-id="${g.id}">
+        <div class="gate-chip-code">${g.id} ${on ? '✓' : ''}</div>
+        <div class="gate-chip-name">${esc(g.name.replace(/^[CD]\d+\s*/, ''))}</div>
+        <div class="gate-chip-desc">${esc(g.desc)}</div>
+      </button>`;
+    }).join('');
+
+    gateSelectionHtml = `
+      <div class="card" style="margin-bottom:16px;background:var(--card-hover)">
+        <h3 style="margin:0 0 6px">🏮 候機門臺灣文化主題探索</h3>
+        <p class="sub" style="margin:0 0 12px">桃園機場第二航廈每個候機室都有不同的臺灣文化主題！點選或填寫你們這次出發的候機門：</p>
+        <div class="gate-chips-wrap">${gateChips}</div>
+        <div style="display:flex;gap:8px;align-items:center;margin-top:10px">
+          <input type="text" id="tpe-gate-custom" class="text" style="flex:1" placeholder="或自填候機門主題（例如：C3 街頭夜市候機門）" value="${esc(savedGateCustom)}">
+          <button type="button" class="btn small" id="btn-save-gate">儲存</button>
+        </div>
+      </div>
+
+      <div class="card" style="margin-bottom:16px;border-left:4px solid var(--primary)">
+        <h3 style="margin:0 0 6px">👨‍👩‍👧‍👦 啟程出發儀式：全家第一張大合照</h3>
+        <p class="sub" style="margin:0 0 12px">在候機室的特色文化牆前，全家 7 個人圍在一起拍下出發前的全家大合照！上傳立得 50 分！</p>
+        <label class="btn block ${departureBlob ? 'ghost' : ''}" style="cursor:pointer">
+          ${departureBlob ? '🔄 更換全家合照' : '📷 拍照 / 上傳全家啟程合照 (+50分)'}
+          <input type="file" accept="image/*" id="tpe-departure-input" hidden>
+        </label>
+        <div id="tpe-photo-box">${departurePhotoHtml}</div>
+      </div>
+    `;
+  } else {
+    // Non-TPE airport photo upload
+    gateSelectionHtml = `
+      <div class="card" style="margin-bottom:16px;border-left:4px solid var(--primary)">
+        <h3 style="margin:0 0 6px">📸 ${airport.code} 機場建築與旅程打卡</h3>
+        <p class="sub" style="margin:0 0 12px">拍下這座世界級機場的壯麗屋頂、天光或家人候機的身影，上傳立得 30 分！</p>
+        <label class="btn block ${airportBlob ? 'ghost' : ''}" style="cursor:pointer">
+          ${airportBlob ? '🔄 更換機場照片' : '📷 拍照 / 上傳機場打卡照 (+30分)'}
+          <input type="file" accept="image/*" id="airport-photo-input" hidden>
+        </label>
+        <div id="airport-photo-box">${airportPhotoHtml}</div>
+      </div>
+    `;
+  }
+
+  view(`
+    ${back('#/', '首頁')}
+    <div style="display:flex;justify-content:space-between;align-items:flex-start;gap:12px;margin-bottom:8px">
+      <div>
+        <h1 style="margin:0">✈️ 四大國際機場手帳</h1>
+        <p class="sub" style="margin:4px 0 0">走過桃園、杜拜、巴塞隆納與馬德里，用建築美學與文化視野開啟 30 天壯遊</p>
+      </div>
+    </div>
+
+    <!-- Navigation pills -->
+    <div class="airport-pill-nav">${tabsHtml}</div>
+
+    <!-- Airport Card -->
+    <div class="airport-card">
+      <div class="airport-header">
+        <div style="display:flex;justify-content:space-between;align-items:center">
+          <div class="airport-code-badge">${airport.flag} ${airport.code}</div>
+          <span class="chip warn">${esc(airport.role)}</span>
+        </div>
+        <div class="airport-title">${esc(airport.name)}</div>
+        <div class="airport-subtitle">${esc(airport.nameEn)} • ${esc(airport.terminal)}</div>
+      </div>
+
+      <!-- Interactive Gate / Photo Section -->
+      ${gateSelectionHtml}
+
+      <!-- Lore & Macroeconomics & Anthropology -->
+      <div style="font-size:16px;line-height:1.7;color:var(--fg);margin-bottom:16px">
+        ${airport.lore}
+      </div>
+
+      <!-- Architecture Highlight Card -->
+      <div style="background:var(--card-hover);border-radius:var(--r-sm);border:1px solid var(--line);padding:14px;font-size:15px;line-height:1.65;color:var(--fg)">
+        ${airport.architecture}
+      </div>
+    </div>
+  `);
+
+  // Event bindings
+  if (airport.id === 'tpe') {
+    $$('.gate-chip-item').forEach((btn) => {
+      btn.onclick = () => {
+        const gid = btn.dataset.gateId;
+        LS.set('tpe_gate_theme', gid);
+        const gObj = airport.gates.find((g) => g.id === gid);
+        award({ key: 'tpe_gate_pick', points: 15, label: '候機門文化探索：' + (gObj ? gObj.name : gid) });
+        toast('🎉 已選定候機門：' + (gObj ? gObj.name : gid) + '！+15 分');
+        renderAirports('tpe');
+      };
+    });
+
+    const btnSaveGate = $('#btn-save-gate');
+    if (btnSaveGate) {
+      btnSaveGate.onclick = () => {
+        const val = ($('#tpe-gate-custom').value || '').trim();
+        LS.set('tpe_gate_custom', val);
+        toast('已儲存自填候機門主題：' + val);
+      };
+    }
+
+    const tpeInput = $('#tpe-departure-input');
+    if (tpeInput) {
+      tpeInput.onchange = async () => {
+        const file = tpeInput.files && tpeInput.files[0];
+        if (!file) return;
+        await DB.put('photo:tpe_departure', file);
+        award({ key: 'tpe_departure_photo', points: 50, label: '桃園機場全家啟程大合照' });
+        toast('🎉 全家出發合照上傳成功！+50 分');
+        renderAirports('tpe');
+      };
+    }
+  } else {
+    const aInput = $('#airport-photo-input');
+    if (aInput) {
+      aInput.onchange = async () => {
+        const file = aInput.files && aInput.files[0];
+        if (!file) return;
+        await DB.put('photo:airport:' + airport.id, file);
+        award({ key: 'airport_photo|' + airport.id, points: 30, label: airport.name + ' 打卡' });
+        toast('🎉 ' + airport.code + ' 機場打卡照片已儲存！+30 分');
+        renderAirports(airport.id);
+      };
+    }
+  }
+
+  return 'tools';
+}
+
+route('/airports', () => { renderAirports('tpe'); return 'tools'; });
+route('/airports/:id', (id) => { renderAirports(id); return 'tools'; });
+
+
 /* ---------- tools (遊戲間) ---------- */
 const SECRET_TASKS = [
   '讓一位家人不知不覺說出「好好吃」三次。',
@@ -1326,6 +2097,7 @@ route('/tools', () => {
       <a class="item" href="#/tapa"><div class="t"><b>🍢 今日美味 Tapa 刮刮樂</b><span>每天刮開一道美味好運小事（最適合全家）</span></div>${CHEV}</a>
       <a class="item" href="#/pokedex"><div class="t"><b>📖 西班牙旅行大圖鑑</b><span>30 款西班牙經典圖鑑收集＋復古拍立得</span></div>${CHEV}</a>
       <a class="item" href="#/flags"><div class="t"><b>🚩 城市旗與小眾故事</b><span>30 天打卡收集城市旗與傳奇故事</span></div>${CHEV}</a>
+      <a class="item" href="#/airports"><div class="t"><b>✈️ 四大國際機場手帳</b><span>桃園全家啟程合照、杜拜轉機、巴塞隆納與馬德里建築手帳</span></div>${CHEV}</a>
       <a class="item" href="#/tool/wheel"><div class="t"><b>命運之輪</b><span>轉一次，轉到什麼就做什麼</span></div>${CHEV}</a>
       <a class="item" href="#/tool/price"><div class="t"><b>物價猜猜猜</b><span>手機輪流傳，每人偷偷輸入猜價</span></div>${CHEV}</a>
       <a class="item" href="#/tool/steps"><div class="t"><b>步數猜猜猜</b><span>進景點前猜，出來對答案</span></div>${CHEV}</a>

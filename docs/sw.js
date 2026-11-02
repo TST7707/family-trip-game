@@ -1,5 +1,5 @@
 /* Offline support: keep the app and all content on the phone. */
-const CACHE = 'ftg-v1.7.0';
+const CACHE = 'ftg-v1.8.0';
 const SHELL = ['./', 'index.html', 'app.css', 'app.js', 'content.json', 'manifest.webmanifest', 'icon-192.png', 'icon-512.png'];
 
 self.addEventListener('install', (e) => {
