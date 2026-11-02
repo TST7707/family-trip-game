@@ -951,6 +951,40 @@ const MUSEUM_MASTERPIECES = {
       desc: '高第發明的自然結構柱，柱腳為多角形，向上旋轉分岔為八角與圓形樹枝，支撐雙曲面拋物線天頂；上午東側透過藍色與綠色冷調彩繪花窗灑落晨曦，下午西側透過橘色、紅色與金黃色暖調花窗傾瀉夕陽，整座教堂內部就是一座光影流轉的神聖自然森林。'
     }
   ],
+  'barcelona-s3': [
+    {
+      id: 'santpau-1',
+      titleZh: '《行政大樓粉紅玫瑰彩繪玻璃與馬賽克穹頂》',
+      titleEs: 'Cúpula y Vitrales del Pabellón de la Administración',
+      artist: '蒙塔內爾 (Lluís Domènech i Montaner)',
+      sala: '主入口行政大樓二樓大廳',
+      desc: '行政大樓核心的雙曲面穹頂大廳，以柔和粉紅與金色花磚拼貼出壯麗的哥德式拱肋。頭頂巨幅「光之花」彩繪玻璃天窗傾瀉漫射日光，象徵現代醫學驅散黑暗與疾病，美得如同歐洲皇家宮殿。'
+    },
+    {
+      id: 'santpau-2',
+      titleZh: '《地下白色瓷磚秘密醫療隧道長廊》',
+      titleEs: 'Galerías y Túneles Subterráneos',
+      artist: '蒙塔內爾 (Lluís Domènech i Montaner)',
+      sala: '全區地下隧道系統（長逾 1 公里）',
+      desc: '全歐洲最早開創的地下分流通道！整座園區的地上花園專供病人散步休養，而推床、藥品與遺體運送全數移至鋪滿白瓷磚的地下隧道，杜絕交叉感染，讓地面絲毫不帶一絲醫院的死亡與冰冷氣息。'
+    },
+    {
+      id: 'santpau-3',
+      titleZh: '《聖薩爾瓦多展廳陶瓷彩磚圓頂與天使雕像》',
+      titleEs: 'Pabellón de San Salvador',
+      artist: '蒙塔內爾 & 保·加爾加略 (Pau Gargallo)',
+      sala: '入口右側聖薩爾瓦多展廳',
+      desc: '屋頂覆蓋著鮮豔童話般的金黃與草綠釉面彩磚圓頂，外牆矗立著加泰隆尼亞雕刻巨擘保·加爾加略雕刻的守護天使；內部完整保留了百年前「無直角防積灰塵」的圓弧天花板與現代消毒科學細節。'
+    },
+    {
+      id: 'santpau-4',
+      titleZh: '《吉爾家族哥德字母「P」與加泰隆尼亞令旗》',
+      titleEs: 'Emblemas de Pau Gil y la Senyera',
+      artist: '蒙塔內爾 (Lluís Domènech i Montaner)',
+      sala: '各病房外牆與山牆簷角',
+      desc: '巴黎單身銀行家保羅·吉爾在遺囑中留下的霸道印記——整座醫院隨處可見粉紅釉磚燒製的字母「P」，以及加泰隆尼亞四道紅紋（Senyera），見證富豪慈善與民族文化自豪的完美交織。'
+    }
+  ],
   'barcelona-s5': [
     {
       id: 'batllo-1',
@@ -1317,6 +1351,7 @@ const PRAISE_CYCLES = [
 
 const SPOT_FLAVORS = [
   { match: /聖家堂|高第/, text: '安東尼·高第如果看見你答得這麼精準，一定會邀請你一起設計尚未完工的榮耀立面！⛪️' },
+  { match: /聖保羅|蒙塔內爾/, text: '蒙塔內爾的童話花園宮殿為你喝采！連高第的老師藏在磁磚裡的秘密都被你一眼看穿！🏰' },
   { match: /普拉多|委拉斯奎茲/, text: '委拉斯奎茲在《宮娥》畫布後面都要為你這神之一筆拍手叫好！🎨' },
   { match: /蘇菲亞|格爾尼卡|畢卡索|達利/, text: '超現實主義與立體派的百年密碼都被你輕鬆破解，畢卡索和達利都要甘拜下風！🖼️' },
   { match: /考古|MAN|埃爾切/, text: '這件萬年前的古代瑰寶被你一眼參透，你簡直就是現代伊比利半島的印第安納·瓊斯！🏺' },
