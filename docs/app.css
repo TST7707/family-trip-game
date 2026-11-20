@@ -250,3 +250,110 @@ details.aside p{margin:4px 0 0;font-size:14px;line-height:1.7;color:var(--muted)
 .poster.img img{display:block;width:100%;height:auto}
 .city-tile img.psvg{object-fit:cover;object-position:50% 52%;background:var(--paper)}
 @media (prefers-color-scheme: dark){ .poster.img img,.city-tile img.psvg{filter:brightness(.92)} }
+
+/* v2.0：找回 v1.9.1 的功能（機場手帳、國旗、圖鑑、Tapa、翻卡測驗、名畫尋寶、防扒提醒），套用海報風的方角與無陰影 */
+:root{--r-sm:0;--r-md:2px;--r-lg:2px;--shadow:none;--shadow-sm:none;--shadow-lg:none;--card-hover:var(--sunken);--primary-gradient:var(--ochre);--sea:var(--teal);--sea-bg:var(--plan-bg)}
+.flame-pill{display:inline-flex;align-items:center;gap:5px;padding:5px 12px;border-radius:999px;background:#F9EFE6;color:#B85338;border:1px solid #EED9C7;font-size:15px;font-weight:800}
+.scratch-box{position:relative;width:100%;min-height:230px;border-radius:var(--r-lg);overflow:hidden;background:var(--card);box-shadow:var(--shadow);border:2px dashed #C5964D;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:24px;text-align:center}
+.scratch-content{display:flex;flex-direction:column;align-items:center;justify-content:center;gap:12px;width:100%}
+.scratch-emoji{font-size:56px;line-height:1}
+.scratch-title{font-size:23px;font-weight:800;color:var(--primary)}
+.scratch-desc{font-size:16px;color:var(--muted);max-width:440px;line-height:1.65}
+.scratch-cover{position:absolute;inset:0;background:linear-gradient(135deg, #C5964D 0%, #B8853D 50%, #9E6F2E 100%);display:flex;flex-direction:column;align-items:center;justify-content:center;color:#fff;cursor:pointer;z-index:2;transition:opacity .4s ease,visibility .4s}
+.scratch-cover.scratched{opacity:0;visibility:hidden;pointer-events:none}
+.scratch-cover .cover-txt{font-size:21px;font-weight:800;letter-spacing:1px;margin-top:10px;text-shadow:0 1px 4px rgba(0,0,0,0.25)}
+.milestone-card{background:var(--card);border-radius:var(--r-md);border:1px solid var(--line);box-shadow:var(--shadow);padding:18px;margin-bottom:16px;border-left:5px solid var(--good)}
+.progress-outer{background:var(--sunken);border-radius:999px;height:18px;overflow:hidden;margin:12px 0 8px;position:relative;border:1px solid var(--line)}
+.progress-inner{background:linear-gradient(90deg, #4B8358 0%, #C5964D 60%, #B85338 100%);height:100%;border-radius:999px;transition:width .5s ease}
+.progress-labels{display:flex;justify-content:space-between;font-size:14px;color:var(--muted);font-weight:700}
+.pokedex-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px}
+@media (min-width: 520px){.pokedex-grid{grid-template-columns:repeat(3,minmax(0,1fr))}}
+.poke-card{background:var(--card);border-radius:var(--r-md);box-shadow:var(--shadow-sm);border:1.5px solid var(--line);padding:14px 12px;display:flex;flex-direction:column;align-items:center;text-align:center;gap:8px;cursor:pointer;position:relative;transition:transform .15s ease,box-shadow .15s ease}
+.poke-card.locked{opacity:.65;filter:grayscale(80%);background:var(--sunken)}
+.poke-card.unlocked{border-color:var(--good);background:#F2F7F3;box-shadow:0 3px 12px rgba(62, 110, 73, 0.12)}
+.poke-icon{font-size:42px;line-height:1}
+.poke-name{font-weight:800;font-size:16px;line-height:1.2;color:var(--fg)}
+.poke-sub{font-size:13px;color:var(--muted)}
+.poke-thumb{width:100%;aspect-ratio:1/1;object-fit:cover;border-radius:8px;margin-top:6px;border:1px solid var(--line)}
+.flag-card{background:var(--card);border-radius:var(--r-md);border:1px solid var(--line);box-shadow:var(--shadow);padding:18px;margin-bottom:16px}
+.flag-header{display:flex;justify-content:space-between;align-items:flex-start;gap:10px;margin-bottom:12px;flex-wrap:wrap}
+.flag-title-wrap{flex:1;min-width:0}
+.flag-title{font-weight:800;font-size:18px;color:var(--fg);margin-top:2px}
+.flag-city{font-size:14px;color:var(--primary);font-weight:700;margin-top:2px}
+.flag-visual-grid{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin:12px 0 16px}
+.flag-visual-box{display:flex;flex-direction:column;align-items:center;background:var(--sunken);border-radius:var(--r-sm);border:1px solid var(--line);padding:10px;text-align:center;position:relative}
+.flag-visual-label{font-size:12.5px;font-weight:700;color:var(--muted);margin-bottom:6px}
+.flag-guide-frame{width:100%;aspect-ratio:3/2;border-radius:6px;overflow:hidden;box-shadow:0 2px 6px rgba(0,0,0,0.12);border:1px solid rgba(0,0,0,0.1);display:flex;align-items:center;justify-content:center;background:#fff}
+.flag-guide-frame svg{width:100%;height:100%;display:block}
+.flag-user-frame{width:100%;aspect-ratio:3/2;border-radius:6px;overflow:hidden;background:var(--card);border:1.5px dashed var(--line);display:flex;align-items:center;justify-content:center;position:relative}
+.flag-user-frame.has-photo{border:1.5px solid var(--good)}
+.flag-user-frame img{width:100%;height:100%;object-fit:cover;display:block}
+.flag-captured-badge{position:absolute;bottom:4px;left:4px;right:4px;background:rgba(62,110,73,0.92);color:#fff;font-size:11px;font-weight:700;padding:2px 4px;border-radius:4px;text-align:center}
+.flag-empty-hint{font-size:12px;color:var(--muted);padding:8px;line-height:1.4}
+.flag-lore{background:var(--card-hover);border-radius:var(--r-sm);border:1px solid var(--line);padding:14px;font-size:15px;line-height:1.65;display:flex;flex-direction:column;gap:10px}
+.flag-lore-sec b{color:var(--primary);display:inline-block;margin-right:4px;font-weight:800}
+.polaroid{background:#FFFDF9;color:#2C2621;padding:16px 16px 28px;border-radius:8px;box-shadow:0 6px 22px rgba(50, 40, 30, 0.12);border:1px solid #EAE4D8;max-width:380px;margin:16px auto;text-align:center}
+.polaroid img{width:100%;aspect-ratio:1/1;object-fit:cover;display:block;border-radius:3px;background:#ECE7DE}
+.polaroid-caption{margin-top:14px;font-family:"Caveat","Comic Sans MS",cursive,sans-serif;font-size:22px;font-weight:700;color:#2C2621}
+.polaroid-date{font-size:13px;color:#786F66;margin-top:4px}
+.spot-mode-toggle{display:flex;background:var(--sunken);padding:4px;border-radius:var(--r-md);gap:6px;margin:14px 0 16px;border:1px solid var(--line)}
+.spot-mode-btn{flex:1;display:flex;align-items:center;justify-content:center;gap:6px;padding:10px 12px;border-radius:var(--r-sm);border:none;background:transparent;color:var(--muted);font-weight:700;font-size:15px;cursor:pointer;transition:all .15s ease}
+.spot-mode-btn.on{background:var(--card);color:var(--primary);box-shadow:var(--shadow-sm);border:1px solid var(--line)}
+.spot-mode-btn .badge{background:var(--primary);color:#fff;font-size:11.5px;padding:2px 7px;border-radius:999px;font-weight:800}
+.hunt-box{background:var(--card);border-radius:var(--r-md);border:1px solid var(--line);box-shadow:var(--shadow);padding:18px;margin-bottom:20px}
+.hunt-progress-wrap{margin-bottom:18px;padding-bottom:14px;border-bottom:1px dashed var(--line)}
+.hunt-progress-header{display:flex;justify-content:space-between;align-items:center;margin-bottom:6px}
+.hunt-progress-header b{font-size:16.5px;color:var(--fg)}
+.hunt-item{background:var(--card-hover);border:1.5px solid var(--line);border-radius:var(--r-md);padding:16px;margin-bottom:14px;transition:border-color .2s ease,background .2s ease}
+.hunt-item.checked{border-color:var(--good);background:#F4F8F4}
+.hunt-item-top{display:flex;justify-content:space-between;align-items:flex-start;gap:10px;margin-bottom:8px}
+.hunt-item-title{font-size:17.5px;font-weight:800;color:var(--fg);line-height:1.35}
+.hunt-item-es{font-size:13.5px;color:var(--muted);font-style:italic;margin-top:2px}
+.hunt-item-artist{font-size:13.5px;color:var(--primary);font-weight:700;margin-top:4px}
+.sala-badge{display:inline-flex;align-items:center;gap:4px;padding:4px 10px;border-radius:6px;background:var(--warn-bg);color:var(--warn);border:1px solid rgba(168,111,48,0.25);font-size:13px;font-weight:800;white-space:nowrap}
+.hunt-item.checked .sala-badge{background:var(--good-bg);color:var(--good);border-color:rgba(62,110,73,0.25)}
+.hunt-item-desc{font-size:15px;color:var(--fg);line-height:1.6;margin:10px 0}
+.hunt-item-actions{display:flex;gap:10px;align-items:center;flex-wrap:wrap;margin-top:12px;padding-top:10px;border-top:1px dashed var(--line)}
+.hunt-check-btn{display:inline-flex;align-items:center;gap:8px;padding:8px 16px;border-radius:var(--r-sm);font-size:14.5px;font-weight:800;cursor:pointer;border:1.5px solid var(--line);background:var(--card);color:var(--fg);transition:all .15s ease}
+.hunt-check-btn.checked{background:var(--good);color:#fff;border-color:var(--good)}
+.hunt-check-box{width:18px;height:18px;border-radius:4px;border:2px solid currentColor;display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:900}
+.hunt-photo-thumb{width:100%;max-width:280px;aspect-ratio:4/3;object-fit:cover;border-radius:8px;margin-top:10px;border:1.5px solid var(--line);box-shadow:var(--shadow-sm);display:block}
+.airport-pill-nav{display:flex;gap:6px;overflow-x:auto;padding-bottom:8px;margin-bottom:16px;-webkit-overflow-scrolling:touch}
+.airport-pill{padding:8px 14px;border-radius:999px;border:1px solid var(--line);background:var(--card);color:var(--muted);font-weight:700;font-size:14.5px;white-space:nowrap;text-decoration:none;display:inline-flex;align-items:center;gap:6px;transition:all .15s ease}
+.airport-pill.on{background:var(--primary);color:#fff;border-color:var(--primary);box-shadow:var(--shadow-sm)}
+.airport-card{background:var(--card);border-radius:var(--r-lg);border:1px solid var(--line);box-shadow:var(--shadow);padding:22px;margin-bottom:20px}
+.airport-header{border-bottom:1px solid var(--line);padding-bottom:14px;margin-bottom:16px}
+.airport-code-badge{font-size:28px;font-weight:900;color:var(--primary);letter-spacing:1px}
+.airport-title{font-size:22px;font-weight:800;color:var(--fg);margin:4px 0 2px}
+.airport-subtitle{font-size:14px;color:var(--muted)}
+.gate-chips-wrap{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px;margin:12px 0 16px}
+@media (min-width: 540px){.gate-chips-wrap{grid-template-columns:repeat(3,minmax(0,1fr))}}
+.gate-chip-item{background:var(--sunken);border:1.5px solid var(--line);border-radius:var(--r-sm);padding:10px;cursor:pointer;text-align:left;transition:all .15s ease}
+.gate-chip-item.on{background:#FDF3E7;border-color:var(--warn);box-shadow:var(--shadow-sm)}
+.gate-chip-code{font-weight:900;color:var(--primary);font-size:15px}
+.gate-chip-name{font-weight:700;font-size:13.5px;color:var(--fg);margin:2px 0}
+.gate-chip-desc{font-size:12px;color:var(--muted);line-height:1.35}
+.safety-banner{background:#FDF5EB;border:1.5px solid #E6B988;border-radius:var(--r-md);padding:14px 16px;margin:12px 0 16px;box-shadow:var(--shadow-sm);border-left:5px solid #C87A2C}
+.safety-banner-header{display:flex;align-items:center;gap:8px;font-weight:800;font-size:16px;color:#9E5918;margin-bottom:6px}
+.safety-icon{font-size:20px;line-height:1}
+.safety-banner-body{font-size:14px;line-height:1.6;color:var(--fg)}
+.safety-check-item{background:rgba(255,255,255,0.75);border-radius:6px;padding:6px 10px;margin-top:6px;border:1px solid rgba(200,122,44,0.25);font-size:13.5px}
+.quiz-deck{margin:18px 0 24px}
+.q-deck-header{display:flex;justify-content:space-between;align-items:flex-end;gap:10px;margin-bottom:8px}
+.q-deck-title-wrap h2{margin:0 0 2px;font-size:22px}
+.q-progress-badge{display:inline-flex;align-items:center;gap:4px;padding:4px 12px;border-radius:999px;background:var(--warn-bg);color:var(--warn);font-size:14.5px;font-weight:900;border:1.5px solid rgba(168,111,48,0.25);white-space:nowrap}
+.q-deck-bar-outer{background:var(--sunken);border-radius:999px;height:7px;overflow:hidden;margin-bottom:14px;border:1px solid var(--line)}
+.q-deck-bar-inner{background:linear-gradient(90deg, #A86F30 0%, #B85338 100%);height:100%;border-radius:999px;transition:width .3s ease}
+.q-card{background:var(--card);border-radius:var(--r-lg);border:1.5px solid var(--line);box-shadow:var(--shadow);padding:20px 18px;margin-bottom:12px;position:relative}
+.q-card .qtext{font-weight:800;font-size:19px;line-height:1.55;margin:10px 0 16px;color:var(--fg)}
+.praise-box{background:linear-gradient(135deg, #FCF8F2 0%, #F6ECE0 100%);border:1.5px solid #D8BC9D;border-radius:var(--r-md);padding:16px;margin:14px 0;box-shadow:0 4px 14px rgba(184,83,56,0.08);border-left:5px solid var(--primary)}
+.praise-title{font-size:18px;font-weight:900;color:var(--primary);margin-bottom:6px;display:flex;align-items:center;gap:6px;line-height:1.35}
+.praise-body{font-size:15px;line-height:1.65;color:var(--fg);font-weight:600}
+.praise-flavor{margin-top:8px;padding-top:8px;border-top:1px dashed rgba(184,83,56,0.25);font-size:14px;color:var(--primary);font-weight:700}
+.btn-next-step{width:100%;min-height:50px;font-size:17px;font-weight:800;margin-top:14px;display:flex;align-items:center;justify-content:center;gap:8px;border-radius:var(--r-md);background:var(--primary-gradient);color:#fff;border:0;box-shadow:0 4px 14px rgba(184,83,56,0.25);cursor:pointer;transition:transform .12s ease,box-shadow .12s ease}
+.btn-next-step:active{transform:translateY(1px)}
+.q-deck-nav{display:flex;justify-content:space-between;align-items:center;gap:10px;margin-top:10px}
+.q-dots-wrap{display:flex;gap:6px;align-items:center}
+.q-dot{width:10px;height:10px;border-radius:50%;background:var(--line);cursor:pointer;transition:all .2s ease}
+.q-dot.on{width:22px;border-radius:999px;background:var(--primary)}
+.q-dot.done{background:var(--good)}

@@ -1,12 +1,12 @@
 /* Offline support: keep the app and all content on the phone. */
-const CACHE = 'ftg-v1.9.2';
+const CACHE = 'ftg-v2.0.0';
 const SHELL = [
   './',
   'index.html',
   'app.css',
-  'app.css?v=1.9.2',
+  'app.css?v=2.0.0',
   'app.js',
-  'app.js?v=1.9.2',
+  'app.js?v=2.0.0',
   'content.json',
   'preread.json',
   'img/barcelona.jpg',
@@ -17,6 +17,11 @@ const SHELL = [
   'img/pompeii.jpg',
   'img/tunis.jpg',
   'img/palermo.jpg',
+  'img/sevilla.jpg',
+  'img/guadix.jpg',
+  'img/alhambra.jpg',
+  'img/cordoba.jpg',
+  'img/ship.jpg',
   'manifest.webmanifest',
   'icon-192.png',
   'icon-512.png',
