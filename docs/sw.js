@@ -1,6 +1,27 @@
 /* Offline support: keep the app and all content on the phone. */
-const CACHE = 'ftg-v1.9.1';
-const SHELL = ['./', 'index.html', 'app.css', 'app.js', 'content.json', 'manifest.webmanifest', 'icon-192.png', 'icon-512.png'];
+const CACHE = 'ftg-v1.9.2';
+const SHELL = [
+  './',
+  'index.html',
+  'app.css',
+  'app.css?v=1.9.2',
+  'app.js',
+  'app.js?v=1.9.2',
+  'content.json',
+  'preread.json',
+  'img/barcelona.jpg',
+  'img/madrid.jpg',
+  'img/segovia.jpg',
+  'img/marseille.jpg',
+  'img/genoa.jpg',
+  'img/pompeii.jpg',
+  'img/tunis.jpg',
+  'img/palermo.jpg',
+  'manifest.webmanifest',
+  'icon-192.png',
+  'icon-512.png',
+  'itinerario.html'
+];
 
 self.addEventListener('install', (e) => {
   e.waitUntil(caches.open(CACHE).then((c) => c.addAll(SHELL)).then(() => self.skipWaiting()));
