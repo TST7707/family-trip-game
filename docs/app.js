@@ -1,6 +1,6 @@
 'use strict';
 /* 家族任務遊戲 — single-page app. Content comes from content.json (generated from the script). */
-const APP_VERSION = '2.6.0';
+const APP_VERSION = '2.7.1';
 const TRIP_START = '2026-12-09';
 const TRIP_END = '2027-01-06';
 const RESET_DATE = '2026-12-07';
@@ -1362,6 +1362,7 @@ route('/today', () => {
 route('/city/:id', (id) => {
   const city = CITY[id];
   if (!city) { location.hash = '#/'; return; }
+  if (id === 'cruise') return renderCruiseHome();
   const cityItems = city.cityCards.map((c) => {
     const ok = isUnlocked(c);
     const d = cardDate(c);
@@ -1873,6 +1874,7 @@ route('/card/:id', async (id) => {
         return `<div class="gamebox"><h3>景點小遊戲：${esc(card.game.name)}</h3><p>${card.game.rules}</p>
           ${tool ? `<a class="btn small" href="#/tool/${tool[1]}">打開${esc(tool[0])}工具</a>` : ''}</div>`;
       })() : ''}
+      ${card.id === 'cruise-s5' ? pompeiiMissionHtml() : ''}
       ${card.tasks.length ? `<h2>現場出任務</h2><div class="stack">${card.tasks.map((t, i) => `<div class="card task-box" data-task="${i}"><p>${t}</p>
         <input class="text task-note" placeholder="寫下細節（選填，例如名字、地點）">
         <div class="tc"></div></div>`).join('')}</div>` : ''}
@@ -3167,6 +3169,35 @@ const CDEX_FREE = [
   { id: 'f22', icon: '🏋️', name: '看海的健身房', desc: '健身房有大片窗戶可以看海。器材免費，課程和私人教練要另外付費。' },
   { id: 'f23', icon: '🐋', name: '船身的海洋彩繪', desc: 'Euribia 的船身畫著一幅海洋主題的大彩繪（#SaveTheSea）。在港口下船後，回頭找一個能拍到船身的角度。' },
   { id: 'f24', icon: '🧭', name: '大家在船頭或甲板合照', desc: '找一個有海、有風的地方，大家一起拍一張。' },
+  { id: 'f27', icon: '🌱', name: 'MSC 海洋基金會實驗室', desc: '以海洋和環保為主題的兒童互動活動，免費參加，時間看每日節目表。' },
+  { id: 'f28', icon: '🚶', name: '甲板健走步道', desc: '露天甲板上的步道，免費，清晨人少最舒服。' },
+  { id: 'f29', icon: '📚', name: '圖書角', desc: '小小的閱讀角，可以免費取書來看。' },
+  { id: 'f30', icon: '🎺', name: 'Big Band 大樂團演出', desc: '船上的大樂團在 Carousel Lounge 等地方演出，免費入場，飲料另計。' },
+  { id: 'f31', icon: '🚶‍♂️', name: 'Julian Opie 的「走路的人」LED 藝術', desc: '6 樓的 L\'Atelier du Voyageur 牆上，有英國藝術家 Julian Opie 的會走路人物 LED 作品，經過就能看。' },
+  { id: 'f32', icon: '🛝', name: '空中吊橋', desc: '19 樓有一座橫跨船寬的吊橋，免費，但有身高和鞋子規定，天候不佳會關閉。' },
+];
+
+/* DISEN家訂的是 Aurea 房型：以下是 MSC 官網列出的 Aurea 禮遇（2026 年版），實際以訂房確認信為準 */
+const CDEX_AUREA = [
+  { id: 'a01', icon: "🛳️", name: "優先登船與行李優先託運", desc: "巴塞隆納登船當天可走 Aurea 優先通道，行李也優先收件，排隊時間較短，長輩比較不累。", note: "已查證" },
+  { id: 'a02', icon: "🍽️", name: "Il Campo 餐廳（Aurea 專屬）＋ My Choice 彈性晚餐", desc: "Aurea 房型可以到 7 樓的 Il Campo 餐廳用餐，晚餐不用固定梯次，在開放時段內自己選時間去吃（My Choice）。一般房型的人不能進。", note: "餐廳開放時段和是否需預約，以上船後的說明為準" },
+  { id: 'a03', icon: "🥂", name: "迎賓氣泡酒與巧克力", desc: "入住時房內備有一瓶 Prosecco 氣泡酒和巧克力作為迎賓禮，免費享用。", note: "已查證" },
+  { id: 'a04', icon: "🛎️", name: "24小時客房送餐免外送費", desc: "全天候可叫餐送到房間，免收外送服務費，但餐點本身多數仍要另外付費，點餐前請先看價格。", note: "已查證" },
+  { id: 'a05', icon: "☕", name: "房內歐陸早餐免費送", desc: "前一晚把早餐單掛門上，隔天早上把咖啡、麵包等歐陸早餐送到房間，不收外送費。", note: "已查證" },
+  { id: 'a06', icon: "☀️", name: "成人專屬日光甲板 TOP 19 Exclusive Solarium", desc: "第19層成人限定的安靜日光浴區，有躺椅和毛巾服務，一般乘客要付費，Aurea 免費進入。孩子不能進。", note: "已查證（甲板位置依船上 Daily Program 為準）" },
+  { id: 'a07', icon: "♨️", name: "Aurea Spa 溫泉區（Thermal Area）", desc: "可免費使用 Spa 的三溫暖、蒸氣室、熱水池等設施，僅限成人，須事先預約；海上航行日最熱門，建議登船當天就先預約。", note: "已查證（使用次數／時段依船上規定為準）" },
+  { id: 'a08', icon: "💆", name: "Spa 療程 9 折", desc: "在船上購買的按摩、美容等 Spa 療程享 10% 折扣；與船上其他促銷能否併用，請現場詢問。", note: "已查證" },
+  { id: 'a09', icon: "🛁", name: "浴袍、拖鞋與 MED 盥洗用品", desc: "房內提供浴袍、拖鞋和 MSC 自家 MED 系列沐浴用品。", note: "已查證（官網寫「每間套房」，陽台房是否同樣提供：依訂房確認信為準）" },
+  { id: 'a10', icon: "🛏️", name: "枕頭選單", desc: "可向房務員選擇不同軟硬、材質的枕頭，對頸椎不好或睡不慣的長輩很有幫助。", note: "已查證" },
+];
+const AUREA_INFO = [
+  { icon: "🔄", name: "選擇艙房位置／一次免費改期", desc: "訂位時可自選房號位置；啟航前30天以上可免費改一次航程（新航程須在原出發日90天內）。", note: "已查證（已訂妥者僅供參考）" },
+  { icon: "🍷", name: "飲料套餐：不含，僅訂位時享折扣", desc: "目前官網的 Aurea 已不含飲料套餐（舊版曾含 Easy），只能在訂位時以折扣價加購 Easy／Easy Plus 等套餐。若旅行社打包含飲料，以確認信為準。", note: "依訂房確認信為準" },
+  { icon: "🚪", name: "優先下船：陽台房不一定有", desc: "官方把「優先下船、優先接駁小艇」列為 Aurea 套房專屬；Aurea 陽台房通常和一般乘客一樣依分配時間下船。", note: "依訂房確認信為準" },
+  { icon: "📶", name: "Wi-Fi：不含", desc: "Aurea 不包含上網，需自行購買網路套餐；只有 Yacht Club 才含免費上網。", note: "已查證（部分市場／旅行社促銷可能附贈，依訂房確認信為準）" },
+  { icon: "🍴", name: "特色餐廳：不含", desc: "除了 Il Campo，Aurea 不含其他付費特色餐廳或餐飲抵用額度（如 Kaito 日料、Le Grill 牛排館、Hola 墨西哥餐都要付費）。", note: "已查證" },
+  { icon: "🚌", name: "港口接駁車：不含", desc: "官方 Aurea 權益未列港口接駁巴士，岸上交通與行程須自理或另購。", note: "依訂房確認信為準" },
+  { icon: "🎁", name: "MSC Voyagers Club 積分", desc: "本次航程可累積 MSC 會員點數，下次搭乘可升等享優惠。", note: "已查證" },
 ];
 
 const CDEX_PAID = [
@@ -3180,7 +3211,7 @@ const CDEX_PAID = [
   { id: 'x08', icon: '💆', name: 'Aurea Spa 按摩', desc: '峇里島風格的 Spa，按摩和美容療程要付費。' },
   { id: 'x09', icon: '♨️', name: '溫泉熱療區', desc: '有烤箱、蒸氣室、鹽屋、雪洞等，要另外買票，限 18 歲以上。' },
   { id: 'x10', icon: '🎳', name: '保齡球', desc: '船上有保齡球道，按局收費。' },
-  { id: 'x11', icon: '🏎️', name: 'VR 賽車和電玩區', desc: 'VR 賽車模擬器和電玩遊戲，按次收費。' },
+  { id: 'x11', icon: '🏎️', name: 'VR 賽車和電玩區', desc: '船上的電玩區（Arcade）、VR 體驗和賽車模擬器都要另外付錢，按次計費，從房卡扣款。' },
   { id: 'x12', icon: '🎰', name: '賭場', desc: '7 樓。要滿 18 歲，看看就好也可以。' },
   { id: 'x13', icon: '📸', name: '船上攝影師的照片', desc: '攝影師會在登船、正式之夜幫大家拍照，拍免費，買照片要付錢。' },
 ];
@@ -3360,7 +3391,7 @@ const CDEX_PORT = [
   "where": "老城區 Via San Gregorio Armeno、Piazza San Gaetano",
   "desc": "整條街都是做馬槽人偶的手工坊，從耶穌、天使到現代名人、政治人物都有，還有紅色小辣椒幸運符。人超多，包包一定背在前面。",
   "cost": "免費（逛街）",
-  "season": "12 月限定：2026 年馬槽市集 11/14–2027 年 1/10（已查證）；工坊全年都在"
+  "season": "12 月限定：2026 年馬槽市集 11/1 開始（結束日期出發前請確認）；工坊全年都在"
  },
  {
   "id": "p17",
@@ -3561,7 +3592,7 @@ function cdexCard(it, sec, pts, blob) {
     <div class="poke-icon">${it.icon}</div>
     <div class="poke-name">${esc(it.name)}</div>
     <div class="poke-sub">${esc(it.desc)}</div>
-    ${meta}${img}
+    ${it.note ? `<div class="cdex-season">${esc(it.note)}</div>` : ''}${meta}${img}
     <label class="btn small ${on ? 'ghost' : ''}" style="margin-top:auto;width:100%;cursor:pointer">
       ${on ? '換照片' : `📷 打卡點亮 +${pts}`}
       <input type="file" accept="image/*" class="cdex-input" data-id="${it.id}" data-sec="${sec}" hidden>
@@ -3569,12 +3600,12 @@ function cdexCard(it, sec, pts, blob) {
   </div>`;
 }
 
-const CDEX_PTS = { free: 20, paid: 10, port: 20 };
-function cdexAll() { return [...CDEX_FREE, ...CDEX_PAID, ...CDEX_PORT]; }
+const CDEX_PTS = { free: 20, aurea: 20, paid: 10, port: 20 };
+function cdexAll() { return [...CDEX_FREE, ...CDEX_AUREA, ...CDEX_PAID, ...CDEX_PORT]; }
 
 async function renderCruiseDex(tab) {
-  tab = ['free', 'paid', 'port'].includes(tab) ? tab : 'free';
-  const list = tab === 'free' ? CDEX_FREE : tab === 'paid' ? CDEX_PAID : CDEX_PORT;
+  tab = ['free', 'aurea', 'paid', 'port'].includes(tab) ? tab : 'free';
+  const list = { free: CDEX_FREE, aurea: CDEX_AUREA, paid: CDEX_PAID, port: CDEX_PORT }[tab];
   const blobs = await Promise.all(list.map((it) => DB.pokeGet('cdex:' + it.id)));
   const allIds = cdexAll().map((x) => x.id);
   const got = (await Promise.all(allIds.map((id) => DB.pokeGet('cdex:' + id)))).filter(Boolean).length;
@@ -3592,17 +3623,20 @@ async function renderCruiseDex(tab) {
   const intro = {
     free: '這些都包含在船票裡，不用另外付錢。看到、吃到、玩到就拍照點亮！',
     paid: '<b>這一區要另外付錢。</b>想體驗的人再去，不用為了點亮圖鑑而花錢，所以分數比較少（+10）。價格以船上公告為準，記帳前先問清楚。',
+    aurea: '<b>DISEN家訂的是 Aurea 房型</b>，比一般房多了下面這些禮遇，看到、用到就拍照點亮。依 MSC 官網 2026 年的 Aurea 說明整理；每項實際內容請以訂房確認信和上船後的說明為準。',
     port: '下船後在街上就看得到的當地特色，以不用門票為準。標「小額」的是幾歐元的街頭小吃，想吃再買。12 月限定的活動已盡量查證日期，標「出發前請確認」的請再看一下。',
   }[tab];
   view(`${back('#/cruise', '郵輪靠港')}<h1>🚢 郵輪大圖鑑</h1>
     <p class="sub">MSC Euribia 一週的海上生活和六個港口。已點亮 <b>${got} / ${allIds.length}</b></p>
     <div class="seg cdex-tabs">
       <a class="${tab === 'free' ? 'on' : ''}" href="#/cruisedex/free">船上免費</a>
+      <a class="${tab === 'aurea' ? 'on' : ''}" href="#/cruisedex/aurea">Aurea 禮遇</a>
       <a class="${tab === 'paid' ? 'on' : ''}" href="#/cruisedex/paid">船上付費</a>
       <a class="${tab === 'port' ? 'on' : ''}" href="#/cruisedex/port">下船打卡</a>
     </div>
     <div class="card cdex-intro${tab === 'paid' ? ' paid' : ''}"><p style="margin:0">${intro}</p></div>
     ${tab === 'port' ? safetyBannerHtml() : ''}
+    ${tab === 'aurea' ? `<div class="card"><h3>要特別注意的幾件事</h3><ul class="rtips">${AUREA_INFO.map((x) => `<li><b>${x.icon} ${esc(x.name)}</b>：${esc(x.desc)}（${esc(x.note)}）</li>`).join('')}</ul></div>` : ''}
     ${body}
     <p class="sub" style="font-size:12.5px;margin-top:16px">船上資訊整理自 MSC 官網與郵輪媒體（Cruise Critic、Seatrade 等）的 Euribia 介紹；餐廳、節目和開放時間可能調整，以上船後的每日節目表和 MSC for Me App 為準。</p>`);
   $$('.cdex-input').forEach((input) => {
@@ -3621,19 +3655,98 @@ async function renderCruiseDex(tab) {
 route('/cruisedex', () => renderCruiseDex('free'));
 route('/cruisedex/:tab', (tab) => renderCruiseDex(tab));
 
+const POMPEII_MISSION = [
+ {
+  "n": 1,
+  "time": "14:45",
+  "zh": "海門（城門入口）",
+  "it": "Porta Marina",
+  "lat": 40.74848,
+  "lng": 14.48306,
+  "min": 5,
+  "story": "從火車站旁的海門進城，這叫「西進東出」：一路往東走、不走回頭路，最後從另一頭的圓形競技場出口離開。城門有一大一小兩個拱門，大的給騾車和馬車，小的給行人，兩千年前就有人車分流。進門是一段被車輪和腳步磨得發亮的石板上坡，下雨時很滑。低頭看：路中間凸起的大石塊叫「過街石」。當時沒有下水道，雨水、髒水和垃圾都順著馬路流，過街石就是讓人過馬路不弄濕鞋的「斑馬線」，石頭之間的空隙剛好讓車輪通過。石板縫裡有時嵌著白色小石子，有人說是讓夜裡走路的人看得見的「古代反光標記」，不過這只是一種說法，考古學家還沒有證據。",
+  "task": "找一組過街石，大家一個接一個踩過去，拍下石頭和旁邊被車輪磨出的深溝。"
+ },
+ {
+  "n": 2,
+  "time": "14:55",
+  "zh": "廣場與度量衡台",
+  "it": "Foro · Mensa Ponderaria",
+  "lat": 40.74925,
+  "lng": 14.4844,
+  "min": 17,
+  "story": "廣場長約 142 公尺，是龐貝的市政中心，北邊的朱比特神廟正後方就是維蘇威火山。先別急著拍火山，到廣場西邊、阿波羅神廟圍牆的壁龛找「度量衡台」：石桌上挖了幾個大小不同的洞，底下有出口。買賣有糾紛時，把穀物或油倒進標準的洞裡量，就知道有沒有被偷斤減兩。現場這個是複製品，真品在拿坡里國家考古博物館。\n這裡也適合聊一個還沒吵完的問題：火山到底哪天爆發？小普林尼信件的抄本寫的是 8 月 24 日。可是 2018 年，考古學家在一間正在整修的房子牆上，發現用木炭隨手寫的日期，換算是 10 月 17 日；遺址裡也有石榴、栗子這些秋天的水果，有人穿得比較厚。所以很多學者認為爆發應該在 10 月下旬。2024 年，現任園長祖赫特里格爾（Zuchtriegel）又提醒：中世紀的抄本其實只留下 8 月 24 日這一個日期，其他日期是近代學者的推測；他認為證據還不夠，研究還在繼續。不管哪一天，對龐貝人來說都是糟糕的一天。",
+  "task": "找到度量衡台，數一數石桌上有幾個洞並拍下來。再投票：你站「8 月派」還是「10 月派」？"
+ },
+ {
+  "n": 3,
+  "time": "15:15",
+  "zh": "小巷與妓院",
+  "it": "Lupanare",
+  "lat": 40.75018,
+  "lng": 14.48693,
+  "min": 12,
+  "story": "往東穿過小巷。牆角或路面上偶爾會看到刻著男性生殖器的浮雕，以前常有人說「跟著它指的方向就能找到妓院」，這是錯的。它其實是羅馬人的辟邪符（fascinus），用來擋住忌妒的「邪眼」，麵包店、民宅、路口到處都有，方向也各不相同。\n妓院（Lupanare）是龐貝唯一專門蓋來做這門生意的兩層樓房子，名字來自拉丁文 lupa（母狼），是當時對妓女的俗稱。一樓有幾間小房間，床是磚石砌的平台，當年上面鋪床墊，看起來很短。牆上記錄到的塗鴉超過 150 條，有名字、日期，也有評語。門上方的小幅情色壁畫，有人說是給外地客人看的「菜單」，但這只是其中一種解讀。壁畫比較露骨，長輩和孩子可以自己決定要不要進去。這裡 16:00 停止入場，請把握時間。",
+  "task": "在妓院外的牆上找一段看得出字母的古代塗鴉，拍下來。（不進去也可以在外面找）"
+ },
+ {
+  "n": 4,
+  "time": "15:28",
+  "zh": "豐饒大道與熱食店",
+  "it": "Via dell'Abbondanza · Thermopolium di Vetutius Placidus",
+  "lat": 40.74975,
+  "lng": 14.4901,
+  "min": 24,
+  "story": "轉上龐貝最熱鬧的商業大街，一路往東走大約 18 分鐘。路邊常看到 L 形的石砌櫃台，嵌著一個個大陶罐，那是熱食店（thermopolium），龐貝大約有 80 家。很多人家裡沒有廚房，就在外面買熱的吃。2020 年在另一間熱食店的陶罐裡，找到鴨骨，還有豬、山羊、魚和蝸牛的遺留。店門口的石門檻上有一條長溝，是插木板門用的，打烊時一片片插上，很像今天的鐵捲門。路上的維圖提烏斯・普拉西杜斯熱食店（Vetutius Placidus）通常只能從外面看櫃台。\n這條街北邊是正在挖掘的第九區，一般遊客進不去，但最近的新發現都在這附近：2024 年挖出一間牆壁漆成黑色的宴會廳，畫著海倫與帕里斯等神話人物，漆黑是為了遮住油燈的煙；2026 年 10 月底，又在一棟 1912 年只挖過門面的房子（暫稱科爾內利烏斯・馬克西穆斯之家）裡，找到一個原封不動的木櫃，裡面有青銅燈、梳妝用品、炊具、38 枚銅幣，還有一串至少 24 個小護身符的兒童項鍊。兩千年前的父母，也想把最好的平安符掛在孩子身上。",
+  "task": "找到一個嵌著陶罐的熱食店櫃台，再找門檻上插木板門的長溝，兩個都拍下來。"
+ },
+ {
+  "n": 5,
+  "time": "15:55",
+  "zh": "大體育場：石膏像常設展",
+  "it": "Palestra Grande · I calchi di Pompei",
+  "lat": 40.7515,
+  "lng": 14.4939,
+  "min": 25,
+  "story": "一定要在 16:00 前進來，之後就不能入場。這裡原本是龐貝年輕人運動的大體育場，中間有游泳池。2026 年 3 月起，22 具罹難者石膏像在北側柱廊常設展出，門票已含。石膏像不是石化的屍體：火山灰把人包住、變硬，身體腐爛後留下人形空洞；1863 年起考古學家菲奧雷利（Fiorelli）把石膏灌進空洞，最後一刻的姿勢就被留了下來，連衣服的皺摺都看得到。\n2024 年，《當代生物學》（Current Biology）期刊發表古 DNA 研究，改寫了幾個老故事：大家以為是「戴金手鐲、抱著孩子的媽媽」，其實是一位男性，而且和孩子沒有血緣關係；「相擁而死的姊妹」至少有一位是男性；被當成「一家人」的一組遺體，能檢驗的三個人彼此也不是近親。研究也發現，很多龐貝人的祖先來自東地中海。真相或許更讓人感動：在最後一刻，一個陌生人選擇緊緊護住別人的孩子。",
+  "task": "在石膏像前安靜站 30 秒。走出來後，每個人說一句心裡的感受。（請不要大聲喧嘩，拍照時保持尊重）"
+ },
+ {
+  "n": 6,
+  "time": "16:20",
+  "zh": "圓形競技場",
+  "it": "Anfiteatro",
+  "lat": 40.75125,
+  "lng": 14.4952,
+  "min": 20,
+  "story": "大約西元前 70 年蓋好，是現存最古老的羅馬石造圓形競技場，可坐約 2 萬人，比羅馬競技場早了大約 150 年。西元 59 年，龐貝人和鄰城努切里亞人在這裡看角鬥士比賽，吵著吵著丟石頭、拔刀，死傷很多。羅馬史學家塔西佗記載，尼祿皇帝把案子交給元老院，結果龐貝被禁止舉辦這類比賽 10 年，主辦人也被流放。城裡還留下一則幸災樂禍的塗鴉，大意是嘲笑對方「贏了也一起完蛋」，兩千年前就有網路酸民的味道。1971 年，英國樂團平克佛洛伊德在這裡拍了沒有觀眾的演唱會電影。這時天快黑了（日落約 16:40），看完就從旁邊的出口離開，一步回頭路都不用走。",
+  "task": "在競技場中央拍一張大合照，所有人一起高舉雙手當「冠軍隊」。"
+ },
+ {
+  "n": 7,
+  "time": "16:40",
+  "zh": "出口：圓形競技場廣場",
+  "it": "Uscita Piazza Anfiteatro",
+  "lat": 40.7496,
+  "lng": 14.496,
+  "min": 5,
+  "story": "從東側的 Piazza Anfiteatro 出口離開。回拿坡里有兩個車站：走約 8–10 分鐘到 Pompei Santuario 站（Circumvesuviana 往 Napoli 的 Poggiomarino 線），或走約 12–15 分鐘到國鐵 Pompei 站（Trenitalia，可直達 Napoli Centrale）。班次和走路時間是估計，出發前一天請查 eavsrl.it 和 trenitalia.com。也可以走回西邊的 Pompei Scavi 站（約 20–25 分鐘）。最晚 18:00 前上車，19:30 前回到船上。",
+  "task": "上車前在車站拍一張「平安脫離龐貝」的合照，回船上再傳。"
+ }
+];
 const PORT_ROUTES = {
  "pompeii": {
   "date": "2026-12-15",
   "port": "拿坡里",
   "title": "龐貝 2 小時：最經典的走法",
-  "summary": "12月15日（週二）龐貝考古公園照常開放（冬季 9:00–17:00，最後入場 15:30）。建議時程：13:00 靠岸、約13:20 下船 → 步行約10分鐘到地鐵 Municipio → 地鐵1號線3站到 Garibaldi → 搭 Circumvesuviana 拿坡里–蘇連多線（往 Sorrento 方向）約35分鐘到「Pompei Scavi – Villa dei Misteri」→ 約14:45 從 Porta Marina 入口入園。重點：園內多數屋舍（浴場、悲劇詩人之家、妓院、維蒂之家等）冬季只開到 16:20、最後入場 16:00，而廣場、神廟、大劇場開到 17:00；因此路線先看「有關門時間的室內屋舍」，16:00 後再看露天的大劇場、會堂、阿波羅神廟，最後從 Porta Marina 出園（日落約 16:36，最後 20 分鐘天色漸暗）。主路線 11 站、步行約 2.2 公里、總計約 2 小時；17:00 前出園，搭 17:00–17:30 之間的火車回拿坡里，約 18:15–18:45 可回到碼頭，離 19:30 登船仍有充裕緩衝。注意：原本最有名的『廣場穀倉（Granai del Foro）石膏遺體』目前官網標示暫不開放；2026年3月起罹難者石膏像（22具）改在東側『大體育場 Palestra Grande』常設展出，距主路線較遠，列在延伸行程。",
+  "summary": "西進東出：從海門進、圓形競技場出口出。12 月 15 日（週二）照常開放，冬季 9:00–17:00、最後入場 15:30；室內屋舍與大體育場 16:00 停止入場。",
   "verify": "【已查證（官網 pompeiisites.org，2026年11月查詢）】冬季（10/15–3/15）龐貝古城 9:00 開門、最後入場 15:30、17:00 閉園；全年只在 12/25 與 1/1 休園（除另行公告），週二照常開放（「週二休」只適用於 Stabiae、Oplontis 等周邊遺址，不是龐貝古城）。入口三處：Porta Marina、Piazza Esedra、Piazza Anfiteatro（官網售票處也只設在這三個入口內）；官網未說明冬季關閉任一入口。票價：Pompei Express（只含古城）€20；Pompei Plus €25；18–25歲歐盟公民 €2；未滿18歲免費（以官網為準）。門票實名制：自2024/11/15起所有門票記名，每日上限 20,000 人，現場購票須出示身分證件/護照；2026/3/2 起官方售票改為 Vivaticket（官網標示 pompeii.vivaticket.it／ticket.pompeiisites.org），舊 TicketOne 票不再有效。夏季（3/16–10/14）才有上午/下午入場名額分段，冬季官網未提分段。屋舍冬季時間：維蒂之家、悲劇詩人之家、妓院、斯塔比亞浴場、廣場浴場 9:15–16:20（最後入場16:00）；農牧神之家、廣場、阿波羅神廟、會堂、大劇場、競技場、逃亡者花園 9:00–17:00；小劇場 Odeion 只能從外面看；廣場穀倉暫不開放。【出發前請確認】票價（不同來源寫 €18/€20/€22，以購票頁為準）、是否需選入場時段、當天各屋舍開放公告（官網「Service announcements」）、EAV 火車是否罷工（eavsrl.it）。建議出發前一週在官網購買記名電子票，每位家人各自填姓名並帶護照。",
   "plans": [
    {
     "id": "go",
-    "title": "怎麼去：拿坡里碼頭 → 龐貝 → 回船",
+    "title": "怎麼去：拿坡里碼頭 → 龐貝海門",
     "fit": "",
-    "summary": "",
+    "summary": "13:00 靠岸，下船後直接出發，約 14:45 從海門入園。",
     "steps": [
      {
       "type": "交通",
@@ -3682,23 +3795,15 @@ const PORT_ROUTES = {
       "lat": 40.74848,
       "lng": 14.48306,
       "desc": "出站過馬路即是入口廣場，入口距月台約 50 公尺，加上驗票、安檢與上坡約 5–10 分鐘。超過 30×30×15 公分的包包須寄物（Porta Marina 有付費寄物處）。"
-     },
-     {
-      "type": "交通",
-      "zh": "回程",
-      "it": "",
-      "lat": 40.74858,
-      "lng": 14.48118,
-      "desc": "16:50–17:00 從 Porta Marina 出園，走回 Pompei Scavi 站，搭往 Napoli 的車（約每 30 分鐘一班，約 35–40 分鐘到 Garibaldi／Porta Nolana），再搭地鐵回 Municipio 步行回船。17:00–17:30 的車約 18:15–18:45 回到碼頭；最晚不要晚於約 18:00 從 Pompei Scavi 發車，以保 19:30 前上船。若從東側 Piazza Anfiteatro 出口離開：可步行約 10–15 分鐘到 Pompei Santuario 站（Napoli–Poggiomarino 線，也回拿坡里，但班次以 EAV 時刻表為準），或步行約 20–25 分鐘回 Pompei Scavi 站。"
      }
     ],
     "noRoute": true
    },
    {
     "id": "main",
-    "title": "園內主路線（11 站，約 2 小時，從海門進出）",
+    "title": "園內路線：西進東出（7 站，約 2 小時）",
     "fit": "第一次來、只有 2 小時",
-    "summary": "先看 16:00 就停止入場的室內屋舍，再看開到 17:00 的露天神廟和劇場，最後從同一個門出來，離火車站最近。",
+    "summary": "妓院和大體育場（石膏像）冬天 16:00 停止入場，所以先看它們，最後到開到 17:00 的圓形競技場，從東邊出口離開。每一站的詳細故事和任務在龐貝景點卡的「現場路線任務」。",
     "steps": [
      {
       "type": "景點",
@@ -3706,46 +3811,113 @@ const PORT_ROUTES = {
       "it": "Porta Marina",
       "lat": 40.74848,
       "lng": 14.48306,
+      "time": "14:45",
       "min": 5,
-      "walk": "從 Pompei Scavi 火車站走 5–10 分鐘（含驗票）",
-      "desc": "這是古城朝向大海的西門，因為當年海岸線比現在近得多而得名。城門有兩條拱道：較寬的一條給馱獸與貨車，較窄的給行人，至今仍是主要入口。進門後是一段頗陡的古羅馬石板上坡路，石頭被千年車輪與腳步磨得光滑，下雨時特別滑，請長輩慢慢走、扶著旁邊。走上坡時回頭看，就能感受到龐貝建在古老熔岩台地上的地勢。",
-      "n": 1
+      "desc": "從火車站旁的海門進城，這叫「西進東出」：一路往東走、不走回頭路，最後從另一頭的圓形競技場出口離開。城門有一大一小兩個拱門，大的給騾車和馬車，小的給行人，兩千年前就有人車分流。進門是一段被車輪和腳步磨得發亮的石板上坡，下雨時很滑。低頭看：路中間凸起的大石塊叫「過街石」。當時沒有下水道，雨水、髒水和垃圾都順著馬路流，過街石就是讓人過馬路不弄濕鞋的「斑馬線」，石頭之間的空隙剛好讓車輪通過。石板縫裡有時嵌著白色小石子，有人說是讓夜裡走路的人看得見的「古代反光標記」，不過這只是一種說法，考古學家還沒有證據。"
      },
      {
       "type": "景點",
-      "zh": "廣場與朱比特神廟（遠眺維蘇威火山）",
-      "it": "Foro e Tempio di Giove",
-      "lat": 40.74912,
-      "lng": 14.48533,
-      "min": 10,
-      "walk": "從上一站走 4 分鐘",
-      "desc": "廣場是龐貝的市中心，政治、宗教與市集都在這片長方形大廣場四周。北端高台上的朱比特神廟只剩柱基與階梯，但正後方就是維蘇威火山，正是西元79年毀掉這座城的元凶，是全園最經典的拍照角度。四周可找到市場（Macellum）、榮譽拱門等遺跡。冬天下午光線斜照，建議趁天色還亮先在這裡拍全家福。",
-      "n": 2
+      "zh": "廣場與度量衡台",
+      "it": "Foro · Mensa Ponderaria",
+      "lat": 40.74925,
+      "lng": 14.4844,
+      "time": "14:55",
+      "min": 17,
+      "desc": "廣場長約 142 公尺，是龐貝的市政中心，北邊的朱比特神廟正後方就是維蘇威火山。先別急著拍火山，到廣場西邊、阿波羅神廟圍牆的壁龛找「度量衡台」：石桌上挖了幾個大小不同的洞，底下有出口。買賣有糾紛時，把穀物或油倒進標準的洞裡量，就知道有沒有被偷斤減兩。現場這個是複製品，真品在拿坡里國家考古博物館。"
      },
      {
       "type": "景點",
-      "zh": "廣場浴場",
-      "it": "Terme del Foro",
-      "lat": 40.75034,
-      "lng": 14.48412,
-      "min": 8,
-      "walk": "從上一站走 3 分鐘（廣場北側）",
-      "desc": "興建於約西元前80年羅馬殖民地成立後不久的公共澡堂，分男女兩區。男區的更衣／溫水室最值得看：牆上放衣物的壁龕由一排赤陶「男子人像柱」撐著，拱頂還有精緻灰泥浮雕，房間裡留有一個大型青銅火盆用來取暖。可以跟孫子說：兩千年前的人已經有冷水、溫水、熱水分開的「三溫暖」了。冬季16:00最後入場。",
-      "n": 3
+      "zh": "小巷與妓院",
+      "it": "Lupanare",
+      "lat": 40.75018,
+      "lng": 14.48693,
+      "time": "15:15",
+      "min": 12,
+      "desc": "往東穿過小巷。牆角或路面上偶爾會看到刻著男性生殖器的浮雕，以前常有人說「跟著它指的方向就能找到妓院」，這是錯的。它其實是羅馬人的辟邪符（fascinus），用來擋住忌妒的「邪眼」，麵包店、民宅、路口到處都有，方向也各不相同。"
      },
      {
       "type": "景點",
-      "zh": "悲劇詩人之家（「小心惡犬」馬賽克）",
-      "it": "Casa del Poeta Tragico",
-      "lat": 40.75067,
-      "lng": 14.48381,
+      "zh": "豐饒大道與熱食店",
+      "it": "Via dell'Abbondanza · Thermopolium di Vetutius Placidus",
+      "lat": 40.74975,
+      "lng": 14.4901,
+      "time": "15:28",
+      "min": 24,
+      "desc": "轉上龐貝最熱鬧的商業大街，一路往東走大約 18 分鐘。路邊常看到 L 形的石砌櫃台，嵌著一個個大陶罐，那是熱食店（thermopolium），龐貝大約有 80 家。很多人家裡沒有廚房，就在外面買熱的吃。2020 年在另一間熱食店的陶罐裡，找到鴨骨，還有豬、山羊、魚和蝸牛的遺留。店門口的石門檻上有一條長溝，是插木板門用的，打烊時一片片插上，很像今天的鐵捲門。路上的維圖提烏斯・普拉西杜斯熱食店（Vetutius Placidus）通常只能從外面看櫃台。"
+     },
+     {
+      "type": "景點",
+      "zh": "大體育場：石膏像常設展",
+      "it": "Palestra Grande · I calchi di Pompei",
+      "lat": 40.7515,
+      "lng": 14.4939,
+      "time": "15:55",
+      "min": 25,
+      "desc": "一定要在 16:00 前進來，之後就不能入場。這裡原本是龐貝年輕人運動的大體育場，中間有游泳池。2026 年 3 月起，22 具罹難者石膏像在北側柱廊常設展出，門票已含。石膏像不是石化的屍體：火山灰把人包住、變硬，身體腐爛後留下人形空洞；1863 年起考古學家菲奧雷利（Fiorelli）把石膏灌進空洞，最後一刻的姿勢就被留了下來，連衣服的皺摺都看得到。"
+     },
+     {
+      "type": "景點",
+      "zh": "圓形競技場",
+      "it": "Anfiteatro",
+      "lat": 40.75125,
+      "lng": 14.4952,
+      "time": "16:20",
+      "min": 20,
+      "desc": "大約西元前 70 年蓋好，是現存最古老的羅馬石造圓形競技場，可坐約 2 萬人，比羅馬競技場早了大約 150 年。西元 59 年，龐貝人和鄰城努切里亞人在這裡看角鬥士比賽，吵著吵著丟石頭、拔刀，死傷很多。羅馬史學家塔西佗記載，尼祿皇帝把案子交給元老院，結果龐貝被禁止舉辦這類比賽 10 年，主辦人也被流放。城裡還留下一則幸災樂禍的塗鴉，大意是嘲笑對方「贏了也一起完蛋」，兩千年前就有網路酸民的味道。1971 年，英國樂團平克佛洛伊德在這裡拍了沒有觀眾的演唱會電影。這時天快黑了（日落約 16:40），看完就從旁邊的出口離開，一步回頭路都不用走。"
+     },
+     {
+      "type": "下車",
+      "zh": "出口：圓形競技場廣場",
+      "it": "Uscita Piazza Anfiteatro",
+      "lat": 40.7496,
+      "lng": 14.496,
+      "time": "16:40",
       "min": 5,
-      "walk": "從上一站走 1 分鐘（就在浴場對面）",
-      "desc": "一棟中型住宅，1824年出土，因屋內一幅被認為是詩人朗誦的壁畫而得名。最出名的是門口地板上的黑白馬賽克：一隻被鍊住、張牙舞爪的狗，下面寫著拉丁文「CAVE CANEM」，意思就是「小心惡犬」，是兩千年前的看門告示。入口通常用柵欄隔開，從門外就能清楚看到馬賽克。開放情況以當天公告為準。",
-      "n": 4
+      "desc": "從東側的 Piazza Anfiteatro 出口離開。回拿坡里有兩個車站：走約 8–10 分鐘到 Pompei Santuario 站（Circumvesuviana 往 Napoli 的 Poggiomarino 線），或走約 12–15 分鐘到國鐵 Pompei 站（Trenitalia，可直達 Napoli Centrale）。班次和走路時間是估計，出發前一天請查 eavsrl.it 和 trenitalia.com。也可以走回西邊的 Pompei Scavi 站（約 20–25 分鐘）。最晚 18:00 前上車，19:30 前回到船上。"
+     }
+    ]
+   },
+   {
+    "id": "back",
+    "title": "怎麼回船",
+    "fit": "",
+    "summary": "",
+    "steps": [
+     {
+      "type": "交通",
+      "zh": "回程 A：Pompei Santuario 站（Circumvesuviana）",
+      "it": "Pompei Santuario",
+      "lat": 40.75118,
+      "lng": 14.50164,
+      "desc": "從圓形競技場出口走約 8–10 分鐘，搭往 Napoli 的 Poggiomarino 線，約 40 分鐘到 Garibaldi 或 Porta Nolana，再搭地鐵到 Municipio 走回碼頭。班次出發前請查 eavsrl.it。"
      },
      {
-      "type": "景點",
+      "type": "交通",
+      "zh": "回程 B：國鐵 Pompei 站（Trenitalia）",
+      "it": "Pompei (FS)",
+      "lat": 40.7459,
+      "lng": 14.5013,
+      "desc": "從出口走約 12–15 分鐘，搭區域火車直達 Napoli Centrale（約 30–40 分鐘），再從 Garibaldi 搭地鐵 1 號線到 Municipio。班次出發前請查 trenitalia.com。"
+     },
+     {
+      "type": "下船",
+      "zh": "回到郵輪碼頭",
+      "it": "Stazione Marittima",
+      "lat": 40.83775,
+      "lng": 14.26063,
+      "desc": "最晚 18:00 前在龐貝上車，19:30 前回到船上。"
+     }
+    ],
+    "noRoute": true
+   },
+   {
+    "id": "ext",
+    "title": "時間多的話（14:00 前入園才來得及）",
+    "fit": "早到的人",
+    "summary": "這幾個點在北邊或南邊，會走回頭路，時間不夠就跳過。",
+    "steps": [
+     {
+      "type": "延伸",
       "zh": "農牧神之家",
       "it": "Casa del Fauno",
       "lat": 40.75126,
@@ -3755,80 +3927,6 @@ const PORT_ROUTES = {
       "desc": "龐貝最大、最豪華的私人宅邸，佔滿整個街區，室內面積約3,000平方公尺，始建於約西元前180年。中庭水池上立著一尊跳舞的「農牧神」青銅像（現場為複製品，原件在拿坡里國家考古博物館），因而得名。後方的大廳地板原本是著名的「亞歷山大大帝馬賽克」，描繪他與波斯王大流士作戰，現場為複製品。開放至17:00。",
       "n": 5
      },
-     {
-      "type": "景點",
-      "zh": "妓院",
-      "it": "Lupanare",
-      "lat": 40.75018,
-      "lng": 14.48693,
-      "min": 8,
-      "walk": "從上一站走 5 分鐘（往東南穿過小巷）",
-      "desc": "龐貝保存最完整的古代妓院，名稱來自拉丁文 lupa（母狼，當時對妓女的俗稱），1862年出土。兩層樓建築，一樓走廊兩側有5個小房間，每間都有砌在牆邊的石床，走廊牆上有小幅情色壁畫，像「菜單」一樣告訴客人提供哪些服務。空間狹窄常需排隊，壁畫較露骨。冬季16:00最後入場。",
-      "n": 6
-     },
-     {
-      "type": "景點",
-      "zh": "斯塔比亞浴場（豐饒大道口）",
-      "it": "Terme Stabiane / Via dell'Abbondanza",
-      "lat": 40.74997,
-      "lng": 14.48769,
-      "min": 10,
-      "walk": "從上一站走 2 分鐘",
-      "desc": "龐貝最古老的公共澡堂，第一期約建於西元前125年，位在主街「豐饒大道」與斯塔比亞路交叉口。男區有更衣室、冷水圓頂室、溫水室和熱水室，熱房地板下的「地暖」系統被認為是羅馬世界現存最早的例子；更衣室天花板有小愛神等灰泥浮雕。出來沿豐饒大道走一小段，看路面深深的車轍和過街墊腳石。冬季16:00最後入場。",
-      "n": 7
-     },
-     {
-      "type": "景點",
-      "zh": "大劇場（與小劇場外觀）",
-      "it": "Teatro Grande e Odeion",
-      "lat": 40.74775,
-      "lng": 14.48852,
-      "min": 12,
-      "walk": "從上一站沿 Via Stabiana 往南走 6 分鐘",
-      "desc": "建於西元前2世紀、依著山坡而建的露天半圓形劇場，可容納約5,000名觀眾，近年修復時還在大理石座位上發現古羅馬的座位編號。可坐在階梯上休息。旁邊的小劇場（Odeion）建於約西元前80年，原本有屋頂、約1,500座，用於音樂與議會，目前只能從外面看。開放至17:00。",
-      "n": 8
-     },
-     {
-      "type": "景點",
-      "zh": "會堂（古代法院）",
-      "it": "Basilica",
-      "lat": 40.7487,
-      "lng": 14.48434,
-      "min": 6,
-      "walk": "從上一站經三角廣場往西走 8 分鐘",
-      "desc": "建於西元前2世紀，是龐貝的法院兼商業交易所，也是古城最重要的公共建築之一。現在只剩一排排磚砌粗柱的柱身，可以想像當年屋頂下人來人往、打官司、談生意的場面。這種長方形大廳加半圓形後殿的「巴西利卡」設計，後來被早期基督教教堂沿用，今天很多教堂的格局都源自這裡。開放至17:00。",
-      "n": 9
-     },
-     {
-      "type": "景點",
-      "zh": "阿波羅神廟",
-      "it": "Santuario di Apollo",
-      "lat": 40.74921,
-      "lng": 14.4844,
-      "min": 6,
-      "walk": "從上一站走 1 分鐘（就在會堂北邊）",
-      "desc": "龐貝最古老、最重要的聖地之一，祭祀可追溯到西元前6世紀，現在看到的樣貌主要是西元前2世紀末改建。高台上的神廟四周圍著柱廊，庭院裡立著拉弓射箭姿勢的阿波羅青銅像，以及對面的黛安娜（月亮女神）半身像，現場都是複製品，原件藏在拿坡里國家考古博物館。階梯旁一根柱子上原本放著日晷。開放至17:00。",
-      "n": 10
-     },
-     {
-      "type": "景點",
-      "zh": "維納斯神廟（出口前）",
-      "it": "Santuario di Venere",
-      "lat": 40.74845,
-      "lng": 14.48375,
-      "min": 5,
-      "walk": "從上一站走 2 分鐘；之後 1–2 分鐘即回到 Porta Marina 出口",
-      "desc": "維納斯是龐貝的守護女神。西元前80年羅馬殖民地成立後不久，居民在海門與會堂之間的人工高台上建了這座神殿，當年面向大海、遠遠就能看見。火山爆發前它還在修復62年地震的損壞，爆發後又被盜掘，所以今天只剩基座和柱子殘件。站在平台邊可眺望城外平原，是離開前最後一個回望古城的好位置。",
-      "n": 11
-     }
-    ]
-   },
-   {
-    "id": "ext",
-    "title": "時間多的話：延伸景點",
-    "fit": "14:30 前就入園的人",
-    "summary": "這幾個點在東邊，離主路線較遠，要早一點入園才來得及。",
-    "steps": [
      {
       "type": "延伸",
       "zh": "維蒂之家（可替換第3站）",
@@ -3842,25 +3940,14 @@ const PORT_ROUTES = {
      },
      {
       "type": "延伸",
-      "zh": "大體育場（罹難者石膏像常設展）",
-      "it": "Palestra Grande – I calchi",
-      "lat": 40.75075,
-      "lng": 14.4939,
-      "min": 15,
-      "walk": "從斯塔比亞浴場沿豐饒大道往東走約 12–15 分鐘",
-      "desc": "2026年3月12日起，22具罹難者石膏像在大體育場的南、北柱廊常設展出，門票已含。這些石膏像是考古學家把石膏灌入火山灰中遺體腐化後留下的空腔而成，能看到人們最後的姿勢。屋舍類冬季時間 9:15–16:20，必須在16:00前抵達，所以只適合14:30前入園、並把這裡排在最前面的家人。",
-      "n": "E2"
-     },
-     {
-      "type": "延伸",
-      "zh": "圓形競技場",
-      "it": "Anfiteatro",
-      "lat": 40.75127,
-      "lng": 14.4952,
+      "zh": "斯塔比亞浴場（豐饒大道口）",
+      "it": "Terme Stabiane / Via dell'Abbondanza",
+      "lat": 40.74997,
+      "lng": 14.48769,
       "min": 10,
-      "walk": "從大體育場走 2 分鐘（就在對面）",
-      "desc": "約建於西元前70年，是現存最古老的羅馬石造圓形競技場之一，可容納約2萬人。西元59年龐貝人和鄰城努切里亞人在這裡看角鬥比賽時大打出手，羅馬因此禁賽10年。1971年英國樂團 Pink Floyd 在此無觀眾拍攝演唱會電影。開放至17:00；可從旁邊 Piazza Anfiteatro 出口直接離園。",
-      "n": "E3"
+      "walk": "從上一站走 2 分鐘",
+      "desc": "龐貝最古老的公共澡堂，第一期約建於西元前125年，位在主街「豐饒大道」與斯塔比亞路交叉口。男區有更衣室、冷水圓頂室、溫水室和熱水室，熱房地板下的「地暖」系統被認為是羅馬世界現存最早的例子；更衣室天花板有小愛神等灰泥浮雕。出來沿豐饒大道走一小段，看路面深深的車轍和過街墊腳石。冬季16:00最後入場。",
+      "n": 7
      },
      {
       "type": "延伸",
@@ -4357,6 +4444,847 @@ const PORT_ROUTES = {
    "建議最晚 16:45 回到港口，郵輪 17:30 前要回船。下雨或長輩累了，可以從四角廣場直接搭計程車回港。",
    "雨天替代：把在戶外的時間改到馬西莫劇院內部導覽（€12，每天 09:30–18:00）或聖加大肋納修道院室內參觀。"
   ]
+ },
+ "marseille": {
+  "date": "2026-12-13",
+  "port": "馬賽",
+  "title": "馬賽：舊港聖誕與守護聖母院",
+  "summary": "MSC 停靠 Cap Janet 的 MPCT 郵輪碼頭（Porte 4, Môle Léon Gourret），距舊港約 7.5 km。港方免費接駁車送到 Place de la Joliette，再步行經大教堂、聖讓堡到舊港。12/13 是週日，santons 市集（11/14–1/3）照常開放；守護聖母院搭 60 號公車最省力。",
+  "verify": "已查證：MSC 官方港口頁寫停靠 MPCT（Porte 4, Môle Léon Gourret）；港方免費接駁車終點在 Joliette（9 Quai du Lazaret，Terrasses du Port 旁），MSC 頁面寫約每 20 分鐘一班、09:20–17:20、車程約 25 分鐘（塞車時可到 45 分鐘）。Foire aux santons 2026 年在 11/14–2027/1/3 的 Quai du Port 舉行，免費，10:00–19:00。60 號公車從 Mucem Saint-Jean 經 Quai du Port、Hôtel de Ville、Vieux-Port 到 Notre Dame de la Garde，約 12 分鐘一班、車程約 19 分鐘。聖母院免費參觀，官網列 07:00–18:00，但只寫到 12/12 為止，12/13 起的時段請再確認。小火車 2026 年票價成人 11€、兒童 6€，冬季班距未公布。耶誕木屋市集與 Ombrière 周邊的佈置位置未查到 2026 年官方資料。",
+  "plans": [
+   {
+    "id": "A",
+    "title": "長輩友善：接駁車＋步行海濱＋60 號公車上聖母院",
+    "fit": "全家含祖父母；平路為主，上坡全程搭公車",
+    "summary": "接駁車到 Joliette 後沿海平路走到 La Major 和聖讓堡（MuCEM 外觀），到舊港逛 santons 市集、午餐，再搭 60 號公車上守護聖母院，下山後回 Joliette 搭接駁車。",
+    "steps": [
+     {
+      "time": "09:30",
+      "type": "下船",
+      "zh": "MPCT 郵輪碼頭下船",
+      "it": "Marseille Provence Cruise Terminal (Porte 4)",
+      "lat": 43.33661,
+      "lng": 5.34564,
+      "hours": "依船上通知",
+      "ticket": "免費接駁車",
+      "desc": "地上有綠線指引，跟著走 5–12 分鐘到 Porte 4 出口附近的接駁車站。碼頭很大，長輩可先上洗手間。記得帶船卡和護照影本。",
+      "walk": "接駁車約 25 分鐘（塞車時最多 45 分鐘）到 Joliette"
+     },
+     {
+      "time": "10:00",
+      "type": "下車",
+      "zh": "Joliette 接駁車下車點",
+      "it": "Place de la Joliette / 9 Quai du Lazaret",
+      "lat": 43.3053,
+      "lng": 5.3664,
+      "hours": "接駁約 09:20–17:20（出發前請確認）",
+      "ticket": "免費",
+      "desc": "下車點在 Les Terrasses du Port 購物中心與海運站之間（Five Guys 之後）。回程也在這裡上車，請記住位置；購物中心有乾淨的廁所。",
+      "walk": "沿海濱平路步行約 10 分鐘（約 700 m）到 La Major"
+     },
+     {
+      "time": "10:15",
+      "type": "景點",
+      "zh": "馬賽主教座堂（La Major）",
+      "it": "Cathédrale La Major",
+      "lat": 43.29944,
+      "lng": 5.36389,
+      "hours": "出發前請確認",
+      "ticket": "免費",
+      "desc": "19 世紀的羅馬－拜占庭式條紋大教堂，是法國最大的教堂之一。外面的海濱步道很適合拍全家合照，內部大理石馬賽克很華麗。",
+      "walk": "沿 Esplanade de la Major 步行約 8 分鐘到聖讓堡"
+     },
+     {
+      "time": "10:40",
+      "type": "景點",
+      "zh": "聖讓堡與 MuCEM 空橋（外觀）",
+      "it": "Fort Saint-Jean / MuCEM (passerelle)",
+      "lat": 43.29556,
+      "lng": 5.36278,
+      "hours": "堡區步道開放時間出發前請確認",
+      "ticket": "外部步道與空橋免費；MuCEM 展覽付費",
+      "desc": "從 La Major 旁有高架步道直接進入聖讓堡，堡內花園可俯瞰舊港入口，再沿空橋走到 MuCEM 的鏤空黑色外殼。只看外部不必買票，坡度平緩。",
+      "walk": "從聖讓堡下到舊港北岸約 8 分鐘"
+     },
+     {
+      "time": "11:15",
+      "type": "景點",
+      "zh": "Santons 聖誕人偶市集",
+      "it": "Foire aux santons, Quai du Port",
+      "lat": 43.2961,
+      "lng": 5.37,
+      "hours": "2026/11/14–2027/1/3，10:00–19:00",
+      "ticket": "免費",
+      "desc": "第 224 屆市集，約 21 家 santonnier 攤位，展示普羅旺斯傳統陶土聖誕人偶。可以挑一尊小 santon 當紀念品，給長輩和小朋友都合適。",
+      "walk": "沿 Quai du Port 往東平路約 5 分鐘到 Ombrière"
+     },
+     {
+      "time": "11:50",
+      "type": "景點",
+      "zh": "舊港 Ombrière 鏡面頂棚",
+      "it": "L'Ombrière, Quai de la Fraternité",
+      "lat": 43.29522,
+      "lng": 5.37431,
+      "hours": "全天",
+      "ticket": "免費",
+      "desc": "Norman Foster 設計的不鏽鋼鏡面頂棚，站在下面可以看到全家的倒影。早上有魚販在 Quai des Belges 賣魚；耶誕木屋的位置請以現場為準。",
+      "walk": "附近找午餐，步行 2–5 分鐘"
+     },
+     {
+      "time": "12:15",
+      "type": "午餐",
+      "zh": "舊港周邊午餐",
+      "it": "Vieux-Port (Quai de Rive Neuve / Quai du Port)",
+      "lat": 43.29522,
+      "lng": 5.37431,
+      "hours": "多數 12:00–14:30",
+      "ticket": "依餐廳",
+      "desc": "正宗 bouillabaisse 每人常在 60€ 以上，而且要預訂。一般家庭可選 crêperie 或 brasserie。週日部分店家公休，最好先查好 2–3 家備選。",
+      "walk": "走回 Quai du Port 的 Hôtel de Ville 公車站約 5 分鐘"
+     },
+     {
+      "time": "13:30",
+      "type": "上車",
+      "zh": "60 號公車（Hôtel de Ville 站）",
+      "it": "RTM Bus 60 – arrêt Hôtel de Ville",
+      "lat": 43.296,
+      "lng": 5.369,
+      "hours": "約每 12 分鐘一班（出發前請確認）",
+      "ticket": "RTM 單程票（價格出發前請確認）",
+      "desc": "60 號從 Mucem Saint-Jean 開往 Notre Dame de la Garde，Quai du Port、Hôtel de Ville、Vieux-Port 都有停。車程約 19 分鐘，免爬陡坡。週日班次可能較少。",
+      "walk": "坐到終點站 Notre Dame de la Garde"
+     },
+     {
+      "time": "14:00",
+      "type": "景點",
+      "zh": "守護聖母院",
+      "it": "Basilique Notre-Dame de la Garde",
+      "lat": 43.28394,
+      "lng": 5.3713,
+      "hours": "07:00–18:00（12/13 起出發前請確認）",
+      "ticket": "免費（廁所 0.5€）",
+      "desc": "建在 149 m 高的山丘上，是馬賽的地標「Bonne Mère」，內部有大量船隻還願畫和金色馬賽克。觀景台可 360° 看舊港、伊夫堡和群島，山上風大請帶外套。",
+      "walk": "搭 60 號回 Mucem Saint-Jean 約 20 分鐘"
+     },
+     {
+      "time": "15:15",
+      "type": "上車",
+      "zh": "60 號公車下山",
+      "it": "Bus 60 → Mucem Saint-Jean",
+      "lat": 43.28394,
+      "lng": 5.3713,
+      "hours": "約每 12 分鐘一班",
+      "ticket": "RTM 單程票",
+      "desc": "在終點站 Mucem Saint-Jean 下車可以少走路。如果長輩累了，Vieux-Port 一帶也可以叫計程車回 Joliette。",
+      "walk": "從 Mucem Saint-Jean 沿海平路步行約 15 分鐘（約 1.1 km）到 Joliette 接駁站"
+     },
+     {
+      "time": "16:00",
+      "type": "交通",
+      "zh": "Joliette 搭接駁車回船",
+      "it": "Navette gratuite – Joliette → MPCT",
+      "lat": 43.3053,
+      "lng": 5.3664,
+      "hours": "最晚 16:30 前上車",
+      "ticket": "免費",
+      "desc": "全船 17:30 前要回船，接駁車塞車時要 45 分鐘，加上碼頭步行，請 16:30 前上車。排隊人潮多時再提早。",
+      "walk": "接駁車 25–45 分鐘＋碼頭內步行 5–12 分鐘"
+     }
+    ]
+   },
+   {
+    "id": "B",
+    "title": "腳力好：小火車上聖母院＋Le Panier 老城散步",
+    "fit": "腳力好的成員，或想坐觀光小火車的小朋友",
+    "summary": "上午先走 Le Panier 老城巷弄和 Vieille Charité，中午在舊港逛 santons 市集，下午搭 Petit Train 1 號線上聖母院（山上至少停 20 分鐘，搭下一班回來）。",
+    "steps": [
+     {
+      "time": "10:00",
+      "type": "下車",
+      "zh": "Joliette 接駁車下車點",
+      "it": "Place de la Joliette / 9 Quai du Lazaret",
+      "lat": 43.3053,
+      "lng": 5.3664,
+      "hours": "接駁約 09:20–17:20（出發前請確認）",
+      "ticket": "免費",
+      "desc": "跟方案 A 一樣從 MPCT 搭免費接駁車過來。B 方案上坡、階梯比較多，不建議推輪椅或嬰兒車。",
+      "walk": "步行約 10 分鐘到 Vieille Charité（緩上坡）"
+     },
+     {
+      "time": "10:15",
+      "type": "景點",
+      "zh": "老慈善院",
+      "it": "La Vieille Charité",
+      "lat": 43.29984,
+      "lng": 5.36786,
+      "hours": "週日博物館開放時段出發前請確認",
+      "ticket": "中庭免費",
+      "desc": "17 世紀的救濟院，有三層粉色石拱廊圍著巴洛克禮拜堂，是 Le Panier 最漂亮的建築。中庭可以自由參觀。",
+      "walk": "往南穿過 Le Panier 巷弄約 8 分鐘"
+     },
+     {
+      "time": "10:40",
+      "type": "步行",
+      "zh": "Le Panier 老城巷弄",
+      "it": "Le Panier / Place de Lenche",
+      "lat": 43.2978,
+      "lng": 5.3657,
+      "hours": "全天",
+      "ticket": "免費",
+      "desc": "馬賽最古老的街區，有彩色牆面、塗鴉、肥皂小店和咖啡館，Place de Lenche 可遠眺聖母院。巷弄有階梯，路面是石板路。",
+      "walk": "下坡約 8 分鐘到 Quai du Port"
+     },
+     {
+      "time": "11:15",
+      "type": "景點",
+      "zh": "Santons 市集與 Ombrière",
+      "it": "Foire aux santons / L'Ombrière",
+      "lat": 43.2961,
+      "lng": 5.37,
+      "hours": "10:00–19:00",
+      "ticket": "免費",
+      "desc": "逛 santons 攤位後到 Ombrière 拍倒影照，接著在舊港吃午餐（參考方案 A）。",
+      "walk": "在舊港周邊午餐後，到小火車站約 5 分鐘"
+     },
+     {
+      "time": "13:30",
+      "type": "上車",
+      "zh": "Petit Train 1 號線（聖母院線）",
+      "it": "Petit Train de Marseille – Circuit 1 Notre-Dame",
+      "lat": 43.2956,
+      "lng": 5.3725,
+      "hours": "全年每日行駛，冬季時刻出發前請確認",
+      "ticket": "成人 11€／兒童 6€（2026 年）",
+      "desc": "觀光小火車從舊港出發，繞 Rive Neuve 上山，在聖母院停留至少 20 分鐘，再搭下一班回來。上車點以舊港 Quai du Port 現場站牌為準。",
+      "walk": "車程單程約 30 分鐘（出發前請確認）"
+     },
+     {
+      "time": "14:10",
+      "type": "景點",
+      "zh": "守護聖母院",
+      "it": "Basilique Notre-Dame de la Garde",
+      "lat": 43.28394,
+      "lng": 5.3713,
+      "hours": "07:00–18:00（出發前請確認）",
+      "ticket": "免費",
+      "desc": "參觀教堂和觀景台。記下下一班小火車的時間，不要錯過。",
+      "walk": "小火車回舊港約 30 分鐘"
+     },
+     {
+      "time": "15:30",
+      "type": "步行",
+      "zh": "舊港 → MuCEM 外觀 → Joliette",
+      "it": "Fort Saint-Jean / MuCEM → Joliette",
+      "lat": 43.29687,
+      "lng": 5.36091,
+      "hours": "全天",
+      "ticket": "免費",
+      "desc": "回程順路經過聖讓堡外和 MuCEM 外觀，再沿海濱走到 Joliette，16:30 前搭上接駁車。",
+      "walk": "約 25 分鐘（約 1.8 km）到接駁站"
+     }
+    ]
+   }
+  ],
+  "tips": [
+   "12/13 是週日，部分商店和餐廳公休，舊港市集和聖母院照常開放。",
+   "接駁車可能塞車，請以最晚 16:30 在 Joliette 上車為準；真的趕不上就在舊港叫計程車直奔 MPCT Porte 4（約 20 分鐘）。",
+   "聖母院山頂風大，12 月體感偏冷，請帶防風外套。",
+   "舊港和公車上要提防扒手，護照放船上，只帶影本。",
+   "60 號公車和小火車的冬季時刻都請出發前查 RTM 和官方網站。"
+  ]
+ },
+ "genoa": {
+  "date": "2026-12-14",
+  "port": "熱那亞",
+  "title": "熱那亞：港口、caruggi 巷弄與 Via Garibaldi",
+  "summary": "郵輪停靠 Stazione Marittima（Ponte dei Mille），從碼頭到古港和舊城都能步行。12/14 是週一，Strada Nuova 博物館群和哥倫布之家都休館，行程以外觀、教堂和巷弄散步為主。大教堂 12:00–15:00 午休，請排在上午參觀。",
+  "verify": "已查證：Musei di Strada Nuova（Palazzo Rosso、Bianco、Tursi）週一休館，週二至週五 9–19 開放；Casa di Colombo 週一休館（週二至週五 10–18）；Cattedrale San Lorenzo 週一至週五 8–12、15–19。2025 年 De Ferrari 廣場有大型聖誕樹，市府也有 2026 年的聖誕樹贊助文件，但 2026 年實際擺設請再確認。Euribia 停靠 Ponte dei Mille 還是 Ponte Andrea Doria 未能確認，請以船上通知為準（兩處相鄰）。地鐵票價、聖誕市集位置未查證。",
+  "plans": [
+   {
+    "id": "A",
+    "title": "全步行＋地鐵回程：古港 → 大教堂 → De Ferrari → Via Garibaldi",
+    "fit": "全家含祖父母；平路為主，回程搭地鐵省力",
+    "summary": "沿港邊走到聖喬治宮和古港，穿過 Piazza Banchi 一帶的 caruggi 到大教堂（中午前），再到 De Ferrari 看聖誕樹、吃 focaccia，下午看 Porta Soprana、哥倫布之家外觀和 Via Garibaldi 的宮殿外觀，從 De Ferrari 搭地鐵到 Principe 回船。",
+    "steps": [
+     {
+      "time": "09:30",
+      "type": "下船",
+      "zh": "熱那亞海運站",
+      "it": "Stazione Marittima – Ponte dei Mille",
+      "lat": 44.4154,
+      "lng": 8.9226,
+      "hours": "依船上通知",
+      "ticket": "—",
+      "desc": "熱那亞是 Euribia 的上下船母港，碼頭人潮多。下船後沿 Via Gramsci 的海港側往東南走，記住這棟 20 世紀初的海運站建築，回程好認。",
+      "walk": "沿港邊平路步行約 15–20 分鐘（約 1.2 km）到聖喬治宮"
+     },
+     {
+      "time": "09:50",
+      "type": "景點",
+      "zh": "聖喬治宮",
+      "it": "Palazzo San Giorgio",
+      "lat": 44.40972,
+      "lng": 8.92806,
+      "hours": "外觀全天",
+      "ticket": "外觀免費",
+      "desc": "13 世紀建造，曾是聖喬治銀行總部，馬可波羅傳說就在這裡被囚、口述遊記。面海的立面有聖喬治屠龍壁畫，很適合拍照。",
+      "walk": "過馬路就是古港，步行 3 分鐘"
+     },
+     {
+      "time": "10:05",
+      "type": "景點",
+      "zh": "古港與水族館外觀",
+      "it": "Porto Antico / Acquario di Genova / Bigo",
+      "lat": 44.41028,
+      "lng": 8.92667,
+      "hours": "全天",
+      "ticket": "步行免費；水族館與 Bigo 付費（出發前請確認）",
+      "desc": "Renzo Piano 改造的古港，有水族館、Bigo 起重機觀景台和海濱步道。時間有限，以散步拍照為主；小朋友若想看水族館，需另外安排約 2 小時。",
+      "walk": "穿過高架道路進入舊城，步行約 6 分鐘到 Piazza Banchi"
+     },
+     {
+      "time": "10:40",
+      "type": "步行",
+      "zh": "Caruggi 巷弄（Banchi、Via San Luca）",
+      "it": "Caruggi – Piazza Banchi / Via San Luca",
+      "lat": 44.4093,
+      "lng": 8.9296,
+      "hours": "店家約 9:30 起",
+      "ticket": "免費",
+      "desc": "熱那亞舊城是歐洲最大的中世紀巷弄區之一，巷子窄、建築高。Loggia dei Mercanti 是昔日的交易所。巷弄裡偶有陡坡，請跟緊彼此。",
+      "walk": "沿 Via San Lorenzo 方向步行約 8 分鐘到大教堂"
+     },
+     {
+      "time": "11:10",
+      "type": "景點",
+      "zh": "聖羅倫佐主教座堂",
+      "it": "Cattedrale di San Lorenzo",
+      "lat": 44.4075,
+      "lng": 8.93139,
+      "hours": "週一至五 8:00–12:00、15:00–19:00",
+      "ticket": "教堂免費；寶物館另計（出發前請確認）",
+      "desc": "黑白條紋的哥德式立面，門口有石獅子。教堂內保存一枚二戰時打穿屋頂卻沒爆炸的英軍砲彈。12:00 關門，請在此之前進去。",
+      "walk": "沿 Via San Lorenzo 上行約 4 分鐘到 Palazzo Ducale／De Ferrari"
+     },
+     {
+      "time": "11:45",
+      "type": "景點",
+      "zh": "De Ferrari 廣場與總督宮",
+      "it": "Piazza De Ferrari / Palazzo Ducale",
+      "lat": 44.4075,
+      "lng": 8.93389,
+      "hours": "廣場全天；總督宮展覽出發前請確認",
+      "ticket": "廣場免費",
+      "desc": "熱那亞的中心廣場，有大噴泉和歌劇院，聖誕節期間通常會擺巨型聖誕樹（2026 年出發前請確認）。總督宮中庭可以免費穿越，也有乾淨的廁所。",
+      "walk": "步行約 3 分鐘到 Vico della Casana"
+     },
+     {
+      "time": "12:15",
+      "type": "午餐",
+      "zh": "Focaccia 午餐",
+      "it": "Antico Forno della Casana (Vico della Casana)",
+      "lat": 44.4086,
+      "lng": 8.9336,
+      "hours": "營業時間出發前請確認",
+      "ticket": "約 2–4€／片",
+      "desc": "熱那亞的 focaccia 外脆內軟、表面油亮帶鹽粒，也可以試加了 stracchino 起司的 focaccia di Recco。站著吃或外帶到廣場吃都可以，價格親民。",
+      "walk": "步行約 5 分鐘到 Porta Soprana"
+     },
+     {
+      "time": "13:00",
+      "type": "景點",
+      "zh": "Porta Soprana 與哥倫布之家（外觀）",
+      "it": "Porta Soprana / Casa di Colombo",
+      "lat": 44.40517,
+      "lng": 8.93353,
+      "hours": "城門外觀全天；哥倫布之家週一休館",
+      "ticket": "外觀免費",
+      "desc": "12 世紀的雙塔城門保存完好。旁邊的哥倫布之家是重建的小屋，相傳是哥倫布童年的家，週一休館，只能看外觀。旁邊還有 Sant'Andrea 迴廊遺跡。",
+      "walk": "經 Via XX Settembre／Piazza Fontane Marose 步行約 15 分鐘到 Via Garibaldi（緩上坡）"
+     },
+     {
+      "time": "13:45",
+      "type": "景點",
+      "zh": "Via Garibaldi 與羅利宮殿群（外觀）",
+      "it": "Via Garibaldi – Palazzi dei Rolli",
+      "lat": 44.411,
+      "lng": 8.9333,
+      "hours": "街道全天；Musei di Strada Nuova 週一休館",
+      "ticket": "街道免費",
+      "desc": "UNESCO 世界遺產，16 世紀貴族宮殿沿街排開，Palazzo Rosso、Bianco、Tursi 都在這條街上。週一博物館休館，可以看立面，部分宮殿的大廳或中庭若有開放可探頭欣賞。",
+      "walk": "回到 De Ferrari 地鐵站約 8 分鐘"
+     },
+     {
+      "time": "14:45",
+      "type": "上車",
+      "zh": "地鐵 De Ferrari 站",
+      "it": "Metropolitana – De Ferrari",
+      "lat": 44.408,
+      "lng": 8.9342,
+      "hours": "約 6:00–21:00（出發前請確認）",
+      "ticket": "AMT 單程票（約 2€，出發前請確認）",
+      "desc": "搭地鐵到 Principe 站（中途經 San Giorgio、Darsena），比走回碼頭省力很多。地鐵站有電扶梯。",
+      "walk": "坐到 Principe 約 8 分鐘"
+     },
+     {
+      "time": "15:00",
+      "type": "下車",
+      "zh": "Principe 站",
+      "it": "Metropolitana – Principe",
+      "lat": 44.417,
+      "lng": 8.9219,
+      "hours": "—",
+      "ticket": "—",
+      "desc": "出站後往海邊走就是 Stazione Marittima。時間還夠的話，可以在海運站附近喝杯咖啡。",
+      "walk": "步行約 7 分鐘到海運站，16:30 前登船"
+     }
+    ]
+   }
+  ],
+  "tips": [
+   "週一休館：Musei di Strada Nuova、Casa di Colombo（皆已查證）。想進博物館的成員請改在登船前或下船日安排。",
+   "大教堂 12:00–15:00 午休，一定要排在中午前。",
+   "熱那亞是母港，下午會有大量新乘客報到登船，安檢可能要排隊，請 16:00 前回到碼頭。",
+   "舊城巷弄晚上比較冷清，下午走大路回程，並注意隨身財物。",
+   "Focaccia 早上最新鮮，可以早點買一片當點心。"
+  ]
+ },
+ "naples": {
+  "date": "2026-12-15",
+  "port": "拿坡里",
+  "title": "拿坡里：市中心到 Spaccanapoli、聖誕馬槽街",
+  "summary": "給不去龐貝的家人。郵輪停在 Stazione Marittima（Molo Angioino），出站就是 Piazza Municipio 和新堡。下午走 Galleria Umberto I、Plebiscito 廣場、Via Toledo，傍晚進 Spaccanapoli 和 San Gregorio Armeno 的聖誕馬槽街，在 Via dei Tribunali 吃披薩當晚餐，搭地鐵 1 號線回港，19:30 前登船。",
+  "verify": "已查證：新堡（Maschio Angioino）週一至週六 8:30–18:30、週日休館；San Gregorio Armeno 2026 年馬槽市集提前到 11/1 開幕，結束日期與每日時段官方尚未公布（往年開到 1 月初）。未查證：新堡票價、披薩店營業時間、纜車和地鐵票價，以及 Stazione Marittima 的確切靠泊點（MSC 有時停在 Molo Angioino 或其他碼頭）。",
+  "plans": [
+   {
+    "id": "A",
+    "title": "市中心經典步行＋聖誕馬槽街＋披薩晚餐",
+    "fit": "全家含祖父母（不去龐貝的家人）；約 3.5 km，回程搭地鐵",
+    "summary": "下船後先看新堡，再經拱廊、Plebiscito 廣場，沿 Via Toledo 北上到 Gesù Nuovo，進 Spaccanapoli 和 San Gregorio Armeno，17:30 在 Via dei Tribunali 吃披薩，18:40 搭地鐵 1 號線從 Duomo 回 Municipio。",
+    "steps": [
+     {
+      "time": "13:30",
+      "type": "下船",
+      "zh": "拿坡里海運站",
+      "it": "Stazione Marittima – Molo Angioino",
+      "lat": 40.8379,
+      "lng": 14.2547,
+      "hours": "依船上通知",
+      "ticket": "—",
+      "desc": "出海運站就能看到新堡和維蘇威火山。12 月的日落大約 16:40，市中心散步請以傍晚前為主，夜晚則看馬槽街的燈飾。",
+      "walk": "步行約 5 分鐘到新堡"
+     },
+     {
+      "time": "13:40",
+      "type": "景點",
+      "zh": "新堡（安茹城堡）",
+      "it": "Castel Nuovo (Maschio Angioino)",
+      "lat": 40.83833,
+      "lng": 14.25278,
+      "hours": "週一至六 8:30–18:30（週日休）",
+      "ticket": "博物館收費（出發前請確認）；外觀免費",
+      "desc": "13 世紀安茹王朝興建的五塔城堡，入口是亞拉岡王朝的白色大理石凱旋門。時間不多的話，看外觀和 Piazza Municipio 的港景就很值得。",
+      "walk": "步行約 5 分鐘到溫貝托一世拱廊"
+     },
+     {
+      "time": "14:10",
+      "type": "景點",
+      "zh": "溫貝托一世拱廊",
+      "it": "Galleria Umberto I",
+      "lat": 40.83833,
+      "lng": 14.24944,
+      "hours": "全天",
+      "ticket": "免費",
+      "desc": "1890 年完工的十字形玻璃穹頂拱廊，地面有黃道十二宮馬賽克。聖誕期間常有大型聖誕樹，可以躲雨，也有長椅讓長輩休息。",
+      "walk": "對面是聖卡洛歌劇院，步行約 4 分鐘到 Plebiscito"
+     },
+     {
+      "time": "14:30",
+      "type": "景點",
+      "zh": "公民投票廣場與 Gambrinus 咖啡",
+      "it": "Piazza del Plebiscito / Gran Caffè Gambrinus",
+      "lat": 40.83583,
+      "lng": 14.24861,
+      "hours": "廣場全天；咖啡館約 7:00 起",
+      "ticket": "咖啡約 1.5–5€（出發前請確認）",
+      "desc": "半圓柱廊環抱的大廣場，一邊是王宮，一邊是 San Francesco di Paola 教堂。Gambrinus 是百年咖啡館，可以喝杯 espresso、吃 sfogliatella 或 babà 休息一下。",
+      "walk": "沿 Via Toledo 北上約 15 分鐘（約 1.2 km，平路）到 Gesù Nuovo"
+     },
+     {
+      "time": "15:15",
+      "type": "步行",
+      "zh": "Via Toledo 購物大街",
+      "it": "Via Toledo",
+      "lat": 40.8392,
+      "lng": 14.2484,
+      "hours": "店家約 10:00–20:00",
+      "ticket": "免費",
+      "desc": "拿坡里最主要的步行購物街。左側是西班牙區的斜坡窄巷，不必深入。想坐纜車的話，Augusteo 站就在這段路上（見選項）。",
+      "walk": "往北經 Piazza Dante 方向，右轉進 Piazza del Gesù Nuovo"
+     },
+     {
+      "time": "15:35",
+      "type": "景點",
+      "zh": "新耶穌教堂與聖嘉勒修道院",
+      "it": "Chiesa del Gesù Nuovo / Santa Chiara",
+      "lat": 40.84694,
+      "lng": 14.25083,
+      "hours": "教堂約 8:00–13:00、16:00–19:30（出發前請確認）",
+      "ticket": "教堂免費；聖嘉勒迴廊收費（出發前請確認）",
+      "desc": "Gesù Nuovo 的鑽石切面石牆外觀很特別，內部是華麗的巴洛克風格。對面的 Santa Chiara 有馬約利卡彩磚迴廊，但收費且可能接近關門，可以只看外觀。",
+      "walk": "沿 Spaccanapoli（Via Benedetto Croce）往東約 5 分鐘"
+     },
+     {
+      "time": "16:00",
+      "type": "步行",
+      "zh": "Spaccanapoli 直線老街",
+      "it": "Spaccanapoli – Piazza San Domenico Maggiore",
+      "lat": 40.84889,
+      "lng": 14.25472,
+      "hours": "全天",
+      "ticket": "免費",
+      "desc": "把古城切成兩半的筆直老街，兩旁是小教堂、甜點店和紀念品店。在 Scaturchio 可以買 ministeriale 巧克力或 sfogliatella。人潮多時請牽好小孩。",
+      "walk": "左轉進 Via San Gregorio Armeno 約 4 分鐘"
+     },
+     {
+      "time": "16:20",
+      "type": "景點",
+      "zh": "聖誕馬槽街",
+      "it": "Via San Gregorio Armeno",
+      "lat": 40.8504,
+      "lng": 14.2575,
+      "hours": "2026 年 11/1 開幕，每日時段出發前請確認",
+      "ticket": "免費",
+      "desc": "全世界最有名的手工聖誕馬槽（presepe）街，除了耶穌誕生場景，還有足球明星、政治人物的諷刺小偶，12 月中人潮非常多。天黑後燈光最漂亮。",
+      "walk": "走到 Via dei Tribunali 約 3 分鐘"
+     },
+     {
+      "time": "17:30",
+      "type": "午餐",
+      "zh": "Via dei Tribunali 披薩（晚餐）",
+      "it": "Pizzeria Di Matteo / Sorbillo – Via dei Tribunali",
+      "lat": 40.85098,
+      "lng": 14.25846,
+      "hours": "營業時間出發前請確認",
+      "ticket": "Margherita 約 6–10€（出發前請確認）",
+      "desc": "拿坡里披薩的發源街。Di Matteo 的炸披薩（pizza fritta）很有名，Sorbillo 名氣最大但常要排隊。17:30 前到可以避開晚餐人潮；人多時建議分兩桌或外帶。",
+      "walk": "沿 Via Duomo 南行約 6 分鐘到地鐵 Duomo 站"
+     },
+     {
+      "time": "18:40",
+      "type": "上車",
+      "zh": "地鐵 1 號線 Duomo 站",
+      "it": "Metropolitana Linea 1 – Duomo",
+      "lat": 40.8472,
+      "lng": 14.2607,
+      "hours": "約 6:00–23:00（出發前請確認）",
+      "ticket": "UnicoNapoli 單程票（出發前請確認）",
+      "desc": "搭往 Piscinola 方向（經 Università）到 Municipio，只要 2 站，方向請以站內標示為準。1 號線的許多車站本身就是當代藝術車站，有電扶梯。",
+      "walk": "坐到 Municipio 約 5 分鐘"
+     },
+     {
+      "time": "18:55",
+      "type": "下車",
+      "zh": "地鐵 Municipio 站",
+      "it": "Metropolitana Linea 1 – Municipio",
+      "lat": 40.8403,
+      "lng": 14.2528,
+      "hours": "—",
+      "ticket": "—",
+      "desc": "出站就是 Piazza Municipio，往海邊走就是海運站。19:30 前登船，船 20:00 開。",
+      "walk": "步行約 8 分鐘到海運站"
+     }
+    ]
+   },
+   {
+    "id": "B",
+    "title": "選項：Funicolare Centrale 上 Vomero 看夜景（加 1 小時）",
+    "fit": "想看海灣全景的人；用來取代 Gesù Nuovo 那段",
+    "summary": "在 Via Toledo 的 Augusteo 站搭纜車上 Vomero 的 Piazza Fuga，在附近看一眼海灣後原車下山，再接回 Spaccanapoli。時間緊的話建議跳過。",
+    "steps": [
+     {
+      "time": "15:15",
+      "type": "上車",
+      "zh": "中央纜車 Augusteo 站",
+      "it": "Funicolare Centrale – Augusteo",
+      "lat": 40.8392,
+      "lng": 14.2484,
+      "hours": "約 7:00–22:00（出發前請確認）",
+      "ticket": "UnicoNapoli 單程票（出發前請確認）",
+      "desc": "Augusteo 站在 Via Toledo 旁的 Piazza Duca d'Aosta，是全義大利最繁忙的纜車之一，坐到山頂約 5 分鐘。",
+      "walk": "上到 Piazza Fuga（Vomero）約 5 分鐘"
+     },
+     {
+      "time": "15:30",
+      "type": "景點",
+      "zh": "Vomero 區 Piazza Fuga 周邊",
+      "it": "Vomero – Piazza Fuga",
+      "lat": 40.844,
+      "lng": 14.237,
+      "hours": "全天",
+      "ticket": "免費",
+      "desc": "Vomero 是山丘上的住宅商業區，往上可以走到聖艾爾摩城堡（坡陡、要另外計時，長輩不建議）。看一下風景、喝杯熱飲就下山。",
+      "walk": "原纜車下山，再步行約 15 分鐘到 Gesù Nuovo"
+     }
+    ]
+   }
+  ],
+  "tips": [
+   "去龐貝的家人搭船方行程，請在會合時間前跟這組確認回船時間（全船 19:30 前登船）。",
+   "拿坡里扒手多：手機不要放後口袋，背包背在前面，Via Toledo 和馬槽街特別擁擠。",
+   "12 月天黑早（約 16:40），老城巷弄晚上還算熱鬧，但請走主要街道。",
+   "Gambrinus 坐著喝比站在吧台喝貴很多，看清楚價格。",
+   "披薩店多數只收現金或要排隊，請帶歐元零錢。"
+  ]
+ },
+ "tunis": {
+  "date": "2026-12-17",
+  "port": "突尼斯",
+  "title": "突尼斯：迦太基遺跡＋藍白小鎮 Sidi Bou Said",
+  "summary": "郵輪停在 La Goulette 港。迦太基與 Sidi Bou Said 都在港口北方 5–10 km。帶長輩最穩的是參加 MSC 岸上行程，或在碼頭內的計程車站談好一台車包 4–5 小時。腳力好的人可以搭 TGM 輕軌，但從碼頭走到車站並不順，需有心理準備。",
+  "verify": "已查證：迦太基博物館冬季 8:30–17:00；2026/4/1 起新票價，迦太基（B 類）20 DT，2027 年起 30 DT，Bardo＋迦太基聯票 2026 年 45 DT，但是否就是外國遊客的迦太基通票並未明載；舊資料寫通票 12 DT，已過時。未查證：各遺址冬季時段（推估同為 8:30–17:00）、TGM 票價與班距、計程車行情（網路參考約 4 人座 40€ 半日包車，資料年代偏舊）、碼頭與 TGM 站確切位置（座標為約略值）。",
+  "plans": [
+   {
+    "id": "A",
+    "title": "推薦：MSC 岸上行程或碼頭包計程車（4–5 小時）",
+    "fit": "全家含祖父母；最省力、最安全",
+    "summary": "MSC 岸上行程有導遊、準時回船有保障，最適合長輩。自行包車請在碼頭內的計程車站談好總價、時數、行程和幣別，依序遊覽迦太基港口、Byrsa 山、安東尼浴場和 Sidi Bou Said，14:30–15:00 回港。",
+    "steps": [
+     {
+      "time": "09:30",
+      "type": "下船",
+      "zh": "La Goulette 郵輪碼頭",
+      "it": "Port de La Goulette – Terminal croisière",
+      "lat": 36.8143,
+      "lng": 10.309,
+      "hours": "依船上通知",
+      "ticket": "—",
+      "desc": "碼頭建築仿麥地那風格，裡面有計程車調度站和換匯處。突尼斯第納爾（DT）不能帶出境，換少量就好。直接跟司機（而不是調度員）談價，寫在紙上確認。",
+      "walk": "計程車約 15 分鐘到迦太基港口"
+     },
+     {
+      "time": "09:50",
+      "type": "上車",
+      "zh": "包車出發（議價）",
+      "it": "Taxi depuis le port (négocier)",
+      "lat": 36.8143,
+      "lng": 10.309,
+      "hours": "約 4–5 小時",
+      "ticket": "參考：4 人座約 40–60€（舊資料，出發前請確認）",
+      "desc": "談好「港口→迦太基→Sidi Bou Said→港口、5 小時、總價○○歐元或 DT、回程付款」。祖孫三代人多時，可以包 6–8 人座的廂型車。",
+      "walk": "車程約 15 分鐘"
+     },
+     {
+      "time": "10:10",
+      "type": "景點",
+      "zh": "迦太基布匿港口",
+      "it": "Ports puniques de Carthage",
+      "lat": 36.8459,
+      "lng": 10.323,
+      "hours": "冬季約 8:30–17:00（出發前請確認）",
+      "ticket": "迦太基遺址票（2026 年約 20 DT，出發前請確認）",
+      "desc": "圓形軍港和長方形商港的遺跡，迦太基當年海上霸權的核心，現在只剩水池與小島，旁邊的 Tophet 祭祀遺址也可順道看。遺址間告示少，建議請司機或導遊說明。",
+      "walk": "車程約 5 分鐘到 Byrsa 山"
+     },
+     {
+      "time": "10:40",
+      "type": "景點",
+      "zh": "Byrsa 山與迦太基博物館",
+      "it": "Colline de Byrsa / Musée national de Carthage",
+      "lat": 36.85278,
+      "lng": 10.32333,
+      "hours": "冬季 8:30–17:00",
+      "ticket": "含在遺址票內（出發前請確認）",
+      "desc": "古迦太基的衛城，山頂可以俯瞰海灣和布匿港口，有布匿時期住宅遺跡和聖路易大教堂（外觀）。博物館收藏馬賽克和石棺，坡道不長，長輩也能走。",
+      "walk": "車程約 5 分鐘到安東尼浴場"
+     },
+     {
+      "time": "11:30",
+      "type": "景點",
+      "zh": "安東尼浴場",
+      "it": "Thermes d'Antonin",
+      "lat": 36.85432,
+      "lng": 10.3351,
+      "hours": "冬季約 8:30–17:00（出發前請確認）",
+      "ticket": "含在遺址票內",
+      "desc": "2 世紀的羅馬帝國大型公共浴場，緊鄰海邊，巨大的石柱和地下拱室保存良好。附近是總統府，嚴禁朝總統府方向拍照。園區步道平坦，但面積大。",
+      "walk": "車程約 10 分鐘到 Sidi Bou Said"
+     },
+     {
+      "time": "12:15",
+      "type": "景點",
+      "zh": "Sidi Bou Said 藍白小鎮",
+      "it": "Sidi Bou Saïd",
+      "lat": 36.87167,
+      "lng": 10.34722,
+      "hours": "全天",
+      "ticket": "免費",
+      "desc": "白牆、藍門、九重葛的山城，主街是石板上坡，兩旁有手工藝店和甜點攤。可以買一份 bambalouni（突尼斯炸甜甜圈）。坡道雖陡但不長，長輩可以慢慢走。",
+      "walk": "主街上坡約 5 分鐘到 Café des Nattes"
+     },
+     {
+      "time": "12:30",
+      "type": "午餐",
+      "zh": "Café des Nattes（坐席喝薄荷茶）",
+      "it": "Café des Nattes",
+      "lat": 36.8709,
+      "lng": 10.3473,
+      "hours": "營業時間出發前請確認",
+      "ticket": "薄荷松子茶約數 DT（出發前請確認）",
+      "desc": "主街頂端階梯上的百年咖啡館，席地坐在草蓆上，喝加了松子的薄荷茶。保羅．克利等畫家都來過，氛圍很道地。",
+      "walk": "往海邊下坡約 7 分鐘到 Café des Délices"
+     },
+     {
+      "time": "13:15",
+      "type": "午餐",
+      "zh": "Café des Délices 海景平台",
+      "it": "Café des Délices",
+      "lat": 36.8695,
+      "lng": 10.35,
+      "hours": "營業時間出發前請確認",
+      "ticket": "飲料約數 DT（出發前請確認）",
+      "desc": "層層疊疊的白色露台可以俯瞰地中海和港灣，是全鎮最美的看海點。午餐可以在鎮上餐廳簡單吃，或在這裡配點心。",
+      "walk": "回停車處搭車，約 20 分鐘回港"
+     },
+     {
+      "time": "14:30",
+      "type": "交通",
+      "zh": "回 La Goulette 港",
+      "it": "Retour au port de La Goulette",
+      "lat": 36.8143,
+      "lng": 10.309,
+      "hours": "最晚 16:00 前回到碼頭",
+      "ticket": "依議價",
+      "desc": "提早回港。碼頭的商店可以用剩下的第納爾買紀念品。全船 17:30 前要回船，自行包車沒有等船保障，寧可早回。",
+      "walk": "—"
+     }
+    ]
+   },
+   {
+    "id": "B",
+    "title": "自助：TGM 輕軌（腳力好的成員）",
+    "fit": "年輕成員；需要比較多步行，也要能接受輕軌的擁擠與衛生狀況",
+    "summary": "從碼頭走到 TGM La Goulette 站，往 La Marsa 方向搭到 Carthage Salammbô（布匿港口）→ 步行到 Byrsa → 安東尼浴場 → 在 Carthage Hannibal 站重新上車 → Sidi Bou Said，再搭 TGM 回 La Goulette。",
+    "steps": [
+     {
+      "time": "09:40",
+      "type": "步行",
+      "zh": "前往 TGM La Goulette 站",
+      "it": "Gare TGM La Goulette",
+      "lat": 36.8179,
+      "lng": 10.3047,
+      "hours": "班次約 15–20 分鐘一班（出發前請確認）",
+      "ticket": "單程約 1 DT 內（出發前請確認）",
+      "desc": "車站在碼頭停車場另一頭的小房子（有黑色鐵柵欄），但不同資料說從碼頭步行並不好走。先在碼頭內換少量第納爾，買票只收現金。",
+      "walk": "往 La Marsa 方向搭約 15 分鐘到 Carthage Salammbô"
+     },
+     {
+      "time": "10:10",
+      "type": "下車",
+      "zh": "Carthage Salammbô 站 → 布匿港口",
+      "it": "Gare TGM Carthage Salammbô",
+      "lat": 36.846,
+      "lng": 10.321,
+      "hours": "—",
+      "ticket": "—",
+      "desc": "下車後步行到布匿港口和 Tophet，在第一個遺址買迦太基遺址票（多個遺址共用一張，請保留好）。",
+      "walk": "步行約 5 分鐘到布匿港口"
+     },
+     {
+      "time": "10:20",
+      "type": "景點",
+      "zh": "布匿港口與 Tophet",
+      "it": "Ports puniques / Tophet de Salammbô",
+      "lat": 36.8459,
+      "lng": 10.323,
+      "hours": "冬季約 8:30–17:00（出發前請確認）",
+      "ticket": "遺址票約 20 DT（出發前請確認）",
+      "desc": "看完港口後往北走上 Byrsa 山，約 20 分鐘，有上坡。",
+      "walk": "步行約 20 分鐘（上坡）到 Byrsa"
+     },
+     {
+      "time": "11:00",
+      "type": "景點",
+      "zh": "Byrsa 山與博物館",
+      "it": "Colline de Byrsa",
+      "lat": 36.85278,
+      "lng": 10.32333,
+      "hours": "冬季 8:30–17:00",
+      "ticket": "遺址票",
+      "desc": "全景視野最佳的一站，可以在博物館外的庭園休息。",
+      "walk": "下山往海邊步行約 15 分鐘到安東尼浴場"
+     },
+     {
+      "time": "11:50",
+      "type": "景點",
+      "zh": "安東尼浴場",
+      "it": "Thermes d'Antonin",
+      "lat": 36.85432,
+      "lng": 10.3351,
+      "hours": "冬季約 8:30–17:00（出發前請確認）",
+      "ticket": "遺址票",
+      "desc": "濱海的羅馬浴場遺址，禁止朝總統府方向拍照。",
+      "walk": "步行約 10 分鐘到 Carthage Hannibal 站"
+     },
+     {
+      "time": "12:40",
+      "type": "上車",
+      "zh": "Carthage Hannibal 站",
+      "it": "Gare TGM Carthage Hannibal",
+      "lat": 36.857,
+      "lng": 10.329,
+      "hours": "約 15–20 分鐘一班",
+      "ticket": "約 1 DT",
+      "desc": "往 La Marsa 方向搭 3 站到 Sidi Bou Said。",
+      "walk": "約 8 分鐘"
+     },
+     {
+      "time": "12:55",
+      "type": "下車",
+      "zh": "Sidi Bou Said 站",
+      "it": "Gare TGM Sidi Bou Saïd",
+      "lat": 36.8688,
+      "lng": 10.3416,
+      "hours": "—",
+      "ticket": "—",
+      "desc": "出站後沿上坡走進村子主街，約 10 分鐘到 Café des Nattes。",
+      "walk": "上坡步行約 10 分鐘"
+     },
+     {
+      "time": "13:10",
+      "type": "景點",
+      "zh": "Café des Nattes → Café des Délices",
+      "it": "Café des Nattes / Café des Délices",
+      "lat": 36.8709,
+      "lng": 10.3473,
+      "hours": "營業時間出發前請確認",
+      "ticket": "約數 DT",
+      "desc": "喝薄荷茶、逛藍白巷弄，再下坡到 Café des Délices 看海。",
+      "walk": "回 Sidi Bou Said 站約 15 分鐘"
+     },
+     {
+      "time": "15:00",
+      "type": "交通",
+      "zh": "TGM 回 La Goulette",
+      "it": "TGM Sidi Bou Saïd → La Goulette",
+      "lat": 36.8688,
+      "lng": 10.3416,
+      "hours": "最晚 15:30 前上車",
+      "ticket": "約 1 DT",
+      "desc": "往 Tunis Marine 方向搭到 La Goulette 站，車程約 25 分鐘，再走回碼頭。如果 TGM 誤點，可以在 Sidi Bou Said 叫黃色計程車（跳表，約 15 分鐘）。",
+      "walk": "約 25 分鐘＋步行回碼頭"
+     }
+    ]
+   }
+  ],
+  "tips": [
+   "帶長輩建議優先選 MSC 岸上行程：有導遊，遇到交通延誤也保證等人；自行前往若延誤，船不會等。",
+   "第納爾不可帶出境，碼頭內可換匯；計程車一定要先談好總價和幣別，並寫在紙上。",
+   "安東尼浴場旁是總統府，嚴禁對軍警和官方建築拍照。",
+   "出發前請查詢外交部旅遊警示，並避開抗議或人群聚集的地方。",
+   "Sidi Bou Said 的石板坡在雨後很滑，請穿止滑鞋。",
+   "遺址冬季約 17:00 關門，票價 2026 年剛調漲，請帶足現金 DT。"
+  ]
  }
 };
 
@@ -4394,20 +5322,24 @@ function routeStepHtml(s, i) {
     ${s.lat != null ? `<div class="rstep-btns"><a class="btn small ghost" href="${gmPin(s.lat, s.lng)}" target="_blank" rel="noopener">🗺️ 在地圖看位置</a><a class="btn small ghost" href="${gmGo(s.lat, s.lng)}" target="_blank" rel="noopener">🧭 從這裡導航過去</a></div>` : ''}
   </div>`;
 }
-route('/portroute/:id', (id) => {
-  const r = PORT_ROUTES[id];
-  if (!r) { location.hash = '#/cruise'; return 'home'; }
-  const plans = r.plans.map((p) => {
+function routePlansHtml(r, compact) {
+  return r.plans.map((p) => {
     const segs = p.noRoute ? [] : walkSegments(p.steps);
     const segBtns = segs.map((g, k) => `<a class="btn small" href="${gmRoute(g)}" target="_blank" rel="noopener">🗺️ 走路路線${segs.length > 1 ? ' 第 ' + (k + 1) + ' 段' : ''}：${esc(g[0].zh.split('（')[0])} → ${esc(g[g.length - 1].zh.split('（')[0])}</a>`).join('');
-    return `<details class="rplan" ${r.plans.length === 1 || p.id === 'main' || p.id === 'A' ? 'open' : ''}>
+    return `<details class="rplan" ${!compact && (r.plans.length === 1 || p.id === 'main' || p.id === 'A') ? 'open' : ''}>
       <summary><b>${esc(p.title)}</b>${p.fit ? `<span>適合：${esc(p.fit)}</span>` : ''}</summary>
       ${p.summary ? `<p class="sub">${esc(p.summary)}</p>` : ''}
       ${segBtns ? `<div class="rroute">${segBtns}<p class="sub" style="margin:4px 0 0;font-size:12.5px">在 Google 地圖打開整段步行路線（坐車的部分已分開）。</p></div>` : ''}
       ${p.steps.map(routeStepHtml).join('')}
     </details>`;
   }).join('');
-  view(`${back('#/cruise', '郵輪靠港')}<div class="kicker">${esc(dayName(r.date))} · ${esc(r.port)}</div><h1>${esc(r.title)}</h1>
+}
+route('/portroute/:id', (id) => {
+  const r = PORT_ROUTES[id];
+  if (!r) { location.hash = '#/cruise'; return 'home'; }
+  const plans = routePlansHtml(r);
+  const pk = (PORTS.find((x) => x.routes.includes(id)) || {}).key;
+  view(`${back(pk ? '#/port/' + pk : '#/cruise', pk ? '回港口頁' : '郵輪靠港')}<div class="kicker">${esc(dayName(r.date))} · ${esc(r.port)}</div><h1>${esc(r.title)}</h1>
     <p class="sub">${esc(r.summary)}</p>
     ${plans}
     <div class="card"><h3>小提醒</h3><ul class="rtips">${r.tips.map((t) => `<li>${esc(t)}</li>`).join('')}</ul></div>
@@ -4544,6 +5476,90 @@ function paintMoney() {
 }
 route('/money', () => { paintMoney(); moneyFlush(); return 'home'; });
 window.addEventListener('online', () => moneyFlush());
+
+/* ---------- v2.7：郵輪篇改版（每個港口一張海報 → 書架 → 路線 → 安全提醒 → 城市卡與景點卡） ---------- */
+const PORTS = [
+  { key: 'marseille', date: '2026-12-13', name: '馬賽', en: 'MARSEILLE', shelf: '馬賽', routes: ['marseille'] },
+  { key: 'genoa', date: '2026-12-14', name: '熱那亞', en: 'GENOVA', shelf: '熱那亞', routes: ['genoa'] },
+  { key: 'naples', date: '2026-12-15', name: '拿坡里與龐貝', en: 'NAPOLI · POMPEII', shelf: '那不勒斯與龐貝', routes: ['pompeii', 'naples'] },
+  { key: 'palermo', date: '2026-12-16', name: '巴勒摩', en: 'PALERMO', shelf: '巴勒摩', routes: ['palermo'] },
+  { key: 'tunis', date: '2026-12-17', name: '突尼西亞', en: 'TUNIS · CARTHAGE', shelf: '突尼西亞', routes: ['tunis'] },
+];
+function portMD(date) { return Number(date.slice(5, 7)) + '/' + Number(date.slice(8, 10)); }
+function portCards(list, p) { return list.filter((c) => (c.port || '').startsWith(portMD(p.date) + ' ')); }
+function cruiseItem(c, kind) {
+  if (kind === 'city') {
+    const ok = isUnlocked(c);
+    return ok
+      ? `<a class="item" href="#/card/${c.id}"><div class="t"><b>${esc(c.title)}</b><span>城市卡</span></div>${doneMark(c)}${CHEV}</a>`
+      : `<div class="item locked"><div class="t"><b>${esc(c.title.split('：')[0])}</b><span>${esc(fmtDate(cardDate(c)))} 解鎖</span></div><span class="chip">未解鎖</span></div>`;
+  }
+  return `<a class="item" href="#/card/${c.id}"><div class="t"><b>${esc(c.title)}</b><span>${esc(c.game ? '小遊戲：' + c.game.name : '景點卡')}</span></div>${doneMark(c)}${CHEV}</a>`;
+}
+function renderCruiseHome() {
+  const city = CITY.cruise;
+  const tiles = PORTS.map((p) => {
+    const cp = CRUISE_PORTS.find((x) => x.date === p.date);
+    return `<a class="port-tile" href="#/port/${p.key}">${posterImg(PORT_POSTER[p.date])}
+      <div class="port-tile-cap"><b>${esc(dayName(p.date))} ${esc(p.name)}</b><span>${cp ? '靠港 ' + esc(cp.hours) + '・' : ''}書架、路線、城市卡與景點卡 →</span></div></a>`;
+  }).join('');
+  view(`${back('#/', '首頁')}${posterImg(CITY_POSTER.cruise || 'ship')}<h1>${esc(city.name)}</h1>
+    <p class="sub">12/12 巴塞隆納上船，12/19 回到巴塞隆納。每個港口都會有一張城市卡、兩張景點卡可以玩。</p>
+    <a class="card cdex-promo" href="#/cruisedex"><b>🚢 船上有哪些設施可以玩呢？到圖鑑看看吧！</b><span>免費設施、付費體驗、DISEN家 Aurea 房型的禮遇（含 Il Campo 專屬餐廳）、下船打卡</span></a>
+    <p class="sub">靠港那天手機很可能沒有網路，題目和拍照照樣能玩，照片回船上再傳。</p>
+    <h2>五個港口</h2><div class="port-tiles">${tiles}</div>
+    <a class="btn ghost block" href="#/cruise">郵輪靠港：大家想去哪裡（投票）</a>`);
+  return 'home';
+}
+function portRoutesHtml(keys) {
+  return keys.map((k) => PORT_ROUTES[k]).filter(Boolean).map((r) => `<div class="card port-route">
+    <h3>🗺️ ${esc(r.title)}</h3><p class="sub" style="margin:0 0 8px">${esc(r.summary)}</p>
+    ${routePlansHtml(r, true)}
+    <a class="btn small ghost" href="#/portroute/${Object.keys(PORT_ROUTES).find((x) => PORT_ROUTES[x] === r)}">打開完整頁面（含小提醒與查證說明）</a></div>`).join('');
+}
+route('/port/:key', (key) => {
+  const p = PORTS.find((x) => x.key === key);
+  if (!p) { location.hash = '#/city/cruise'; return 'home'; }
+  const city = CITY.cruise;
+  const cp = CRUISE_PORTS.find((x) => x.date === p.date);
+  const cityCards = portCards(city.cityCards, p).map((c) => cruiseItem(c, 'city')).join('');
+  const spots = portCards(city.spots, p).map((c) => cruiseItem(c, 'spot')).join('');
+  view(`${back('#/city/cruise', '地中海郵輪')}${posterImg(PORT_POSTER[p.date])}
+    <div class="kicker">${esc(dayName(p.date))} · ${esc(p.en)}</div><h1>${esc(p.name)}</h1>
+    ${cp ? `<p class="sub">靠港 ${esc(cp.hours)}。${esc(cp.tip)}</p>` : ''}
+    ${shelfHtml('cruise', p.shelf)}
+    <h2>遊覽建議路線</h2>
+    <p class="sub">搭車和下車的位置、每個景點都能直接在 Google 地圖打開。</p>
+    ${portRoutesHtml(p.routes)}
+    ${safetyBannerHtml()}
+    ${cityCards ? `<h2>城市卡</h2><div class="list">${cityCards}</div>` : ''}
+    ${spots ? `<h2>景點卡</h2><div class="list">${spots}</div>` : ''}`);
+  return 'home';
+});
+
+/* 龐貝：現場路線任務（西進東出，配合冬季 16:00 停止入場的時間） */
+function pompeiiMissionHtml() {
+  const done = LS.get('pmis:' + S.player, {});
+  return `<h2>龐貝現場路線任務（約 2 小時）</h2>
+    <p class="sub">從海門進、圓形競技場出口出，一路往東不走回頭路。妓院和大體育場（石膏像）冬天 16:00 停止入場，所以照這個順序走。每完成一站的任務 +10 分。</p>
+    <div class="stack">${POMPEII_MISSION.map((m) => `<div class="card pmis${done[m.n] ? ' done' : ''}">
+      <div class="rstep-head"><span class="rstep-n">${esc(m.time)}</span><div class="rstep-t"><b>${m.n}. ${esc(m.zh)}</b><span>${esc(m.it)}・約 ${m.min} 分鐘</span></div></div>
+      ${m.story.split('\n').map((t) => `<p>${esc(t)}</p>`).join('')}
+      <div class="pmis-task"><b>🎯 任務：</b>${esc(m.task)}</div>
+      <div class="rstep-btns"><a class="btn small ghost" href="${gmPin(m.lat, m.lng)}" target="_blank" rel="noopener">🗺️ 在地圖看位置</a><a class="btn small ghost" href="${gmGo(m.lat, m.lng)}" target="_blank" rel="noopener">🧭 導航過去</a>
+        <button type="button" class="btn small${done[m.n] ? ' ghost' : ''}" data-pmis="${m.n}">${done[m.n] ? '✓ 已完成' : '完成任務 +10'}</button></div>
+    </div>`).join('')}</div>`;
+}
+document.addEventListener('click', (e) => {
+  const b = e.target.closest && e.target.closest('[data-pmis]');
+  if (!b) return;
+  const n = b.dataset.pmis; const k = 'pmis:' + S.player; const done = LS.get(k, {});
+  if (done[n]) return;
+  done[n] = Date.now(); LS.set(k, done);
+  const m = POMPEII_MISSION.find((x) => String(x.n) === n);
+  award({ key: 'pmis|' + n, points: 10, label: '龐貝路線任務：' + (m ? m.zh : n) });
+  b.textContent = '✓ 已完成'; b.classList.add('ghost'); b.closest('.pmis').classList.add('done');
+});
 
 route('/help', () => {
   view(`${back('#/', '首頁')}<h1>玩法說明</h1>
@@ -5161,7 +6177,7 @@ const CRUISE_PORTS = [
     opts: [
       { name: '老城與新街', spot: '老城與新街', fit: '喜歡鑽小巷、看豪宅、吃青醬和佛卡夏的人。大多是平路，大約 2 到 3 小時。' },
       { name: '舊港與燈塔', spot: '舊港與燈塔', fit: '想輕鬆走的人，帶長輩也方便。舊港平坦好走，旁邊有水族館；燈塔比較遠，遠遠看就好。' },
-      { name: '哥倫布故居', fit: '想打卡的人。房子很小，大約 30 分鐘，就在老城東邊的城門旁，可以和老城排在一起。' },
+      { name: '哥倫布故居', fit: '想打卡的人。房子很小，就在老城東邊的城門旁。注意：故居和新街的博物館週一休館，12/14 剛好是週一，只能看外觀。' },
       STAY ] },
   { date: '2026-12-15', port: '那不勒斯（義大利）', hours: '13:00–20:00',
     tip: '這一站下午 1 點才到，時間最緊。龐貝冬天通常下午 5 點關門、3 點半左右最後入場，要去就得一下船馬上出發（火車單程大約 35 到 40 分鐘，或參加船上的行程）。出發前請再查一次官網的時間。去不了龐貝的人，留在那不勒斯老城吃披薩也很好。',
@@ -5228,8 +6244,8 @@ route('/cruise', () => {
 
 /* ---------- 小書架：也許出發前你會想看看 ---------- */
 let SHELF = {};
-const SHELF_VERB = { 文學: '我想閱讀', 電影: '我想看', 影集: '我想看', 音樂: '我想聽', 歌劇: '我想看', 音樂劇: '我想看', 芭蕾: '我想看' };
-const SHELF_TONE = { 文學: 'sd', 電影: 't', 影集: 'k', 音樂: 'o', 歌劇: 'r', 音樂劇: 'r', 芭蕾: 'o' };
+const SHELF_VERB = { 繪本: '我想讀', 文學: '我想閱讀', 電影: '我想看', 影集: '我想看', 音樂: '我想聽', 歌劇: '我想看', 音樂劇: '我想看', 芭蕾: '我想看' };
+const SHELF_TONE = { 繪本: 'o', 文學: 'sd', 電影: 't', 影集: 'k', 音樂: 'o', 歌劇: 'r', 音樂劇: 'r', 芭蕾: 'o' };
 const SHELF_PLACE = { barcelona: 'Barcelona', sevilla: 'Sevilla', guadix: 'Granada', cordoba: 'Córdoba', madrid: 'Madrid',
   馬賽: 'Marseille', 熱那亞: 'Genova', 那不勒斯與龐貝: 'Napoli', 巴勒摩: 'Palermo', 突尼西亞: 'Tunis' };
 function shelfPicked() { return LS.get('shelf', {}); }
@@ -5249,18 +6265,18 @@ function spineHtml(it, i) {
 function shelfRow(items, label) {
   return `<div class="shelf">${label ? `<div class="shelf-label">${esc(label)}</div>` : ''}<div class="shelf-row">${items.map(spineHtml).join('')}</div><div class="shelf-board"></div></div>`;
 }
-function shelfHtml(cityId) {
-  const items = SHELF[cityId] || [];
+function shelfHtml(cityId, port) {
+  const items = (SHELF[cityId] || []).filter((x) => !port || x.port === port);
   if (!items.length) return '';
   const picked = items.filter((x) => shelfPicked()[x.id]).length;
   let rows;
-  if (cityId === 'cruise') {
+  if (cityId === 'cruise' && !port) {
     const ports = [];
     items.forEach((x) => { if (!ports.includes(x.port)) ports.push(x.port); });
     rows = ports.map((p) => shelfRow(items.filter((x) => x.port === p), p)).join('');
   } else rows = shelfRow(items);
   return `<h2>也許出發前你會想看看</h2>
-    <p class="sub">和這裡有關的書、電影、音樂和舞台作品。點一本書背看介紹；勾了「想看」的，會在書架上發亮。${picked ? `已勾選 ${picked} 本。` : ''}</p>
+    <p class="sub">旅途開始前先看看和這個城市有關的書、電影、音樂和舞台作品吧。點一本書背看介紹；勾了「想看」的，會在書架上發亮呦！${picked ? `已勾選 ${picked} 本。` : ''}</p>
     ${rows}<a class="shelf-link" href="#/shelf">我的書單 →</a>`;
 }
 route('/shelf/:id', (id) => {
@@ -5270,13 +6286,15 @@ route('/shelf/:id', (id) => {
   const on = !!shelfPicked()[it.id];
   const hint = SHELF_PLACE[it.port] || SHELF_PLACE[cityId] || '';
   const meta = CITY_META[cityId] || TRIP_META;
-  view(`${back('#/city/' + cityId, CITY[cityId] ? CITY[cityId].name : '返回')}
+  const pp = cityId === 'cruise' && PORTS.find((x) => x.shelf === it.port);
+  view(`${back(pp ? '#/port/' + pp.key : '#/city/' + cityId, pp ? pp.name : (CITY[cityId] ? CITY[cityId].name : '返回'))}
     <div class="kicker">SHELF · ${esc(meta.en)}${it.port ? ' · ' + esc(it.port) : ''}</div>
     <div class="row"><span class="chip">${esc(it.type)}</span>${it.year ? `<span class="chip">${esc(it.year)}</span>` : ''}</div>
     <h1>${esc(it.title)}</h1>
     <p class="sub">${esc([it.original, it.creator].filter(Boolean).join('｜'))}</p>
     <blockquote class="teaser">${esc(it.teaser)}</blockquote>
     <div class="card reading"><p style="margin:0">${esc(it.body)}</p></div>
+    ${it.passage ? `<h2>最常被津津樂道的段落（約 3 分鐘）</h2><div class="card reading passage">${it.passage.split(/\n+/).map((t) => `<p>${esc(t)}</p>`).join('')}<p class="sub" style="font-size:12.5px;margin:8px 0 0">以上是用自己的話重新講的故事，不是原文。</p></div>` : ''}
     ${it.places && it.places.length ? `<h2>按圖索驥</h2><div class="list">${it.places.map((p) => `<div class="item" style="align-items:flex-start">
       <div class="t"><b>${esc(p.name)}</b><span style="white-space:normal">${esc(p.text)}</span></div>
       <a class="btn small ghost" href="${esc(mapUrl(p.name + ' ' + hint))}" target="_blank" rel="noopener">地圖</a></div>`).join('')}</div>` : ''}

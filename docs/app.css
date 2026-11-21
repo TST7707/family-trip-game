@@ -557,3 +557,18 @@ details.stay[open] summary{border-bottom:1px solid var(--line)}
 .money-main span{font-size:13px;color:var(--muted);line-height:1.5}
 .money-amt{font-weight:800;white-space:nowrap}
 .money-del{border:0;background:none;color:var(--muted);font-size:18px;width:36px;height:36px;cursor:pointer}
+
+/* ---------- v2.7：郵輪港口海報、龐貝路線任務 ---------- */
+.port-tiles{display:flex;flex-direction:column;gap:16px;margin:0 0 16px}
+.port-tile{display:block;text-decoration:none;color:var(--fg);border:1.5px solid var(--line);background:var(--card)}
+.port-tile img,.port-tile .poster{margin:0 !important;display:block;width:100%}
+.port-tile-cap{display:flex;flex-direction:column;gap:2px;padding:10px 12px}
+.port-tile-cap b{font-size:17px}
+.port-tile-cap span{font-size:13.5px;color:var(--muted)}
+.port-route h3{margin:0 0 4px}
+.port-route .rplan{margin:0 0 10px}
+.pmis p{margin:8px 0;line-height:1.8;font-size:15.5px}
+.pmis-task{padding:8px 10px;border:1.5px dashed var(--primary);margin:8px 0;line-height:1.6}
+.pmis.done{border-left:5px solid var(--good)}
+.passage p{margin:0 0 10px;line-height:1.85;font-size:16px}
+.cdex-tabs a{font-size:14px;padding:10px 2px}
