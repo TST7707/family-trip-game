@@ -357,3 +357,162 @@ details.aside p{margin:4px 0 0;font-size:14px;line-height:1.7;color:var(--muted)
 .q-dot{width:10px;height:10px;border-radius:50%;background:var(--line);cursor:pointer;transition:all .2s ease}
 .q-dot.on{width:22px;border-radius:999px;background:var(--primary)}
 .q-dot.done{background:var(--good)}
+
+/* v2.1：小書架（也許出發前你會想看看） */
+.shelf{margin:8px 0 4px}
+.shelf-label{font:500 11px/1.5 var(--mono);letter-spacing:.16em;color:var(--muted);margin:14px 0 0}
+.shelf-row{display:flex;align-items:flex-end;gap:5px;overflow-x:auto;padding:22px 8px 0;scrollbar-width:none;-webkit-overflow-scrolling:touch}
+.shelf-row::-webkit-scrollbar{display:none}
+.shelf-board{height:9px;background:var(--slate);border-top:2px solid var(--ink);box-shadow:0 5px 0 -1px var(--sand)}
+.spine{position:relative;flex:none;display:flex;flex-direction:column;align-items:center;justify-content:space-between;padding:12px 0 8px;border:1px solid var(--ink);border-bottom:0;text-decoration:none;color:var(--ink);background:var(--sand);transition:transform .2s ease}
+.spine.o{background:var(--ochre)} .spine.sd{background:var(--sand)}
+.spine.t{background:var(--teal);color:var(--paper)} .spine.k{background:var(--slate);color:var(--paper)} .spine.r{background:var(--rust);color:var(--paper)}
+.spine::before,.spine::after{content:"";position:absolute;left:3px;right:3px;height:1px;background:currentColor;opacity:.55}
+.spine::before{top:6px} .spine::after{bottom:30px}
+.spine:active{transform:translateY(-6px)}
+@media (hover:hover){.spine:hover{transform:translateY(-6px)}}
+.sp-title{writing-mode:vertical-rl;white-space:nowrap;font-weight:700;font-size:var(--fs,14px);letter-spacing:.1em;line-height:1.1}
+.sp-type{writing-mode:vertical-rl;font:500 9px/1 var(--mono);letter-spacing:.1em;opacity:.85}
+.spine.glow{transform:translateY(-8px);background-image:linear-gradient(110deg,transparent 35%,rgba(255,255,255,.55) 50%,transparent 65%);background-size:260% 100%;animation:spineGlow 2.4s ease-in-out infinite,spineShine 3s linear infinite}
+.sp-star{position:absolute;top:-19px;font-style:normal;font-size:14px;line-height:1;color:var(--ochre);animation:twinkle 1.6s ease-in-out infinite}
+@keyframes spineGlow{0%,100%{box-shadow:0 0 0 2px var(--ochre),0 0 8px 2px rgba(227,155,45,.45)}50%{box-shadow:0 0 0 2px var(--ochre),0 0 20px 7px rgba(227,155,45,.85)}}
+@keyframes spineShine{from{background-position:130% 0}to{background-position:-130% 0}}
+@keyframes twinkle{0%,100%{opacity:.35;transform:scale(.8) rotate(0)}50%{opacity:1;transform:scale(1.25) rotate(20deg)}}
+@media (prefers-reduced-motion:reduce){.spine.glow,.sp-star{animation:none}.spine.glow{box-shadow:0 0 0 2px var(--ochre),0 0 14px 4px rgba(227,155,45,.7)}}
+.shelf-link{display:inline-block;margin-top:12px;font:600 13px var(--mono);letter-spacing:.08em}
+blockquote.teaser{margin:14px 0;padding:6px 0 6px 14px;border-left:4px solid var(--ochre);font-size:19px;line-height:1.55;font-weight:700}
+.card.think{border-left:4px solid var(--teal);background:var(--plan-bg)}
+label.want{display:flex;align-items:center;gap:14px;margin:22px 0 8px;padding:16px;border:1px solid var(--ink);background:var(--card);cursor:pointer}
+label.want input{width:28px;height:28px;flex:none;accent-color:var(--ochre)}
+label.want b{display:block;font-size:19px}
+label.want small{display:block;color:var(--muted);font-size:14px}
+label.want.on{background:color-mix(in oklab,var(--ochre) 22%,var(--card));box-shadow:inset 6px 0 0 var(--ochre)}
+
+/* v2.2：深色模式可讀性（另一版元件改用色票）、翻卡題目一行一個選項、WoW 記、行前閱讀排版 */
+.safety-banner{background:var(--warn-bg);border:1px solid var(--warn);border-left:5px solid var(--ochre);border-radius:2px;box-shadow:none;color:var(--fg)}
+.safety-banner-header{color:var(--warn)}
+.safety-banner-body{color:var(--fg)}
+.safety-check-item{background:var(--card);border:1px solid var(--line);border-radius:0;color:var(--fg)}
+.praise-box{background:var(--card);border:1px solid var(--line-strong);border-left:5px solid var(--ochre);box-shadow:none;color:var(--fg)}
+.praise-box *{color:inherit}
+.flame-pill{background:var(--warn-bg);color:var(--warn);border-color:var(--warn)}
+.poke-card.unlocked,.hunt-item.checked{background:var(--good-bg)}
+.gate-chip-item.on{background:var(--warn-bg)}
+.sala-badge,.q-progress-badge{border-color:var(--warn)}
+.btn-next-step{color:var(--on-primary);border:1px solid var(--ink);border-radius:2px}
+.airport-pill.on,.spot-mode-btn .badge{color:var(--on-primary)}
+.q-card{color:var(--fg)}
+.q-card .opts{display:flex;flex-direction:column;gap:8px}
+.q-card .opt{width:100%;text-align:left;min-height:52px;padding:10px 12px;border-radius:0;border:1px solid var(--line-strong);background:var(--bg);color:var(--fg);font-size:17px;line-height:1.5;cursor:pointer;display:flex;gap:12px;align-items:flex-start}
+.q-card .opt .k{flex:none;width:26px;height:26px;display:inline-flex;align-items:center;justify-content:center;border:1px solid currentColor;font:700 13px var(--mono)}
+.q-card .opt.correct{border-color:var(--good);background:var(--good-bg)}
+.q-card .opt.correct .k{background:var(--good);color:var(--card);border-color:var(--good)}
+.q-card .opt.wrong{border-color:var(--bad);background:var(--bad-bg)}
+.q-card .opt.wrong .k{background:var(--bad);color:var(--card);border-color:var(--bad)}
+.q-card .opt:disabled{cursor:default;opacity:1}
+.q-card .exp,.q .exp{color:var(--fg)}
+/* WoW 記：右下角、比內文小 */
+.facts-box{margin-top:6px;border-top:1px solid var(--line-strong)}
+.fact{padding:12px 0 8px}
+.fact .ftxt{margin-bottom:4px}
+.wow-row{display:flex;justify-content:flex-end}
+.wow-btn{display:inline-flex;align-items:center;gap:6px;min-height:36px;padding:0 10px;border:1px solid var(--line-strong);background:transparent;color:var(--muted);font:600 13px/1 var(--font);cursor:pointer}
+.wow-btn .n{font-family:var(--mono)}
+.wow-btn.on{background:var(--ochre);border-color:var(--ink);color:var(--on-primary)}
+.wow-day{font:600 12px/1.5 var(--mono);letter-spacing:.12em;color:var(--muted);margin:14px 0 6px}
+/* 行前閱讀：段落好讀 */
+.pre-body p{font-size:17px;line-height:1.85;margin:0 0 16px}
+.pre-tip{margin:4px 0 14px;padding:10px 12px;border-left:3px solid var(--warn);background:var(--warn-bg);font-size:15px;line-height:1.7}
+.pre-tip b{display:block;font:700 12px var(--mono);letter-spacing:.12em;color:var(--warn);margin-bottom:2px}
+.pre-tagline{font-size:19px !important;font-weight:800;line-height:1.5 !important;padding-top:10px;border-top:1px solid var(--line-strong);margin:6px 0 0 !important}
+
+/* v2.3：住宿詳情、訂房確認單 */
+.stays{display:flex;flex-direction:column;gap:8px;margin-bottom:12px}
+details.stay{background:var(--card);border:1px solid var(--line)}
+details.stay summary{list-style:none;cursor:pointer;padding:12px 14px;display:flex;flex-direction:column;gap:2px}
+details.stay summary::-webkit-details-marker{display:none}
+.stay-date{font:700 13px var(--mono);letter-spacing:.06em;color:var(--primary)}
+.stay-name{font-weight:700;line-height:1.4}
+details.stay[open] summary{border-bottom:1px solid var(--line)}
+.stay-body{padding:10px 14px 14px}
+.stay-row{display:grid;grid-template-columns:44px 1fr;gap:8px;padding:5px 0;font-size:15px;line-height:1.55}
+.stay-row span{color:var(--muted);font-size:13px}
+.stay-row b{font-weight:600}
+.stay-rules{margin:8px 0 0;padding-left:20px;font-size:14px;line-height:1.7;color:var(--fg)}
+.docs-card .list{margin-bottom:10px}
+
+/* ---------- v2.4：EES、桃園多選題、工藝地圖、行前清單 ---------- */
+.ees-box{margin:0 0 16px;padding:14px 16px;background:#F0F6FA;border:1.5px solid #BDD5EA;border-left:5px solid #205284;color:#1c2733;line-height:1.7;font-size:15px}
+.ees-box .ees-title{display:block;color:#205284;font-size:16px;margin-bottom:6px}
+.ees-box p{margin:0 0 8px}
+.ees-box ul{margin:0;padding-left:20px}
+.ees-box li{margin:0 0 6px}
+.gate-link{margin-top:12px;padding:10px 12px;border:1px dashed var(--line);background:var(--card);font-size:14.5px;line-height:1.65}
+.craft-map{margin:8px 0 0;padding-left:20px}
+.craft-map li{margin:0 0 10px}
+.mq-card h3{margin:0 0 4px}
+.mq-opts{display:flex;flex-direction:column;gap:8px;margin:10px 0 12px}
+.mq-opt{display:flex;flex-wrap:wrap;align-items:flex-start;gap:8px;padding:10px 12px;border:1.5px solid var(--line);background:var(--card);cursor:pointer;line-height:1.5;color:var(--fg)}
+.mq-opt input{width:20px;height:20px;margin:1px 0 0;flex:0 0 auto;accent-color:var(--primary)}
+.mq-opt .mq-t{flex:1 1 0;min-width:0}
+.mq-opt .mq-rank{flex:1 0 100%;padding-left:28px;font-size:13.5px;font-weight:700}
+.mq-opt.right{border-color:#2e7d4f;background:rgba(46,125,79,.10)}
+.mq-opt.missed{border-color:#2e7d4f;border-style:dashed}
+.mq-opt.wrong{border-color:#b3412e;background:rgba(179,65,46,.10)}
+.mq-opt.plain{opacity:.75}
+.mq-res{font-weight:700;margin:0 0 8px}
+.notice-card h3{margin:0 0 10px}
+.notice-item{padding:10px 12px;border:1px solid var(--line);margin:0 0 10px;line-height:1.65}
+.notice-item p{margin:6px 0 0}
+.notice-item.urgent{border:2px solid #b3412e;background:rgba(179,65,46,.08)}
+.pack-progress .pack-bar{height:10px;background:var(--sunken);border:1px solid var(--line);margin:0 0 8px}
+.pack-progress .pack-bar span{display:block;height:100%;background:var(--primary)}
+.pack-group h3{margin:0 0 8px}
+.pack-group.lv1{border-left:5px solid #b3412e}
+.pack-group.lv2{border-left:5px solid #c98a2b}
+.pack-group.lv3{border-left:5px solid #2b7a8a}
+.pack-group.lv4{border-left:5px solid #6b7a8a}
+.pack-group.lv5{border-left:5px solid var(--line)}
+.pack-row{display:flex;gap:10px;align-items:flex-start;padding:9px 0;border-top:1px solid var(--line);cursor:pointer}
+.pack-row:first-of-type{border-top:0}
+.pack-row input{width:22px;height:22px;margin:1px 0 0;flex:0 0 auto;accent-color:var(--primary)}
+.pack-row .pack-text{display:flex;flex-direction:column;min-width:0}
+.pack-row .pack-t{font-weight:700}
+.pack-row .pack-n{font-size:13.5px;color:var(--muted);line-height:1.55}
+.pack-row.on .pack-t{text-decoration:line-through;opacity:.6}
+.pack-row.ro{cursor:default}
+.pack-dot{width:22px;text-align:center;flex:0 0 auto;color:var(--muted)}
+@media (prefers-color-scheme: dark){
+  :root:not([data-theme="light"]) .ees-box{background:#16222e;border-color:#2c4660;border-left-color:#6fa8dc;color:#e3ecf4}
+  :root:not([data-theme="light"]) .ees-box .ees-title{color:#9cc6ee}
+  :root:not([data-theme="light"]) .mq-opt.right{background:rgba(80,180,120,.16);border-color:#5bb784}
+  :root:not([data-theme="light"]) .mq-opt.missed{border-color:#5bb784}
+  :root:not([data-theme="light"]) .mq-opt.wrong{background:rgba(230,110,90,.16);border-color:#e07a66}
+  :root:not([data-theme="light"]) .notice-item.urgent{border-color:#e07a66;background:rgba(230,110,90,.12)}
+}
+:root[data-theme="dark"] .ees-box{background:#16222e;border-color:#2c4660;border-left-color:#6fa8dc;color:#e3ecf4}
+:root[data-theme="dark"] .ees-box .ees-title{color:#9cc6ee}
+
+/* ---------- v2.5：郵輪大圖鑑 ---------- */
+.cdex-tabs{display:flex;gap:0;margin:12px 0;border:1.5px solid var(--line)}
+.cdex-tabs a{flex:1;text-align:center;padding:10px 4px;font-weight:800;color:var(--fg);text-decoration:none;background:var(--card)}
+.cdex-tabs a+a{border-left:1.5px solid var(--line)}
+.cdex-tabs a.on{background:var(--primary);color:#fff}
+.cdex-intro{line-height:1.7}
+.cdex-intro.paid{border:2px solid #c98a2b}
+.cdex-card .poke-sub{line-height:1.55;text-align:left}
+.cdex-where{font-size:12.5px;color:var(--muted);text-align:left;width:100%}
+.cdex-cost{font-size:12.5px;font-weight:800;color:#2e7d4f;width:100%;text-align:left}
+.cdex-cost.paid{color:#a0661c}
+.cdex-season{font-size:12.5px;font-weight:700;width:100%;text-align:left;padding:4px 6px;border:1px dashed var(--line)}
+.cdex-promo{display:flex;flex-direction:column;gap:4px;text-decoration:none;color:var(--fg);border-left:5px solid var(--primary)}
+.cdex-promo span{font-size:14px;color:var(--muted)}
+@media (prefers-color-scheme: dark){
+  :root:not([data-theme="light"]) .cdex-cost{color:#7fd1a0}
+  :root:not([data-theme="light"]) .cdex-cost.paid{color:#e6b35c}
+}
+:root[data-theme="dark"] .cdex-cost{color:#7fd1a0}
+:root[data-theme="dark"] .cdex-cost.paid{color:#e6b35c}
+.cdex-card.locked{opacity:1;filter:none}
+.cdex-card.locked .poke-icon{filter:grayscale(70%);opacity:.7}
+.cdex-card .poke-name{font-size:15.5px}

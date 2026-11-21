@@ -1,14 +1,15 @@
 /* Offline support: keep the app and all content on the phone. */
-const CACHE = 'ftg-v2.0.0';
+const CACHE = 'ftg-v2.5.0';
 const SHELL = [
   './',
   'index.html',
   'app.css',
-  'app.css?v=2.0.0',
+  'app.css?v=2.5.0',
   'app.js',
-  'app.js?v=2.0.0',
+  'app.js?v=2.5.0',
   'content.json',
   'preread.json',
+  'shelf.json',
   'img/barcelona.jpg',
   'img/madrid.jpg',
   'img/segovia.jpg',

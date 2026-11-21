@@ -1,6 +1,6 @@
 'use strict';
 /* 家族任務遊戲 — single-page app. Content comes from content.json (generated from the script). */
-const APP_VERSION = '2.0.0';
+const APP_VERSION = '2.5.0';
 const TRIP_START = '2026-12-09';
 const TRIP_END = '2027-01-06';
 const RESET_DATE = '2026-12-07';
@@ -110,6 +110,7 @@ async function loadContent() {
   const res = await fetch('content.json', { cache: 'no-cache' });
   C = await res.json();
   try { PRE = await (await fetch('preread.json', { cache: 'no-cache' })).json(); } catch (e) { PRE = {}; }
+  try { SHELF = await (await fetch('shelf.json', { cache: 'no-cache' })).json(); } catch (e) { SHELF = {}; }
   for (const city of C.cities) {
     CITY[city.id] = city;
     for (const c of city.cityCards) { c.city = city.id; CARD[c.id] = c; }
@@ -194,6 +195,9 @@ function blobToBase64(blob) {
 async function syncMeta(d) {
   if (!d) return;
   META.likes = d.likes || {};
+  META.likeLog = d.likeLog || [];
+  const wf = document.getElementById('wow-family');
+  if (wf) wf.innerHTML = wowFamilyInner();
   META.comments = d.comments || {};
   META.recent = d.recent || [];
   META.cutoff = d.cutoff || '';
@@ -329,6 +333,8 @@ function view(html) {
       <a class="chip" href="#/tapa" style="font-weight:700">🍢 每日Tapa</a>
       <a class="chip" href="#/pokedex" style="font-weight:700">📖 大圖鑑</a>
       <a class="chip" href="#/airports" style="font-weight:700">✈️ 四大機場</a>
+      <a class="chip" href="#/cruisedex" style="font-weight:700">🚢 郵輪圖鑑</a>
+      <a class="chip" href="#/pack" style="font-weight:700">🧳 行前清單</a>
     </div>
     <a class="btn small ghost" href="itinerario.html" target="_blank" style="min-height:36px;font-size:13px;padding:0 10px;border-color:var(--primary);color:var(--primary)">🇪🇸 西文行程（同事專用）</a>
   </div>`;
@@ -748,27 +754,35 @@ const AIRPORTS_DATA = [
     name: '臺灣桃園國際機場',
     nameEn: 'Taiwan Taoyuan International Airport',
     flag: '🇹🇼',
-    terminal: '第二航廈 / 第一航廈',
+    terminal: '第一航廈 / 第二航廈 / 第三航廈北登機廊廳',
     role: '啟程出發站（2026/12/08–12/09）',
     theme: '候機門文化主題巡禮與全家啟程合照',
     lore: `
-      <p>從 17 世紀大航海時代的「福爾摩沙」作為東亞海上轉口貿易樞紐，到 1979 年由軍民共用轉型為現代化民航門戶，這座島嶼在地理經濟上始終扮演著海空關鍵十字路口。如今，桃園機場不僅支撐著全球超過六成的先進半導體高價值空中冷鏈與精密物流，更在航廈空間設計上演繹了獨特的「在地文化敘事」。</p>
-      <p>不同於多數國際航空樞紐冰冷標準化的玻璃鋼骨與單調免稅店，桃園機場第二航廈將各登機門打造成微型生活劇場與文化博物館。對於即將展開 30 天跨洲長途旅行的家庭而言，候機室不僅僅是登機前的等待空間，更是一道充滿儀式感的「過渡空間（Liminal Space）」——透過熟悉的夜市紅燈籠、茶席香氣與偶戲工藝，在跨越時區與文化邊界前，為全家人注入安心與溫暖的期待。</p>
+      <p>桃園機場在 1979 年啟用，當年叫「中正國際機場」，是為了取代已經太擠的臺北松山機場而新蓋的國際機場；2006 年改成現在的名字。到 2024 年，它一年接待約 4,470 萬名國際旅客，在國際機場協會（ACI）的統計裡排全球第 13；航空貨運量約 227 萬公噸，排全球第 10。</p>
+      <p>為什麼一個不算大的島，貨運量能排進世界前十？因為臺灣做的晶片、伺服器和電子零件又小又貴，客人又等不及，很多都是坐飛機出國的。我們出發這天，腳下這座機場也正忙著把「臺灣製造」送到全世界。</p>
+      <p>機場這幾年也在長大。英國建築師事務所 RSHP 設計的第三航廈，北登機廊廳在 2025 年 12 月開始試營運，整座航廈預計 2027 年底完工。有趣的是，RSHP 就是理察・羅傑斯創辦的事務所；我們 1 月 6 日回家時，會在馬德里 T4 航廈看到他們另一件得獎作品：波浪竹天花板和彩虹色鋼柱。一趟旅程，從同一家建築師的作品出發，也在他們的作品裡回家。</p>
+      <p>候機的時候別只滑手機。第二航廈有幾個用心的主題角落：木頭森林、回收玻璃做成的藍色水池、布袋戲展區，還有喝茶的空間。這些臺灣手藝，在接下來的 30 天裡，都會在西班牙和地中海遇到它們的「遠房親戚」。下面幫大家整理好了，先記在心裡，到了當地再去找找看。</p>
     `,
     architecture: `
-      <b>🏛️ 建築與空間特色：</b>
-      桃園機場第二航廈巨大的雙曲面懸吊桁架屋頂象徵「飛鷹展翼」，大跨度無柱挑高空間打破了出入境的壓迫感。各特色主題候機室（Gate Lounges）以「一門一景」為核心，融合了台灣傳統竹編、金工、剪黏與現代多媒體光雕，讓旅客在踏出國門前的最後一哩路，沉浸於島嶼多元族群的生活記憶。
+      <b>🧭 工藝尋寶地圖：臺灣手藝 ↔ 旅途上的遠房親戚</b>
+      <ul class="craft-map">
+        <li><b>剪黏 ↔ 碎磚拼貼（trencadís）</b>：廟頂的龍鳳是用剪成小片的彩色瓷碗黏出來的；高第在桂爾公園用打碎的磁磚貼滿彎曲的長椅和蜥蜴。到了<b>桂爾公園</b>，找找看哪一片碎磁磚上還看得到原本的花紋。</li>
+        <li><b>竹編 ↔ 西班牙草編（esparto）</b>：臺灣用竹子編籃子，西班牙南部則用一種很韌的野草「埃斯帕托草」編籃子、草鞋和地墊，已經有幾千年歷史。在<b>塞維亞、哥多華</b>的市場和雜貨店常看得到，突尼斯的市集也有類似的草編籃。</li>
+        <li><b>金工 ↔ 哥多華銀絲細工（filigrana）</b>：師傅把銀拉成比頭髮粗一點的細絲，再一圈一圈盤成花朵和蕾絲般的圖案。在<b>哥多華</b>老城區的銀飾店可以近看，比照片細緻很多。</li>
+        <li><b>木工 ↔ 格拉納達鑲嵌木工（taracea）</b>：用不同顏色的木片和骨片拼出星星般的幾何圖案，是從摩爾人時代傳下來的手藝。<b>阿爾罕布拉宮</b>大廳的木頭天花板也是用幾何木作拼成的，記得抬頭看。</li>
+        <li><b>陶瓷 ↔ 塞維亞瓷磚（azulejo）與突尼西亞彩陶</b>：塞維亞的特里亞納區做彩繪瓷磚已經好幾百年，<b>西班牙廣場</b>的長椅就用瓷磚畫出西班牙各省；<b>突尼斯</b>的市集則可以看到藍白、黃綠色的手繪陶盤。</li>
+        <li><b>偶戲 ↔ 西西里騎士偶戲（Opera dei Pupi）</b>：見下方 D7 布袋戲的說明，<b>巴勒摩</b>是重點。</li>
+        <li><b>光雕 ↔ 聖家堂的彩色玻璃</b>：機場用燈光說故事，高第用太陽。<b>聖家堂</b>東側的玻璃偏藍綠、西側偏橘紅，早上和傍晚進去，教堂會是兩種顏色。</li>
+      </ul>
     `,
     gates: [
-      { id: 'C3', name: 'C3 街頭夜市', desc: '懷舊紅燈籠、經典台灣小吃霓虹燈箱與復古彈珠台' },
-      { id: 'C4', name: 'C4 偶戲掌中乾坤', desc: '精緻木雕布袋戲彩樓戲台，展現生旦淨末丑戲偶工藝' },
-      { id: 'C5', name: 'C5 客家花布與藍染', desc: '深邃靛藍大菁染布，搭配傳統富貴花布燈籠藝術' },
-      { id: 'C6', name: 'C6 臺灣茶香文化', desc: '高山茶萎凋竹簍、品茗茶席陶壺與茶山梯田光影' },
-      { id: 'C7', name: 'C7 金馬電影之光', desc: '經典膠卷放映機、電影聚光燈與台灣新浪潮光影' },
-      { id: 'C8', name: 'C8 寶島好山好水', desc: '中央山脈與玉山意象，台灣黑熊與島嶼特有種生態' },
-      { id: 'D2', name: 'D2 臺灣原住民文化', desc: '十六族幾何圖騰織紋、百步蛇神話雕刻與木舟意象' },
-      { id: 'D3', name: 'D3 嬉遊記與傳統書法', desc: '張炳煌大師行草書法、西遊文學意境與文房四寶' },
-      { id: 'D7', name: 'D7 科技矽島', desc: '高科技半導體矽晶圓光雕、流動光纖與數位脈動' },
+      { id: 'C1', name: 'C1 木育森林候機室', desc: '實木桌椅、石虎與臺灣黑熊等特有動物，還有可以彈的鋼琴（第二航廈）', link: '木頭手藝的遠房親戚在格拉納達：鑲嵌木工（taracea）用彩色木片拼出星星圖案；到阿爾罕布拉宮記得抬頭看木頭天花板。' },
+      { id: 'C2', name: 'C2 Hello Kitty 候機室', desc: '粉紅色候機室，有公車站牌和三麗鷗角色（第二航廈）', link: '喜歡可愛小人偶？12 月的馬賽舊港有「santons 市集」，賣普羅旺斯的手捏黏土小人偶；那不勒斯的聖額我略街整條都是做耶誕馬槽人偶的工坊。' },
+      { id: 'C5', name: 'C5–C6 森林兒童遊戲區', desc: '森林主題的親子遊戲區（第二航廈 3 樓）', link: '大自然變成建築：桂爾公園的石柱長得像樹幹、聖家堂裡的柱子會像樹枝一樣分岔，高第說他的老師是大自然。' },
+      { id: 'C10', name: 'C10-1 春池琉璃藍色玻璃池', desc: '用回收玻璃做成、可以走上去的藍色「水池」（第二航廈）', link: '回收再利用的老前輩是高第：桂爾公園的碎磚拼貼用了很多磁磚工廠的瑕疵品和破瓶子。聖家堂的彩色玻璃則會讓陽光在牆上畫畫。' },
+      { id: 'D7', name: 'D7 霹靂布袋戲展區', desc: '經典戲偶與戲服展示，還能用 AI 做出自己的角色照（第二航廈，2026 年 10 月新登場）', link: '西西里也有自己的「布袋戲」：巴勒摩的騎士偶戲（Opera dei Pupi）用穿金屬盔甲的木偶演查理曼騎士的故事，已被列為聯合國人類非物質文化遺產；那不勒斯則有戴黑面具的白衣小丑 Pulcinella。' },
+      { id: 'DTEA', name: 'D 區 臺灣好茶區', desc: '以臺灣茶為主題的休息空間（第二航廈）', link: '突尼斯人愛喝很甜的薄荷茶，有時還會在杯裡放松子；格拉納達老城的小巷裡也有一整排摩洛哥風格的茶館。比比看哪裡的茶最對味。' },
+      { id: 'D11', name: 'D11–D18 第三航廈北登機廊廳', desc: 'RSHP 設計、2025 年 12 月開始使用的新廊廳，從 D10 走過去', link: '同一家建築師事務所（理察・羅傑斯創辦的 RSHP）也設計了馬德里機場 T4。回家那天，比比看兩座航廈哪裡像。' },
     ]
   },
   {
@@ -781,18 +795,16 @@ const AIRPORTS_DATA = [
     role: '跨洲樞紐轉機站',
     theme: '沙漠超級方舟與 24 小時不夜城世界十字路口',
     lore: `
-      <p>我們轉機的杜拜機場 Terminal 3 航廈是由法國傳奇機場建築大師保羅·安德魯（Paul Andreu，戴高樂機場與北京國家大劇院建築師）與阿聯酋工程團隊操刀，建築面積高達 171 萬平方公尺——相當於超過 <b>15 座台北大巨蛋體育館</b>（或逾 40 座室內比賽球場草坪），亦相當於超過 <b>160 座國定古蹟台南地方法院</b>園區基地（或近 400 座台南地院主體建築）。在 2008 年落成時，它一舉超越美國五角大廈，成為當時<b>全球單一樓地板面積最大的建築物</b>。外觀模擬波斯灣沙漠流動的沙丘與巨型貝殼，採用大跨度雙曲面鋼構流線穹頂；航廈深入地下 20 公尺，擁有三層立體旅客與行李分流捷運系統；在炎夏氣溫高達 48°C 的極端氣候下，建築內部採用高效微氣候地冷循環——透過在厚重大理石地板下密集埋設數百公里低溫冷水盤管（地板輻射水冷），並將低速出風口全數隱於離地面僅 1 至 2 公尺的柱底與踢腳線（微氣候置換通風），專注冷卻人體活動的生活高度，讓受熱空氣自然上升至 30 公尺高的穹頂排出，結合地下 20 公尺深層土壤的天然隔熱屏障與 Low-E 鍍膜玻璃，並點綴室內棕櫚綠洲與人工水幕瀑布的水氣蒸騰，創造了沙漠中不可思議的 23°C 科技綠洲。</p>
+      <p>我們轉機的杜拜機場第三航廈（Terminal 3）在 2008 年 10 月啟用，由法國巴黎機場集團的工程設計公司（ADPi）設計，是阿聯酋航空專用的航廈。它的樓地板面積約 171 萬平方公尺，啟用時被稱為<b>全世界樓地板面積最大的建築</b>（後來被中國成都的環球中心超越）。航廈有一大部分蓋在滑行道底下，出境和入境大廳位在停機坪下方約 10 公尺，所以走著走著，頭頂上可能正有飛機滑過。</p>
 
-      <p>杜拜本土原油儲量在阿拉伯聯合大公國僅佔不足 5%，早在 1980 年代，杜拜的統治者家族馬克圖姆家族便洞悉<b>「石油終會採盡，但地理位置永存」</b>。因為波斯灣恰好座落於全球 8 小時航程的幾何同心圓中心，以機場所在地為圓心畫一個圓，便能覆蓋歐洲、亞洲與非洲超過 50 億人口。杜拜憑藉國家資本主義模式全力扶持阿聯酋航空，開創了舉世無雙的「軸輻式航空網絡（Hub-and-Spoke）」，將一座昔日依賴採珍珠與海灣帆船的小漁港，蛻變為哪怕不需要最終目的地、純靠「中轉流動（Transit）」便能產生天文數字產值的全球心臟。某種意義上，當時的目標正是讓整座城市變得與它的機場難分彼此<sup>[註1]</sup>。</p>
+      <p>為什麼沙漠裡會長出這麼大的機場？杜拜的石油其實不多，只占阿聯石油儲量的一小部分，統治家族很早就決定改走貿易、觀光和航空這條路。航空業常說：從波斯灣起飛，8 小時航程內住著全世界大約三分之二的人口。杜拜扶植阿聯酋航空，把全世界的航線像腳踏車輪的輻條一樣接到這裡（航空業叫「軸輻式航網」），很多旅客根本不出機場，只是在這裡換飛機，也讓這座城市賺進大把鈔票。我們也是其中之一。</p>
 
-      <p>法國人類學家馬克·歐傑曾提出「非場所（Non-place）」概念：機場是超現代性最具代表性的非場所，這裡沒有固定身分、沒有傳統鄉土，只有 24 小時不熄滅的登機廣播、免稅店金光璀璨的純金金條、中東椰棗與來自南亞的多民族流動勞動力。走在航廈深邃的大理石長廊上，每一位擦肩而過的旅客都在前往地球的不同角落；在午夜時分抵達第三航廈，你所瞥見的，正是新全球經濟那顆跳動最劇烈、永不停歇的心跳脈搏<sup>[註2]</sup>。這座巨大的鋼構方舟既是這座城市遞給世界最奢華的名片與握手，也是一場真實上演的全球化微縮劇場——在凌晨三點喧囂的過渡大廳裡，沒有人真正屬於這裡，卻也沒有任何人是外人<sup>[註3]</sup>；在這個為接下來的數小時而設計的封閉穹頂下，國籍與階級的界線悄然撫平，機場已然成為當代人類所擁有的唯一真正具備世界主義的超大型城邦<sup>[註4]</sup>。</p>
+      <p>法國人類學家馬克・歐傑（Marc Augé）在 1992 年提出「非地方」（non-place）的說法：機場、高速公路、大賣場這類地方，人人只是路過，很難對它產生「家」的感覺。半夜的杜拜機場正是這樣：各種語言的廣播、金光閃閃的免稅店、來自南亞和非洲的工作人員，每個擦身而過的人都要去地球的不同角落。旅行作家皮科・艾爾則認為，機場最能看出一個地方的個性，因為它同時是城市的名片和握手<sup>[註1]</sup>；英國小說家巴拉德甚至猜想，機場會是 21 世紀真正的城市<sup>[註2]</sup>。轉機的空檔，不妨想想：你覺得這裡像一座城市嗎？</p>
 
       <div style="margin-top:16px;padding:12px 14px;background:var(--sunken);border-radius:var(--r-sm);border:1px solid var(--line);font-size:13.5px;line-height:1.6;color:var(--muted)">
-        <b style="color:var(--fg)">📝 文學註釋與經典出處：</b><br>
-        • <sup>[註1]</sup> <i>“Dubai's undeclared mission is to make itself indistinguishable from its airport.”</i> —— 約瑟夫·奧尼爾（Joseph O'Neill），長篇小說《狗》（<i>The Dog</i>, 2014）。<br>
-        • <sup>[註2]</sup> <i>“To arrive at midnight at Terminal 3 of Dubai International Airport... is to glimpse the pulsing, non-stop flow of the new global economy.”</i> —— 格雷格·林賽（Greg Lindsay）＆ 約翰·卡薩達（John D. Kasarda），都市專著《航空大都市：即將到來的機場時代》（<i>Aerotropolis: The Way We'll Live Next</i>, 2011）。<br>
-        • <sup>[註3]</sup> <i>“Airports say a lot about a place because they are both a city's business card and its handshake... In the transit lounge at 3 a.m., no one belongs here, yet no one is an outsider.”</i> —— 皮科·愛爾（Pico Iyer），旅行哲學名著《全球靈魂：時差、購物中心與尋家之旅》（<i>The Global Soul: Jet Lag, Shopping Malls, and the Search for Home</i>, 2000）。<br>
-        • <sup>[註4]</sup> <i>“Airports have become the only truly cosmopolitan cities we have... erasing class and national distinctions and subsuming them within the unitary global culture of the departure lounge.”</i> —— J. G. 巴拉德（J. G. Ballard），文化評論隨筆〈機場：21 世紀真正的城市〉（<i>"Airports: The True Cities of the 21st Century"</i>, 1997）。
+        <b style="color:var(--fg)">📝 出處：</b><br>
+        • <sup>[註1]</sup> 皮科・艾爾（Pico Iyer），《全球靈魂》（<i>The Global Soul: Jet Lag, Shopping Malls, and the Search for Home</i>，2000）。原句大意：機場很能說明一個地方，因為它既是城市的名片，也是它的握手。<br>
+        • <sup>[註2]</sup> J. G. 巴拉德（J. G. Ballard），〈機場：21 世紀真正的城市〉（<i>Airports: The True Cities of the 21st Century</i>），《Blueprint》雜誌，1997 年 9 月。原句大意：我猜機場會是 21 世紀真正的城市。
       </div>
     `,
     architecture: ''
@@ -812,12 +824,6 @@ const AIRPORTS_DATA = [
       <p><b>🚩 加泰隆尼亞的文化尊嚴密碼：</b><br>
       為什麼巴塞隆納的自我認同如此深厚？中世紀時，加泰隆尼亞曾是稱霸地中海的海上強權，擁有比馬德里更早成熟的民主議會與海洋法典；1714 年 9 月 11 日主權遭波旁軍隊奪走後，他們將戰敗日訂為民族節（La Diada），用三百年的抗爭將「語言即祖國」刻入骨髓。這份傲骨在機場隨處可見：機場正式名稱以流亡 40 年歸來的自治政府主席「何塞普·塔拉德利亞斯」命名；航廈所有指標第一順位永遠是加泰隆尼亞語，其次才是西班牙語；建築大師波菲更刻意摒棄馬德里式的厚重宮廷感，用通透的白瓷與純淨天光，向世界宣告這是一座向海而生、熱愛自由的古老民族。</p>
 
-      <div style="margin-top:14px;padding:12px 14px;background:#F0F6FA;border-radius:var(--r-sm);border:1.5px solid #BDD5EA;color:var(--fg)">
-        <b style="color:#205284">🛂 歐洲最新數位邊境 EES 通關須知（重要行前心理準備）：</b><br>
-        歐盟已全面實施全新數位出入境系統（EES），徹底廢除人工蓋護照印章，改採高科技數位建檔。此政策旨在精準杜絕 90 天免簽逾期停留，並透過生物特徵防範護照偽造。<br>
-        • <b>採樣流程</b>：於自助機台（Kiosk）先掃描護照照片頁，接著<b>脫下口罩、帽子與眼鏡</b>直視鏡頭拍攝 3D 臉部特徵，最後依螢幕指示將<b>右手四指平貼在發綠光的感應板上壓指紋</b>（放平、勿懸空或過度用力摩擦），隨後前往海關櫃檯完成覆核。<br>
-        • <b>排隊警示與家人應對</b>：初次數位建檔耗時較長，若遇多架跨洲大飛機同時抵達，非歐盟排隊人龍可能長達 1 至 2 小時。請家人<b>在飛機降落前先上洗手間</b>，排隊時備妥英文行程單與保險單，由熟悉英語的家人陪同長輩集體過關，放平心態，從容迎接地中海陽光！
-      </div>
     `,
     architecture: `
       <b>🏛️ 建築與空間特色：</b>
@@ -1366,6 +1372,7 @@ route('/city/:id', (id) => {
   const spotItems = city.spots.map((c) => `<a class="item" href="#/card/${c.id}"><div class="t"><b>${esc(c.title)}</b>
     <span>${esc((c.port ? c.port + '・' : '') + (c.game ? '小遊戲：' + c.game.name : '景點卡'))}</span></div>${doneMark(c)}${CHEV}</a>`).join('');
   view(`${back('#/', '首頁')}${CITY_POSTER[city.id] ? posterImg(CITY_POSTER[city.id]) : posterBlock(city.id, CITY_META[city.id] || TRIP_META)}<h1>${esc(city.name)}</h1>${city.intro.map((p) => `<p class="sub">${p}</p>`).join('')}
+    ${shelfHtml(city.id)}
     <h2>城市卡（每天解鎖一張）</h2><div class="list">${cityItems}</div>
     <h2>景點卡（想去哪個就點哪個）</h2><div class="list">${spotItems}</div>`);
   return 'home';
@@ -1850,22 +1857,22 @@ route('/card/:id', async (id) => {
 
     const casualHtml = `<div id="casual-view" style="${spotMode === 'hunt' && masterpieces ? 'display:none' : ''}">
       ${preReadHtml(card)}<button type="button" class="btn ghost block" data-jump="q-p" style="margin-bottom:12px">不想讀？直接跳到題目</button>
-      <details class="read" open><summary>景點冷知識 <span class="sub">點一下收起來，覺得特別有趣就按讚</span></summary><div class="inner reading">
-      ${card.facts.length ? card.facts.map((f, i) => {
+      <details class="read" open><summary>景點小介紹 <span class="sub">點一下就能收起來，覺得特別有趣就 WoW 記!</span></summary><div class="inner reading">
+      ${card.story.map((p) => `<p>${p}</p>`).join('')}
+      ${card.facts.length ? `<div class="facts-box">${card.facts.map((f, i) => {
         const fid = factId(card, i);
         const on = !!LS.get('likes', {})[fid];
         return `<div class="fact"><div class="ftxt">${f}</div>
-          <button type="button" class="like-btn${on ? ' on' : ''}" data-like="${fid}" aria-pressed="${on}">👍 讚 <span>${likeCount(fid)}</span></button></div>`;
-      }).join('') : ''}
-      ${card.story.map((p) => `<p>${p}</p>`).join('')}</div></details>
+          <div class="wow-row"><button type="button" class="wow-btn${on ? ' on' : ''}" data-like="${fid}" aria-pressed="${on}">👍 WoW 記! <span class="n">${likeCount(fid)}</span></button></div></div>`;
+      }).join('')}</div>` : ''}</div></details>
       <p><b>準備好挑戰今天的任務了嗎？</b></p>
-      ${quizHtml(card, 'p', '出發前的題目')}
+      ${quizHtml(card, 'p', '出發前先來暖身')}
       ${card.game && card.hasGame ? (() => {
         const tool = TOOL_FOR.find(([k]) => card.game.name.includes(k));
         return `<div class="gamebox"><h3>景點小遊戲：${esc(card.game.name)}</h3><p>${card.game.rules}</p>
           ${tool ? `<a class="btn small" href="#/tool/${tool[1]}">打開${esc(tool[0])}工具</a>` : ''}</div>`;
       })() : ''}
-      ${card.tasks.length ? `<h2>現場任務</h2><div class="stack">${card.tasks.map((t, i) => `<div class="card task-box" data-task="${i}"><p>${t}</p>
+      ${card.tasks.length ? `<h2>現場出任務</h2><div class="stack">${card.tasks.map((t, i) => `<div class="card task-box" data-task="${i}"><p>${t}</p>
         <input class="text task-note" placeholder="寫下細節（選填，例如名字、地點）">
         <div class="tc"></div></div>`).join('')}</div>` : ''}
       <a class="btn ghost block" href="#/grid/${card.id}/S">開一個這個景點的九宮格</a>
@@ -1876,17 +1883,16 @@ route('/card/:id', async (id) => {
   }
   view(html);
   bindQuiz(card);
-  bindSpeak();
   $$('[data-jump]').forEach((b) => b.onclick = () => { const target = document.getElementById(b.dataset.jump); if (target) target.scrollIntoView({ behavior: 'smooth' }); });
   $$('[data-like]').forEach((b) => b.onclick = () => {
     const fid = b.dataset.like;
     const m = LS.get('likes', {});
-    m[fid] = !m[fid];
-    if (!m[fid]) delete m[fid];
+    if (m[fid]) delete m[fid]; else m[fid] = Date.now();
     LS.set('likes', m);
     b.classList.toggle('on', !!m[fid]);
     b.setAttribute('aria-pressed', String(!!m[fid]));
-    $('span', b).textContent = likeCount(fid);
+    $('.n', b).textContent = likeCount(fid);
+    if (m[fid]) toast('已記進你的 WoW 筆記，到「我的」可以看到');
     DB.qPut({ id: 'l:' + fid, type: 'like', factId: fid, player: S.player, on: !!m[fid] }).then(flush);
   });
   if (card.type !== 'city') {
@@ -2317,6 +2323,103 @@ route('/pokedex', async () => {
 });
 
 /* ---------- RENDER AIRPORTS (四大國際機場手帳：建築、總體經濟與文化觀察) ---------- */
+/* ---------- v2.4：EES 通關須知（機場手帳最上方）與桃園機場世界名次多選題 ---------- */
+const EES_HTML = `
+  <div class="ees-box">
+    <b class="ees-title">🛂 歐洲最新數位邊境 EES 通關須知（重要行前心理準備）</b>
+    <p>歐盟的數位出入境系統（EES）從 2026 年 4 月 10 日起在所有申根區外部邊境全面上路，用數位建檔取代在護照上蓋章。目的是精準抓出超過 90 天免簽停留的人，也用臉和指紋防止護照被冒用（至於有沒有用又是另外一個話題了）。</p>
+    <ul>
+      <li><b>採樣流程</b>：在自助機台（Kiosk）先掃描護照照片頁，<b>脫下口罩、帽子和眼鏡</b>直視鏡頭拍臉，再依螢幕指示把<b>手指平貼在發綠光的感應板上</b>壓指紋（放平，不要懸空，也不要用力摩擦），最後到海關櫃檯讓關員覆核。</li>
+      <li><b>第一次最久</b>：第一次入境要完整建檔，比較花時間。如果剛好好幾架長程大飛機一起到，非歐盟旅客的隊伍可能要排 1 到 2 小時（要是前面有人機器出問題會更久。來到歐洲請凡事放寬心，這裡的效率沒有臺灣高）。</li>
+      <li><b>先做好準備</b>：飛機降落前或剛下飛機就先去洗手間；排隊時備妥英文行程單、回程機票和保險資料。</li>
+      <li><b>離開時也要記錄</b>：出境離開申根區時（例如馬德里回臺灣），系統也會再記錄一次。郵輪組停靠突尼西亞（不在申根區），回到歐洲時要怎麼查驗，請聽船上的廣播安排。</li>
+    </ul>
+  </div>`;
+
+const TPE_QUIZ = [
+  {
+    id: 'top3',
+    title: '🥇 哪些項目，桃園機場曾拿下「全世界前 3 名」？',
+    hint: '可以複選，5 個選項。',
+    pass: 'top 3',
+    opts: [
+      { t: 'Skytrax 全球最佳行李運送機場', ok: true, r: '第 1 名（2025、2026 連續兩年）' },
+      { t: 'Skytrax 全球進步最多機場', ok: true, r: '第 3 名（2026）；2025 年是第 5 名' },
+      { t: '全球最友善機場（英國 APH 依 Google 評論統計）', ok: true, r: '第 1 名（2025）' },
+      { t: 'Skytrax 全球最佳出入境查驗（證照查驗）', ok: false, r: '第 4 名（2025），差一點點！2026 年是第 7 名' },
+      { t: 'Skytrax 全球最乾淨機場', ok: false, r: '第 6 名（2026）；2025 年是第 9 名' },
+    ],
+  },
+  {
+    id: 'top50',
+    title: '🏅 哪些項目，桃園機場進了「全世界前 50 名」？',
+    hint: '可以複選，15 個選項。注意年份！',
+    pass: 'top 50',
+    opts: [
+      { t: '2026 Skytrax 全球最佳機場（總排名）', ok: true, r: '第 24 名（2026）' },
+      { t: '2025 Skytrax 全球最佳機場（總排名）', ok: true, r: '第 43 名（2025）' },
+      { t: '2024 Skytrax 全球最佳機場（總排名）', ok: false, r: '第 66 名（2024）' },
+      { t: '2023 Skytrax 全球最佳機場（總排名）', ok: false, r: '第 82 名（2023）' },
+      { t: '2022 Skytrax 全球最佳機場（總排名）', ok: false, r: '第 67 名（2022）' },
+      { t: '2024 Skytrax 全球最佳行李運送', ok: true, r: '第 8 名（2024），隔年就衝到第 1' },
+      { t: '2025 Skytrax 全球最佳出入境查驗', ok: true, r: '第 4 名（2025）' },
+      { t: '2026 Skytrax 全球最佳出入境查驗', ok: true, r: '第 7 名（2026）' },
+      { t: '2026 Skytrax 全球最乾淨機場', ok: true, r: '第 6 名（2026）' },
+      { t: '2026 Skytrax 全球最佳機場員工', ok: true, r: '第 6 名（2026）' },
+      { t: '2026 Skytrax 全球最佳機場洗手間', ok: true, r: '第 8 名（2026）；2025 年是第 9 名' },
+      { t: '2026 Skytrax 全球最適合親子的機場', ok: true, r: '第 10 名（2026）' },
+      { t: '2026 Skytrax 全球最佳機場購物', ok: true, r: '第 10 名（2026）' },
+      { t: '2024 國際旅客人數（國際機場協會 ACI）', ok: true, r: '第 13 名（2024，約 4,470 萬人次）' },
+      { t: '2024 航空貨運量（國際機場協會 ACI）', ok: true, r: '第 10 名（2024，約 227 萬公噸）' },
+    ],
+  },
+];
+
+function tpeQuizHtml() {
+  return TPE_QUIZ.map((q) => {
+    const st = LS.get('tpeq:' + S.player + ':' + q.id, null);
+    const done = !!(st && st.done);
+    const picked = (st && st.picked) || [];
+    const opts = q.opts.map((o, i) => {
+      const on = picked.includes(i);
+      let cls = '';
+      let tag = '';
+      if (done) {
+        cls = o.ok ? (on ? ' right' : ' missed') : (on ? ' wrong' : ' plain');
+        tag = `<span class="mq-rank">${o.ok ? '✅ ' : '❌ '}${esc(o.r)}</span>`;
+      }
+      return `<label class="mq-opt${cls}"><input type="checkbox" data-q="${q.id}" value="${i}"${on ? ' checked' : ''}${done ? ' disabled' : ''}><span class="mq-t">${esc(o.t)}</span>${tag}</label>`;
+    }).join('');
+    let res = '';
+    if (done) {
+      const right = q.opts.filter((o, i) => o.ok === picked.includes(i)).length;
+      res = `<div class="mq-res">你答對了 ${right} / ${q.opts.length} 個選項${right === q.opts.length ? '，全對！🎉' : '。綠色框是應該選的，紅色框是不該選的。'}</div>
+        <button type="button" class="btn small ghost" data-mq-reset="${q.id}">重新作答</button>`;
+    } else {
+      res = `<button type="button" class="btn block" data-mq-check="${q.id}">公布答案</button>`;
+    }
+    return `<div class="card mq-card"><h3>${q.title}</h3><p class="sub">${q.hint}</p><div class="mq-opts">${opts}</div>${res}</div>`;
+  }).join('') + `<p class="sub" style="font-size:12.5px;margin:-6px 0 16px">資料來源：Skytrax 世界機場大獎 2022–2026、國際機場協會（ACI）2024 年統計、英國 APH 2025 年調查，經中央社、公視、台北時報等媒體報導。</p>`;
+}
+
+function bindTpeQuiz() {
+  $$('[data-mq-check]').forEach((b) => {
+    b.onclick = () => {
+      const id = b.dataset.mqCheck;
+      const q = TPE_QUIZ.find((x) => x.id === id);
+      const picked = $$(`input[data-q="${id}"]`).filter((x) => x.checked).map((x) => +x.value);
+      if (!picked.length) { toast('先勾選至少一個選項喔'); return; }
+      LS.set('tpeq:' + S.player + ':' + id, { done: true, picked });
+      const allRight = q.opts.every((o, i) => o.ok === picked.includes(i));
+      if (allRight) award({ key: 'tpe_quiz_' + id, points: 20, label: '桃園機場世界名次全對（' + q.pass + '）' });
+      renderAirports('tpe').then(() => { const el = $(`[data-mq-reset="${id}"]`); if (el) el.closest('.mq-card').scrollIntoView({ block: 'start' }); });
+    };
+  });
+  $$('[data-mq-reset]').forEach((b) => {
+    b.onclick = () => { LS.set('tpeq:' + S.player + ':' + b.dataset.mqReset, null); renderAirports('tpe'); };
+  });
+}
+
 async function renderAirports(activeId = 'tpe') {
   activeId = activeId || 'tpe';
   const airport = AIRPORTS_DATA.find((a) => a.id === activeId) || AIRPORTS_DATA[0];
@@ -2328,7 +2431,7 @@ async function renderAirports(activeId = 'tpe') {
   }).join('');
 
   // TPE Gate selection state
-  const savedGateId = LS.get('tpe_gate_theme', 'C3');
+  const savedGateId = LS.get('tpe_gate_theme', '');
   const savedGateCustom = LS.get('tpe_gate_custom', '');
 
   // Photos from DB
@@ -2365,8 +2468,8 @@ async function renderAirports(activeId = 'tpe') {
     const gateChips = airport.gates.map((g) => {
       const on = g.id === savedGateId;
       return `<button type="button" class="gate-chip-item ${on ? 'on' : ''}" data-gate-id="${g.id}">
-        <div class="gate-chip-code">${g.id} ${on ? '✓' : ''}</div>
-        <div class="gate-chip-name">${esc(g.name.replace(/^[CD]\d+\s*/, ''))}</div>
+        <div class="gate-chip-code">${esc(g.name.split(' ')[0])} ${on ? '✓' : ''}</div>
+        <div class="gate-chip-name">${esc(g.name.split(' ').slice(1).join(' '))}</div>
         <div class="gate-chip-desc">${esc(g.desc)}</div>
       </button>`;
     }).join('');
@@ -2374,10 +2477,11 @@ async function renderAirports(activeId = 'tpe') {
     gateSelectionHtml = `
       <div class="card" style="margin-bottom:16px;background:var(--card-hover)">
         <h3 style="margin:0 0 6px">🏮 候機門臺灣文化主題探索</h3>
-        <p class="sub" style="margin:0 0 12px">桃園機場第二航廈每個候機室都有不同的臺灣文化主題！點選或填寫你們這次出發的候機門：</p>
+        <p class="sub" style="margin:0 0 12px">桃園機場有幾個臺灣文化主題角落。候機時去逛逛，點選你們找到的那一個，就能看到它在西班牙和地中海的「遠房親戚」（位置以現場為準，不在你們的登機門附近也沒關係）：</p>
         <div class="gate-chips-wrap">${gateChips}</div>
+        ${(() => { const g = airport.gates.find((x) => x.id === savedGateId); return g && g.link ? `<div class="gate-link"><b>🔗 旅途上的遠房親戚</b><br>${esc(g.link)}</div>` : ''; })()}
         <div style="display:flex;gap:8px;align-items:center;margin-top:10px">
-          <input type="text" id="tpe-gate-custom" class="text" style="flex:1" placeholder="或自填候機門主題（例如：C3 街頭夜市候機門）" value="${esc(savedGateCustom)}">
+          <input type="text" id="tpe-gate-custom" class="text" style="flex:1" placeholder="或寫下你們發現的其他角落（例如：登機門旁的一面藝術牆）" value="${esc(savedGateCustom)}">
           <button type="button" class="btn small" id="btn-save-gate">儲存</button>
         </div>
       </div>
@@ -2391,6 +2495,7 @@ async function renderAirports(activeId = 'tpe') {
         </label>
         <div id="tpe-photo-box">${departurePhotoHtml}</div>
       </div>
+      ${tpeQuizHtml()}
     `;
   } else {
     // Non-TPE airport photo upload
@@ -2415,6 +2520,8 @@ async function renderAirports(activeId = 'tpe') {
         <p class="sub" style="margin:4px 0 0">走過桃園、杜拜、巴塞隆納與馬德里，用建築美學與文化視野開啟 30 天壯遊</p>
       </div>
     </div>
+
+    ${EES_HTML}
 
     <!-- Navigation pills -->
     <div class="airport-pill-nav">${tabsHtml}</div>
@@ -2458,6 +2565,7 @@ async function renderAirports(activeId = 'tpe') {
         renderAirports('tpe');
       };
     });
+    bindTpeQuiz();
 
     const btnSaveGate = $('#btn-save-gate');
     if (btnSaveGate) {
@@ -2539,6 +2647,7 @@ route('/tools', () => {
     <div class="list">
       <a class="item" href="#/tapa"><div class="t"><b>🍢 今日美味 Tapa 刮刮樂</b><span>每天刮開一道美味好運小事（最適合全家）</span></div>${CHEV}</a>
       <a class="item" href="#/pokedex"><div class="t"><b>📖 西班牙旅行大圖鑑</b><span>30 款西班牙經典圖鑑收集＋復古拍立得</span></div>${CHEV}</a>
+      <a class="item" href="#/cruisedex"><div class="t"><b>🚢 郵輪大圖鑑</b><span>船上免費體驗、船上付費體驗、下船街頭打卡</span></div>${CHEV}</a>
       <a class="item" href="#/flags"><div class="t"><b>🚩 城市旗與小眾故事</b><span>30 天打卡收集城市旗與傳奇故事</span></div>${CHEV}</a>
       <a class="item" href="#/airports"><div class="t"><b>✈️ 四大國際機場手帳</b><span>桃園全家啟程合照、杜拜轉機、巴塞隆納與馬德里建築手帳</span></div>${CHEV}</a>
       <a class="item" href="#/tool/wheel"><div class="t"><b>命運之輪</b><span>轉一次，轉到什麼就做什麼</span></div>${CHEV}</a>
@@ -2712,7 +2821,7 @@ route('/wall', () => {
   view(`<h1>排行與動態牆</h1><p class="sub" id="ws">讀取中…</p>
     <h2>總分</h2><div class="list" id="board"></div>
     <h2>最近得分</h2><div class="list" id="recent"></div>
-    <h2>大家最愛的冷知識</h2><div class="list" id="facts"></div>
+    <h2>大家最常 WoW 記的冷知識</h2><div class="list" id="facts"></div>
     <h2>大家的九宮格</h2><p class="sub">看完可以留一句評語，每張照片留言一次就 +5 分。</p><div class="wall-grid" id="pics"></div>
     <button class="btn ghost block" id="rf" style="margin-top:16px">重新整理</button>`);
   const paintBoard = (rows) => {
@@ -2803,6 +2912,7 @@ route('/me', () => {
       <label class="toggle"><span>暫停上傳（例如在郵輪上不想用網路）</span><input type="checkbox" id="pz" ${S.paused ? 'checked' : ''}></label>
     </div>
     <div class="card"><p class="section-label">上傳清單</p><p id="qc" class="sub">計算中…</p><button class="btn small" id="fl">現在上傳</button></div>
+    ${wowNotesHtml()}
     <h2>全家名單</h2>
     <div class="card"><label class="field"><span>一行一個名字（遊戲間和給分會用到）</span><textarea class="text" id="fam">${esc(S.family.join('\n'))}</textarea></label>
       <button class="btn small" id="savef">儲存名單</button></div>
@@ -2911,13 +3021,613 @@ async function renderAdmin() {
 }
 
 /* ---------- help ---------- */
+/* ---------- v2.4：行前檢查清單（每個人勾自己的） ---------- */
+const PACK_GROUPS = [
+  { lv: 1, title: '① 沒帶就出不了門', items: [
+    { id: 'passport', t: '護照', n: '效期最好還有 6 個月以上。拍一張照片頁存在手機裡備用。' },
+    { id: 'ticket', t: '機票／電子機票', n: '存在手機裡，也印一份紙本放在隨身包。' },
+    { id: 'cruise-doc', t: '郵輪登船證（e-ticket）與行李吊牌', n: '完成 MSC 線上報到後才拿得到，存手機＋印紙本。' },
+    { id: 'card', t: '信用卡 2 張（不同發卡組織，例如 Visa＋Mastercard）', n: '分開放，一張不見還有另一張。出國前打開海外刷卡功能。' },
+    { id: 'cash', t: '少量歐元現金', n: '小費、廁所、市集用。不用帶太多，歐洲幾乎都能刷卡。' },
+    { id: 'phone', t: '手機＋充電線', n: '開通國際漫遊或買好歐洲網卡／eSIM。' },
+    { id: 'meds', t: '個人常用藥＋英文藥單', n: '放隨身行李，不要托運。帶足整趟旅程的量，再多幾天備用。' },
+    { id: 'insurance', t: '旅遊平安險與海外醫療險資料', n: '把保單號碼和緊急聯絡電話存在手機裡。' },
+  ] },
+  { lv: 2, title: '② 很重要', items: [
+    { id: 'plug', t: '歐規轉接頭（兩根圓腳，C／F 型）', n: '西班牙、法國、義大利、突尼西亞都用得到。歐洲電壓是 230V，吹風機等電器要看清楚是否支援。' },
+    { id: 'powerbank', t: '行動電源', n: '只能放隨身行李，不能托運。阿聯酋航空機上禁止使用行動電源，出發前請再確認航空公司規定。' },
+    { id: 'glasses', t: '眼鏡／隱形眼鏡＋備用', n: '' },
+    { id: 'coat', t: '保暖外套', n: '12 月到 1 月，馬德里、格拉納達早晚可能接近 0°C。' },
+    { id: 'shoes', t: '好走的鞋', n: '每天會走很多路，老城區是石板路。' },
+    { id: 'warm', t: '毛帽、手套、圍巾', n: '' },
+    { id: 'umbrella', t: '摺疊傘或輕便雨衣', n: '' },
+    { id: 'copy', t: '護照影本＋兩張大頭照', n: '和護照分開放，萬一護照遺失補辦會快很多。' },
+  ] },
+  { lv: 3, title: '③ 郵輪上用得到', items: [
+    { id: 'formal', t: '正裝（如果要參加船上的正式晚宴）', n: 'Gala Night 通常 1 次（有時 2 次）。男生：有領襯衫或西裝外套；女生：洋裝。不強制，但晚上進餐廳不能穿短褲、拖鞋和背心。' },
+    { id: 'white', t: '一件白色衣服', n: '船上常辦白色派對。' },
+    { id: 'swim', t: '泳衣', n: '船上有泳池和按摩池。' },
+    { id: 'seasick', t: '暈船藥', n: '冬天的地中海有時浪會比較大，容易暈的人先準備。' },
+    { id: 'daybag', t: '上岸用的小背包', n: '每個港口上岸玩一天用，拉鍊要能關好。' },
+  ] },
+  { lv: 4, title: '④ 生活用品', items: [
+    { id: 'toilet', t: '盥洗用品、牙刷牙膏', n: '歐洲很多住宿不提供牙刷。' },
+    { id: 'skin', t: '保養品、護唇膏、護手霜', n: '歐洲冬天很乾。液體帶上飛機要用 100ml 以下小瓶，裝進透明夾鏈袋。' },
+    { id: 'pajama', t: '睡衣', n: '' },
+    { id: 'slipper', t: '室內拖鞋', n: '歐洲旅館多半沒有拖鞋。' },
+    { id: 'underwear', t: '內衣褲、襪子', n: '有洗衣機可以洗，帶一週份就夠。' },
+    { id: 'tissue', t: '面紙', n: '' },
+    { id: 'pen', t: '一支筆', n: '填表格、寫明信片用。' },
+  ] },
+  { lv: 5, title: '⑤ 不用從臺灣帶（珊笛帶）', note: '這些東西歐洲就買得到，由珊笛從歐洲就近帶過來，大家不用塞進行李箱。', items: [
+    { id: 'detergent', t: '洗衣粉／洗衣球（珊笛帶）', n: '' },
+    { id: 'hanger', t: '衣架、曬衣夾（珊笛帶）', n: '' },
+    { id: 'bags', t: '垃圾袋、夾鏈袋（珊笛帶）', n: '' },
+    { id: 'wipes', t: '濕紙巾（珊笛帶）', n: '' },
+    { id: 'shampoo', t: '大罐洗髮精、沐浴乳（珊笛帶）', n: '' },
+  ] },
+];
+
+const PACK_NOTICE = `
+  <div class="card notice-card">
+    <h3>📢 行前注意事項</h3>
+    <div class="notice-item urgent">
+      <b>🚢 郵輪：迪森、怡華、星丞務必在出發前完成線上報到（Web Check-in）</b>
+      <p>到 MSC 官網或 MSC for Me App 填好護照資料，完成後下載登船證（e-ticket）和行李吊牌。沒做完，登船當天會很麻煩。不會操作的話，直接找珊笛幫忙。</p>
+    </div>
+    <div class="notice-item">
+      <b>🇪🇺 入境歐洲申根區要付費的政策（ETIAS）：目前還不用申請</b>
+      <p>ETIAS 全名翻成中文大概是：歐洲旅遊資訊和授權系統。就是入境前要先上網申請，然後繳一筆手續費。這不是簽證，概念跟英國的 ETA 類似。</p>
+      <p>原訂 ETIAS 要在 2026 年第四季實施，目前官網公告的大意是：<b>現在還不用 ETIAS，歐盟會在正式啟用前幾個月公告。</b>所以這趟入境申根區，只有「不用事先申請的 EES」。</p>
+    </div>
+    <div class="notice-item">
+      <b>🛂 EES 數位通關：入境要拍臉、按指紋</b>
+      <p>流程和排隊的心理準備，請看 <a href="#/airports">四大機場手帳</a> 最上方的說明。</p>
+    </div>
+  </div>`;
+
+function packHtml() {
+  const me = S.player;
+  const got = LS.get('pack:' + me, {});
+  const isSandy = /珊笛|Sandy/i.test(me);
+  const all = PACK_GROUPS.filter((g) => g.lv < 5 || isSandy).flatMap((g) => g.items);
+  const n = all.filter((it) => got[it.id]).length;
+  const pct = all.length ? Math.round((n / all.length) * 100) : 0;
+  const groups = PACK_GROUPS.map((g) => {
+    const tickable = g.lv < 5 || isSandy;
+    const rows = g.items.map((it) => `
+      <label class="pack-row${got[it.id] ? ' on' : ''}${tickable ? '' : ' ro'}">
+        ${tickable ? `<input type="checkbox" data-pack="${it.id}"${got[it.id] ? ' checked' : ''}>` : '<span class="pack-dot">·</span>'}
+        <span class="pack-text"><span class="pack-t">${esc(it.t)}</span>${it.n ? `<span class="pack-n">${esc(it.n)}</span>` : ''}</span>
+      </label>`).join('');
+    const note = g.note ? `<p class="sub" style="margin:0 0 8px">${esc(isSandy ? '你負責從歐洲帶這些過來，帶好了就打勾。' : g.note)}</p>` : '';
+    return `<div class="card pack-group lv${g.lv}"><h3>${esc(g.title)}</h3>${note}${rows}</div>`;
+  }).join('');
+  return `
+    ${back('#/', '首頁')}
+    <div class="kicker">S / 00 · ${esc(me)} 的行李</div>
+    <h1>🧳 行前檢查清單</h1>
+    <p class="sub">每個人勾自己的。由上到下照重要程度排好，越上面越不能忘。</p>
+    ${PACK_NOTICE}
+    <div class="card pack-progress">
+      <div class="pack-bar"><span style="width:${pct}%"></span></div>
+      <div><b>${esc(me)}</b> 已經準備好 <b>${n} / ${all.length}</b> 項${n === all.length && all.length ? '，全部到齊！🎉' : ''}</div>
+    </div>
+    ${groups}
+    <button type="button" class="btn small ghost" id="pack-reset">全部取消勾選</button>`;
+}
+
+route('/pack', () => {
+  view(packHtml());
+  const bind = () => {
+    $$('[data-pack]').forEach((cb) => {
+      cb.onchange = () => {
+        const k = 'pack:' + S.player;
+        const got = LS.get(k, {});
+        if (cb.checked) got[cb.dataset.pack] = Date.now(); else delete got[cb.dataset.pack];
+        LS.set(k, got);
+        const y = window.scrollY;
+        view(packHtml()); bind(); window.scrollTo(0, y);
+      };
+    });
+    const r = $('#pack-reset');
+    if (r) r.onclick = () => { if (confirm('確定要把勾選全部取消嗎？')) { LS.set('pack:' + S.player, {}); view(packHtml()); bind(); } };
+  };
+  bind();
+  return 'home';
+});
+
+/* ---------- v2.5：郵輪大圖鑑（船上免費／船上付費／下船打卡） ---------- */
+const CDEX_FREE = [
+  { id: 'f01', icon: '🌅', name: '海上日出', desc: '12 月日出比較晚，大約早上 8 點前後。到最高層甲板，看太陽從海平線冒出來。每天的節目表通常會寫日出時間。' },
+  { id: 'f02', icon: '🌇', name: '海上夕陽', desc: '12 月大約下午 5 點前後日落。站在船尾或側邊甲板，看太陽沉進地中海。' },
+  { id: 'f03', icon: '🌊', name: '船尾的白色航跡', desc: '到船尾往下看，大船在海上拖出一條長長的白色浪花，像一條路。' },
+  { id: 'f04', icon: '👋', name: '巴塞隆納出港', desc: '12/12 開船時到甲板上，看巴塞隆納和蒙特惠奇山慢慢變小。' },
+  { id: 'f05', icon: '⚓', name: '清晨進港', desc: '挑一天早起，看船慢慢靠進港口：馬賽的山頂聖母院、熱那亞的燈塔、拿坡里的維蘇威火山。' },
+  { id: 'f06', icon: '✨', name: '海上的星空', desc: '海上日晚上，找一個比較暗的甲板角落往上看。遠離城市燈光，星星會比在家多很多。天冷記得穿外套。' },
+  { id: 'f07', icon: '🍳', name: 'Marketplace 自助餐廳的早餐', desc: '15 樓的自助餐廳，早午晚都開。早餐挑一盤你最得意的組合拍下來。' },
+  { id: 'f08', icon: '🧀', name: '船上現做的莫札瑞拉起司', desc: '自助餐廳有現做的新鮮莫札瑞拉起司，找找看在哪一區。' },
+  { id: 'f09', icon: '🍽️', name: '主餐廳的晚餐', desc: '船上有幾間不用另外付錢的主餐廳，例如 6 樓的 Aurora Boreale／Aurora Borealis（北極光主題）、Colorado River，5 樓的 Green Orchid。拍下你最喜歡的一道菜。' },
+  { id: 'f10', icon: '🍰', name: 'Carousel Lounge 下午點心', desc: '7 樓船尾的 Carousel Lounge 白天提供小點心，例如糕點和小三明治，到傍晚前。' },
+  { id: 'f11', icon: '🍕', name: '泳池邊的披薩和漢堡', desc: '15 樓泳池旁的 Atmosphere Bar 有披薩和漢堡。冬天天冷或下雨可能不開。' },
+  { id: 'f12', icon: '🌌', name: 'Galleria 的 LED 天幕', desc: '6–7 樓的購物大街，頭頂是一條約 80 公尺長的 LED 天花板，號稱海上最長。整點常有燈光音樂秀，抬頭拍一張。' },
+  { id: 'f13', icon: '💎', name: '施華洛世奇水晶樓梯', desc: 'MSC 的招牌：亮晶晶的水晶樓梯。全家在樓梯上排好拍一張「豪華郵輪合照」。' },
+  { id: 'f14', icon: '🎭', name: '劇院的晚間大秀', desc: '每晚都有歌舞、馬戲或音樂秀，不用另外付錢（有些場次要先在 App 預約座位）。曲目以船上節目表為準。' },
+  { id: 'f15', icon: '🎷', name: '酒吧現場音樂', desc: '晚上很多酒吧和大廳都有樂團或歌手表演，坐著聽不用錢（點飲料才要付費）。' },
+  { id: 'f16', icon: '🤵', name: '正式之夜（Gala Night）', desc: '穿上正裝，在船上找一個漂亮的地方拍全家福。是哪一晚要看節目表。' },
+  { id: 'f17', icon: '🤍', name: '白色派對', desc: 'MSC 的傳統，大家穿白色衣服在 Galleria 跳舞。看節目表找時間。' },
+  { id: 'f18', icon: '🎤', name: '卡拉 OK 或遊戲節目', desc: '船上常辦卡拉 OK、問答遊戲和全家一起玩的遊戲節目。上台一次就算數！' },
+  { id: 'f19', icon: '🏊', name: '泳池與按摩池', desc: '泳池甲板有泳池和好幾個戶外按摩池。冬天在熱水按摩池裡看海很享受，天氣不好時可能關閉。' },
+  { id: 'f20', icon: '🛝', name: '滑水道或空中繩索', desc: '船尾有滑水道和空中繩索冒險區。冬天和風大時可能不開，開放的話挑戰一次。' },
+  { id: 'f21', icon: '🏀', name: '運動場', desc: '16 樓運動場可以打籃球、踢足球、打排球。找家人來一場投籃比賽。' },
+  { id: 'f22', icon: '🏋️', name: '看海的健身房', desc: '健身房有大片窗戶可以看海。器材免費，課程和私人教練要另外付費。' },
+  { id: 'f23', icon: '🐋', name: '船身的海洋彩繪', desc: 'Euribia 的船身畫著一幅海洋主題的大彩繪（#SaveTheSea）。在港口下船後，回頭找一個能拍到船身的角度。' },
+  { id: 'f24', icon: '🧭', name: '全家在船頭或甲板合照', desc: '找一個有海、有風的地方，全家一起拍一張。' },
+];
+
+const CDEX_PAID = [
+  { id: 'x01', icon: '🔥', name: 'Kaito 鐵板燒', desc: '師傅在你面前表演切菜、甩鍋、噴火做料理。只有晚餐。' },
+  { id: 'x02', icon: '🍣', name: 'Kaito 壽司和爐端燒', desc: '日式壽司和小串燒。' },
+  { id: 'x03', icon: '🥩', name: 'Le Grill 法式牛排館', desc: '法國風格的牛排館。' },
+  { id: 'x04', icon: '🌮', name: 'Hola! 墨西哥餐廳', desc: '塔可、捲餅、玉米片，可以單點。' },
+  { id: 'x05', icon: '🍨', name: '可麗餅和義式冰淇淋', desc: '甜點大師 Jean-Philippe 的店，在 6 樓 Galleria。' },
+  { id: 'x06', icon: '🍷', name: 'Helios 葡萄酒吧', desc: '有上百種葡萄酒，桌面是互動螢幕。' },
+  { id: 'x07', icon: '☕', name: '汽水、酒和咖啡機咖啡', desc: '一般的茶、咖啡、果汁和白開水在用餐時免費；汽水、酒、咖啡吧的咖啡要另外付錢（或買飲料套餐）。' },
+  { id: 'x08', icon: '💆', name: 'Aurea Spa 按摩', desc: '峇里島風格的 Spa，按摩和美容療程要付費。' },
+  { id: 'x09', icon: '♨️', name: '溫泉熱療區', desc: '有烤箱、蒸氣室、鹽屋、雪洞等，要另外買票，限 18 歲以上。' },
+  { id: 'x10', icon: '🎳', name: '保齡球', desc: '船上有保齡球道，按局收費。' },
+  { id: 'x11', icon: '🏎️', name: 'VR 賽車和電玩區', desc: 'VR 賽車模擬器和電玩遊戲，按次收費。' },
+  { id: 'x12', icon: '🎰', name: '賭場', desc: '7 樓。要滿 18 歲，看看就好也可以。' },
+  { id: 'x13', icon: '📸', name: '船上攝影師的照片', desc: '攝影師會在登船、正式之夜幫大家拍照，拍免費，買照片要付錢。' },
+];
+
+const CDEX_PORT = [
+ {
+  "id": "p01",
+  "port": "巴塞隆納",
+  "date": "12/12",
+  "icon": "🎄",
+  "name": "聖露西亞聖誕市集（Fira de Santa Llúcia）",
+  "where": "巴塞隆納主教座堂前廣場（Pla de la Seu）一帶",
+  "desc": "巴塞隆納最老的聖誕市集，一排排小木屋賣馬槽人偶、苔蘚、聖誕樹和手工裝飾。逛市集不用門票，在大教堂前拍一張很有過節氣氛。",
+  "cost": "免費",
+  "season": "12 月限定：2026 年 11/27–12/23（已查證）"
+ },
+ {
+  "id": "p02",
+  "port": "巴塞隆納",
+  "date": "12/12",
+  "icon": "🧸",
+  "name": "「蹲便小人」偶（Caganer）",
+  "where": "聖露西亞市集的馬槽人偶攤位",
+  "desc": "加泰隆尼亞馬槽裡的搞笑傳統：一個蹲著上大號的小人，藏在馬槽角落。現在還有名人、球員造型。看看找找就很好玩，買不買都可以。",
+  "cost": "免費（看）；買一個約數歐元起",
+  "season": "12 月限定：跟著市集 11/27–12/23（已查證）"
+ },
+ {
+  "id": "p03",
+  "port": "巴塞隆納",
+  "date": "12/12",
+  "icon": "🪵",
+  "name": "會「拉禮物」的木頭（Tió de Nadal）",
+  "where": "聖露西亞市集攤位",
+  "desc": "一截戴紅帽、畫笑臉的小木頭，加泰隆尼亞孩子聖誕節會「餵」它，再用棍子敲著唱歌，讓它「生」出糖果。市集裡大大小小一整排，很適合拍照。",
+  "cost": "免費（看）",
+  "season": "12 月限定：跟著市集 11/27–12/23（已查證）"
+ },
+ {
+  "id": "p04",
+  "port": "巴塞隆納",
+  "date": "12/12",
+  "icon": "⛪",
+  "name": "哥德區老街（Barri Gòtic）",
+  "where": "主教座堂旁的小巷、聖雅各廣場（Plaça de Sant Jaume）",
+  "desc": "石板窄巷、拱廊和中世紀老牆，走路就能逛。聖雅各廣場是市政府所在，每年聖誕節常擺大型馬槽布置。人多的地方注意扒手，包包背前面。",
+  "cost": "免費",
+  "season": "廣場馬槽：通常 12 月有，出發前請確認"
+ },
+ {
+  "id": "p05",
+  "port": "馬賽",
+  "date": "12/13",
+  "icon": "🧑‍🌾",
+  "name": "聖誕小泥偶市集（Foire aux santons）",
+  "where": "舊港邊 Quai du Port（市政廳前那一側）",
+  "desc": "普羅旺斯傳統的小泥偶「桑頓」，除了耶穌一家，還有麵包師、賣魚婦、牧羊人等村民。20 多位職人擺攤，從 1803 年延續至今，免費進場。",
+  "cost": "免費",
+  "season": "12 月限定：2026 年 11/14–2027 年 1/3，約 10:00–19:00（已查證）"
+ },
+ {
+  "id": "p06",
+  "port": "馬賽",
+  "date": "12/13",
+  "icon": "🎁",
+  "name": "舊港聖誕小木屋（Cabanons de Noël）",
+  "where": "舊港 Quai de la Fraternité（港口最底端）",
+  "desc": "港邊一排聖誕小木屋，賣手工飾品、糖果和禮物，晚上點燈很漂亮。旁邊就是大鏡面頂棚，可以拍「倒過來的自己」。",
+  "cost": "免費",
+  "season": "12 月限定：2026 年 11/28–2027 年 1/3（已查證）"
+ },
+ {
+  "id": "p07",
+  "port": "馬賽",
+  "date": "12/13",
+  "icon": "🪞",
+  "name": "舊港大鏡棚（L'Ombrière du Vieux-Port）",
+  "where": "舊港 Quai de la Fraternité",
+  "desc": "一片懸空的不鏽鋼鏡面頂棚，站在底下抬頭，就能看到一家人倒映在天上。是馬賽最受歡迎的免費打卡點。",
+  "cost": "免費",
+  "season": ""
+ },
+ {
+  "id": "p08",
+  "port": "馬賽",
+  "date": "12/13",
+  "icon": "⛪",
+  "name": "守護聖母聖殿（Notre-Dame de la Garde）",
+  "where": "舊港南邊的山丘頂，可搭 60 號公車",
+  "desc": "馬賽人叫她「好媽媽」，金色聖母像守護漁民和水手。教堂免費進入，山頂能看到整個港口和海島。上坡路陡，長輩建議搭公車。",
+  "cost": "免費（公車小額）",
+  "season": ""
+ },
+ {
+  "id": "p09",
+  "port": "馬賽",
+  "date": "12/13",
+  "icon": "🎨",
+  "name": "籃子區老巷（Le Panier）",
+  "where": "舊港北側山坡，市政廳後方",
+  "desc": "馬賽最古老的街區，彩色小屋、階梯巷子和牆上塗鴉，到處都能拍。有很多賣馬賽皂和小泥偶的小店。",
+  "cost": "免費",
+  "season": ""
+ },
+ {
+  "id": "p10",
+  "port": "馬賽",
+  "date": "12/13",
+  "icon": "🚤",
+  "name": "小船形餅乾（Navettes）",
+  "where": "老字號 Four des Navettes，136 rue Sainte（聖維克多修道院旁）",
+  "desc": "像小船的硬餅乾，帶橙花香，是馬賽的傳統點心。老店的烤爐已用了兩百多年。可以買一小包，邊走邊吃。",
+  "cost": "小額（約數歐元一包）",
+  "season": ""
+ },
+ {
+  "id": "p11",
+  "port": "熱那亞",
+  "date": "12/14",
+  "icon": "🎄",
+  "name": "法拉利廣場聖誕樹（Albero di Natale, Piazza De Ferrari）",
+  "where": "Piazza De Ferrari，大噴泉旁",
+  "desc": "熱那亞市中心最大的廣場，有大銅噴泉和氣派老宮殿。每年聖誕在這裡立大樹、點燈，晚上最好看。",
+  "cost": "免費",
+  "season": "12 月限定：2026 年 12/8 點燈，活動到 2027 年 1/6（市政府計畫書，已查證）"
+ },
+ {
+  "id": "p12",
+  "port": "熱那亞",
+  "date": "12/14",
+  "icon": "🫓",
+  "name": "熱那亞佛卡夏（Focaccia genovese）",
+  "where": "老城區任何麵包店（forno）",
+  "desc": "熱那亞人的國民麵包，表面一個個小洞，滿滿橄欖油和粗鹽。在地人早餐還會沾卡布奇諾吃。用紙包一塊，邊走邊吃最道地。",
+  "cost": "小額（約 2–3 歐元一塊）",
+  "season": ""
+ },
+ {
+  "id": "p13",
+  "port": "熱那亞",
+  "date": "12/14",
+  "icon": "🏘️",
+  "name": "老城窄巷（Carruggi）",
+  "where": "港口與法拉利廣場之間的老城區",
+  "desc": "歐洲最大的中世紀老城之一，巷子窄到抬頭只看到一條天空，兩旁是高高的老房子和小店。很好拍，但巷子像迷宮，晚上人少的巷子避開，注意隨身物品。",
+  "cost": "免費",
+  "season": ""
+ },
+ {
+  "id": "p14",
+  "port": "熱那亞",
+  "date": "12/14",
+  "icon": "🏛️",
+  "name": "新街豪宅（Via Garibaldi／Strade Nuove）",
+  "where": "Via Garibaldi",
+  "desc": "一條街上排滿 16 世紀貴族豪宅，被列為世界遺產。走在街上看外觀和中庭大門就很壯觀，進館才要付費。",
+  "cost": "免費（街上看）",
+  "season": ""
+ },
+ {
+  "id": "p15",
+  "port": "熱那亞",
+  "date": "12/14",
+  "icon": "🔥",
+  "name": "聖誕燒月桂樹儀式（Confeugo）",
+  "where": "Piazza De Ferrari",
+  "desc": "熱那亞古老的聖誕傳統：穿古裝的隊伍把月桂樹幹抬到廣場上燒，祝福城市新年好運。",
+  "cost": "免費",
+  "season": "注意：2026 年辦在 12/19（已查證），我們 12/14 在港時看不到，只能看聖誕樹"
+ },
+ {
+  "id": "p16",
+  "port": "拿坡里",
+  "date": "12/15",
+  "icon": "🧑‍🎨",
+  "name": "馬槽人偶街（Via San Gregorio Armeno）",
+  "where": "老城區 Via San Gregorio Armeno、Piazza San Gaetano",
+  "desc": "整條街都是做馬槽人偶的手工坊，從耶穌、天使到現代名人、政治人物都有，還有紅色小辣椒幸運符。人超多，包包一定背在前面。",
+  "cost": "免費（逛街）",
+  "season": "12 月限定：2026 年馬槽市集 11/14–2027 年 1/10（已查證）；工坊全年都在"
+ },
+ {
+  "id": "p17",
+  "port": "拿坡里",
+  "date": "12/15",
+  "icon": "🎄",
+  "name": "市政廳廣場聖誕樹（Piazza Municipio）",
+  "where": "Piazza Municipio，郵輪碼頭一出來就是",
+  "desc": "郵輪碼頭正對面的大廣場，往後看是新堡城堡。2025 年市府的大聖誕樹就立在這裡，下船第一張照片就在這。",
+  "cost": "免費",
+  "season": "通常 11 月中點燈（2025 年在此），2026 年位置出發前請確認"
+ },
+ {
+  "id": "p18",
+  "port": "拿坡里",
+  "date": "12/15",
+  "icon": "🏛️",
+  "name": "翁貝托一世拱廊（Galleria Umberto I）",
+  "where": "Via Toledo 與 Via San Carlo 之間",
+  "desc": "19 世紀玻璃圓頂大拱廊，地上有星座馬賽克。聖誕時常有裝飾或大樹。旁邊就是平民表決廣場（Piazza del Plebiscito）的大圓柱廊。",
+  "cost": "免費",
+  "season": "聖誕裝飾：通常有，出發前請確認"
+ },
+ {
+  "id": "p19",
+  "port": "拿坡里",
+  "date": "12/15",
+  "icon": "🥐",
+  "name": "貝殼酥（Sfogliatella）",
+  "where": "Via Toledo 一帶的老糕餅店",
+  "desc": "一層一層像貝殼的酥皮，裡面包瑞可達起司和柑橘，是拿坡里代表點心，咬下去會掉屑。站在吧台配一杯濃縮咖啡最道地。",
+  "cost": "小額（約 2–3 歐元）",
+  "season": ""
+ },
+ {
+  "id": "p20",
+  "port": "拿坡里",
+  "date": "12/15",
+  "icon": "🍕",
+  "name": "摺疊披薩（Pizza a portafoglio）",
+  "where": "老城區 Via dei Tribunali 的披薩店門口",
+  "desc": "拿坡里是披薩的故鄉。小披薩摺成四折像錢包，用紙包著邊走邊吃，便宜又道地。",
+  "cost": "小額（約數歐元）",
+  "season": ""
+ },
+ {
+  "id": "p21",
+  "port": "拿坡里（龐貝鎮）",
+  "date": "12/15",
+  "icon": "⛪",
+  "name": "龐貝玫瑰聖母聖殿（Santuario della Beata Vergine del Rosario）",
+  "where": "龐貝新鎮 Piazza Bartolo Longo，遺址出口附近",
+  "desc": "遺址外的龐貝新鎮中心，有高高鐘樓的大教堂，免費進入。創建者巴托洛・隆哥 2025 年 10 月剛被封為聖人，是當地人的驕傲。",
+  "cost": "免費",
+  "season": "教堂聖誕常有馬槽展，出發前請確認"
+ },
+ {
+  "id": "p22",
+  "port": "巴勒摩",
+  "date": "12/16",
+  "icon": "🏛️",
+  "name": "四角廣場（Quattro Canti）",
+  "where": "Via Maqueda 與 Via Vittorio Emanuele 十字路口",
+  "desc": "老城正中心的十字路口，四個角落是彎彎的巴洛克建築，上面有四季和國王雕像。站中間轉一圈就能拍四面。",
+  "cost": "免費",
+  "season": ""
+ },
+ {
+  "id": "p23",
+  "port": "巴勒摩",
+  "date": "12/16",
+  "icon": "⛲",
+  "name": "羞恥噴泉（Fontana Pretoria）",
+  "where": "Piazza Pretoria，四角廣場旁",
+  "desc": "滿是裸體雕像的大噴泉，以前修女覺得太害羞，所以叫「羞恥噴泉」。隔著欄杆就能拍得很清楚。",
+  "cost": "免費",
+  "season": ""
+ },
+ {
+  "id": "p24",
+  "port": "巴勒摩",
+  "date": "12/16",
+  "icon": "🎭",
+  "name": "馬西莫劇院外觀（Teatro Massimo）",
+  "where": "Piazza Verdi",
+  "desc": "義大利最大的歌劇院，電影《教父第三集》結尾的階梯就在這裡。在門口大階梯拍照不用買票。",
+  "cost": "免費（外觀）",
+  "season": ""
+ },
+ {
+  "id": "p25",
+  "port": "巴勒摩",
+  "date": "12/16",
+  "icon": "🎁",
+  "name": "巴勒摩聖誕市集（Natale a Palermo）",
+  "where": "Via Maqueda（Via Calderai 到 Piazza Sant'Antonino 一段）、Piazza Marina 等",
+  "desc": "市政府在老城多處擺聖誕市集小攤，Via Maqueda 本身就是步行街，走過去順路就能逛。",
+  "cost": "免費",
+  "season": "12 月限定：2026 年 11/27–2027 年 1/10（市府招標公告，已查證）"
+ },
+ {
+  "id": "p26",
+  "port": "巴勒摩",
+  "date": "12/16",
+  "icon": "🍙",
+  "name": "炸飯糰（Arancina）",
+  "where": "老城炸物店、Ballarò 市場一帶",
+  "desc": "巴勒摩人叫它 arancina，裡面包肉醬或起司，炸得金黃。12/13 聖露西亞節全城都吃它，我們晚三天到還吃得到。",
+  "cost": "小額（約 2–3 歐元）",
+  "season": "聖露西亞節是 12/13（已查證），我們 12/16 已過節，但平常也買得到"
+ },
+ {
+  "id": "p27",
+  "port": "巴勒摩",
+  "date": "12/16",
+  "icon": "🍕",
+  "name": "巴勒摩厚披薩（Sfincione）與巴拉羅市場（Mercato di Ballarò）",
+  "where": "Ballarò 市場（火車站與老城之間）",
+  "desc": "厚厚軟軟的方形披薩，上面是番茄、洋蔥、麵包粉，小販會大聲叫賣。市場本身很熱鬧有阿拉伯風味，人擠注意扒手。",
+  "cost": "小額（約 1–3 歐元一塊）",
+  "season": ""
+ },
+ {
+  "id": "p28",
+  "port": "突尼斯（西迪布賽義德）",
+  "date": "12/17",
+  "icon": "🚪",
+  "name": "藍白小鎮（Sidi Bou Said）",
+  "where": "西迪布賽義德主街到山頂一帶，搭 TGM 輕軌可到",
+  "desc": "白牆配藍門、藍窗、藍色鐵窗，門上釘著圖案鉚釘，是突尼西亞最上鏡的小鎮。整個小鎮就是拍照背景。",
+  "cost": "免費",
+  "season": ""
+ },
+ {
+  "id": "p29",
+  "port": "突尼斯（西迪布賽義德）",
+  "date": "12/17",
+  "icon": "🍩",
+  "name": "糖粉炸甜甜圈（Bambalouni）",
+  "where": "山頂 Café des Nattes 附近的老攤子",
+  "desc": "現炸的圓圈甜甜圈，撒滿砂糖，熱熱的很香。山頂這家老攤據說從 1932 年開到現在。",
+  "cost": "小額（約 1–2 突尼斯第納爾）",
+  "season": ""
+ },
+ {
+  "id": "p30",
+  "port": "突尼斯（西迪布賽義德）",
+  "date": "12/17",
+  "icon": "🍵",
+  "name": "山頂咖啡館薄荷茶（Thé à la menthe, Café des Nattes）",
+  "where": "主街階梯頂的 Café des Nattes",
+  "desc": "坐在鋪草蓆的老咖啡館喝甜薄荷茶，常加松子。畫家克利以前常來這裡。另一家海景咖啡館 Café des Délices 景好但貴，點之前先問價。",
+  "cost": "小額（約 3–5 第納爾，依店家）",
+  "season": ""
+ },
+ {
+  "id": "p31",
+  "port": "突尼斯（西迪布賽義德）",
+  "date": "12/17",
+  "icon": "🌼",
+  "name": "茉莉花小束（Machmoum）",
+  "where": "西迪布賽義德、突尼斯街頭小販",
+  "desc": "突尼西亞國花茉莉花紮成的小花束，男人會夾在耳朵上。是很有代表性的畫面，但主要在夏天傍晚賣，12 月可能看不到。",
+  "cost": "小額（若有，約 1–2 第納爾）",
+  "season": "注意：茉莉花主要是夏季，12 月不一定有（已查證為夏季習俗）"
+ },
+ {
+  "id": "p32",
+  "port": "突尼斯",
+  "date": "12/17",
+  "icon": "🕌",
+  "name": "突尼斯老城市集（Médina de Tunis）",
+  "where": "從海門 Bab el Bhar（法國門）進入，走到橄欖樹清真寺（Zitouna）",
+  "desc": "世界遺產老城，窄巷裡是香料、地毯、銅器和鳥籠攤。看看拍拍不用錢，有人熱情帶路通常會要小費，可以客氣說不用。",
+  "cost": "免費",
+  "season": ""
+ },
+ {
+  "id": "p33",
+  "port": "突尼斯",
+  "date": "12/17",
+  "icon": "🌳",
+  "name": "布爾吉巴大道（Avenue Habib Bourguiba）",
+  "where": "突尼斯新城區，從海門往東",
+  "desc": "被稱為「突尼斯的香榭大道」，兩旁是法式老建築和咖啡館，中間有林蔭步道和大鐘塔。注意：政府機關、軍警附近不要拍照。",
+  "cost": "免費",
+  "season": ""
+ }
+];
+
+function cdexCard(it, sec, pts, blob) {
+  const on = !!blob;
+  const img = blob ? `<img class="poke-thumb" src="${URL.createObjectURL(blob)}" alt="${esc(it.name)}">` : '';
+  const meta = sec === 'port'
+    ? `<div class="cdex-where">📍 ${esc(it.where)}</div><div class="cdex-cost${/免費/.test(it.cost) && !/小額/.test(it.cost) ? '' : ' paid'}">${esc(it.cost)}</div>${it.season ? `<div class="cdex-season">${esc(it.season)}</div>` : ''}`
+    : '';
+  return `<div class="poke-card cdex-card ${on ? 'unlocked' : 'locked'}">
+    <div class="poke-icon">${it.icon}</div>
+    <div class="poke-name">${esc(it.name)}</div>
+    <div class="poke-sub">${esc(it.desc)}</div>
+    ${meta}${img}
+    <label class="btn small ${on ? 'ghost' : ''}" style="margin-top:auto;width:100%;cursor:pointer">
+      ${on ? '換照片' : `📷 打卡點亮 +${pts}`}
+      <input type="file" accept="image/*" class="cdex-input" data-id="${it.id}" data-sec="${sec}" hidden>
+    </label>
+  </div>`;
+}
+
+const CDEX_PTS = { free: 20, paid: 10, port: 20 };
+function cdexAll() { return [...CDEX_FREE, ...CDEX_PAID, ...CDEX_PORT]; }
+
+async function renderCruiseDex(tab) {
+  tab = ['free', 'paid', 'port'].includes(tab) ? tab : 'free';
+  const list = tab === 'free' ? CDEX_FREE : tab === 'paid' ? CDEX_PAID : CDEX_PORT;
+  const blobs = await Promise.all(list.map((it) => DB.pokeGet('cdex:' + it.id)));
+  const allIds = cdexAll().map((x) => x.id);
+  const got = (await Promise.all(allIds.map((id) => DB.pokeGet('cdex:' + id)))).filter(Boolean).length;
+  let body = '';
+  if (tab === 'port') {
+    let last = '';
+    body = list.map((it, i) => {
+      const head = it.port !== last ? `${last ? '</div>' : ''}<h2>${esc(it.date)} ${esc(it.port)}</h2><div class="pokedex-grid">` : '';
+      last = it.port;
+      return head + cdexCard(it, 'port', CDEX_PTS.port, blobs[i]);
+    }).join('') + '</div>';
+  } else {
+    body = `<div class="pokedex-grid">${list.map((it, i) => cdexCard(it, tab, CDEX_PTS[tab], blobs[i])).join('')}</div>`;
+  }
+  const intro = {
+    free: '這些都包含在船票裡，不用另外付錢。看到、吃到、玩到就拍照點亮！',
+    paid: '<b>這一區要另外付錢。</b>想體驗的人再去，不用為了點亮圖鑑而花錢，所以分數比較少（+10）。價格以船上公告為準，記帳前先問清楚。',
+    port: '下船後在街上就看得到的當地特色，以不用門票為準。標「小額」的是幾歐元的街頭小吃，想吃再買。12 月限定的活動已盡量查證日期，標「出發前請確認」的請再看一下。',
+  }[tab];
+  view(`${back('#/cruise', '郵輪靠港')}<h1>🚢 郵輪大圖鑑</h1>
+    <p class="sub">MSC Euribia 一週的海上生活和六個港口。已點亮 <b>${got} / ${allIds.length}</b></p>
+    <div class="seg cdex-tabs">
+      <a class="${tab === 'free' ? 'on' : ''}" href="#/cruisedex/free">船上免費</a>
+      <a class="${tab === 'paid' ? 'on' : ''}" href="#/cruisedex/paid">船上付費</a>
+      <a class="${tab === 'port' ? 'on' : ''}" href="#/cruisedex/port">下船打卡</a>
+    </div>
+    <div class="card cdex-intro${tab === 'paid' ? ' paid' : ''}"><p style="margin:0">${intro}</p></div>
+    ${tab === 'port' ? safetyBannerHtml() : ''}
+    ${body}
+    <p class="sub" style="font-size:12.5px;margin-top:16px">船上資訊整理自 MSC 官網與郵輪媒體（Cruise Critic、Seatrade 等）的 Euribia 介紹；餐廳、節目和開放時間可能調整，以上船後的每日節目表和 MSC for Me App 為準。</p>`);
+  $$('.cdex-input').forEach((input) => {
+    input.onchange = async () => {
+      const f = input.files && input.files[0];
+      if (!f) return;
+      const id = input.dataset.id, sec = input.dataset.sec;
+      const it = cdexAll().find((x) => x.id === id);
+      await DB.pokePut('cdex:' + id, f);
+      award({ key: 'cdex|' + id, points: CDEX_PTS[sec], label: '郵輪圖鑑：' + it.name });
+      const y = window.scrollY; await renderCruiseDex(sec); window.scrollTo(0, y);
+    };
+  });
+  return 'tools';
+}
+route('/cruisedex', () => renderCruiseDex('free'));
+route('/cruisedex/:tab', (tab) => renderCruiseDex(tab));
+
 route('/help', () => {
   view(`${back('#/', '首頁')}<h1>玩法說明</h1>
     <div class="card"><h3>每天早上</h3><p>打開「今天」，解鎖今天的城市卡：讀一個冷門小故事（不想讀可以跳過），挑一個九宮格主題，答 3 題加分題。</p></div>
     <div class="card"><h3>每日美味 Tapa 刮刮樂</h3><p>專為爸媽和弟弟設計！每天刮開一道西班牙美味點心或溫馨好運，只要全家當天有吃到或做到，點一下就能加 20 分！</p></div>
     <div class="card"><h3>西班牙旅行大圖鑑</h3><p>全西 30 款標誌事物（火腿、吉拿棒、羅馬水道橋、白雪公主城堡、大馬士革鋼劍等），看到就拍照打卡點亮圖鑑，旅行結束就是一本專屬家族見聞手冊！</p></div>
-    <div class="card"><h3>到了景點</h3><p>在城市裡點想去的景點卡：先答出發前的題目，看景點冷知識（覺得有趣就按讚），到現場做任務，最後答收尾 3 題。</p></div>
-    <div class="card"><h3>行前閱讀</h3><p>每個景點在參觀前兩天會開放一篇行前閱讀，大約 2 分鐘，講背景、為什麼重要、會看到什麼。不想看字可以按「念給我聽」。</p></div>
+    <div class="card"><h3>到了景點</h3><p>在城市裡點想去的景點卡：先答出發前的題目，看景點冷知識（覺得有趣就按「WoW 記!」），到現場做任務，最後答收尾 3 題。</p></div>
+    <div class="card"><h3>郵輪大圖鑑</h3><p>上方的「🚢 郵輪圖鑑」分三區：船上免費體驗（+20）、船上付費體驗（另外隔開，+10，不用為了分數花錢）、下船後街上看得到的當地特色（+20）。拍照上傳就點亮。</p></div>
+    <div class="card"><h3>行前檢查清單</h3><p>上方的「🧳 行前清單」：每個人勾自己的行李，照重要程度排好；最上面還有郵輪線上報到、ETIAS 和 EES 的提醒。</p></div>
+    <div class="card"><h3>四大機場手帳</h3><p>最上方是歐洲數位通關（EES）的說明。桃園機場有兩題多選題（世界前 3 名、前 50 名），全對各加 20 分；點選你找到的文化角落，看看它在旅途上的「遠房親戚」。</p></div>
+    <div class="card"><h3>行前閱讀</h3><p>每個景點在參觀前兩天會開放一篇行前閱讀，大約 5 分鐘，讀完會更知道要看什麼。</p></div>
+    <div class="card"><h3>小書架</h3><p>每座城市的頁面都有一個「也許出發前你會想看看」書架。點書背看介紹，勾了「我想看」的作品會在書架上發亮，也會收進「我的書單」。</p></div>
     <div class="card"><h3>郵輪靠港</h3><p>首頁的「郵輪靠港：我想去哪裡」可以選每個港口想去的地方，也看得到家人選了什麼。</p></div>
     <div class="card"><h3>九宮格與照片任務</h3><p>拍滿 9 張就能一鍵拼貼。照片任務要拍照上傳，上傳成功才加分。</p></div>
     <div class="card"><h3>留言</h3><p>在「排行」看大家的九宮格，留一句評語就 +5 分，每張照片只能留一次。</p></div>
@@ -2937,13 +3647,22 @@ function spotIdByTitle(key) {
   return hit ? hit.id : null;
 }
 /* 住宿（地址來自訂房資料） */
+/* 住宿（公開資訊；預訂確認碼和 PIN 碼不放這裡，確認單由家庭雲端「住宿確認」資料夾提供） */
 const STAYS = [
-  { label: '12/9 – 12/11', name: 'Happy People Sagrada Familia Apartments', addr: 'Carrer Sardenya 306, 08013 Barcelona, 西班牙', q: 'Carrer Sardenya 306, 08013 Barcelona, Spain', note: '入住 15:00 起　退房 11:00 前' },
-  { label: '12/19 入住', name: "Avinguda d'Isabel la Catòlica, 65, 08905 L'Hospitalet de Llobregat, Barcelona", addr: "Avinguda d'Isabel la Catòlica, 65, 08905 L'Hospitalet de Llobregat, Barcelona, 西班牙", q: "Avinguda d'Isabel la Catòlica, 65, 08905 L'Hospitalet de Llobregat, Barcelona, Spain", note: '' },
-  { label: '12/22 入住', name: '塞維亞', addr: '西班牙塞維亞　Plus Code 92V8+Q2G（37°23\'40.0"N 5°59\'05.7"W）', q: '37.394444,-5.984917', note: '' },
-  { label: '12/26 入住', name: 'Plazuela los Bacas, 8, 18500 Guadix, Granada', addr: 'Plazuela los Bacas, 8, 18500 Guadix, Granada, 西班牙', q: 'Plazuela los Bacas, 8, 18500 Guadix, Granada, Spain', note: '' },
-  { label: '12/29 入住', name: 'Av. del Corregidor, 14, Poniente Sur, 14004 Córdoba', addr: 'Av. del Corregidor, 14, Poniente Sur, 14004 Córdoba, 西班牙', q: 'Av. del Corregidor, 14, 14004 Córdoba, Spain', note: '' },
-  { label: '12/31 入住（至 1/6）', name: 'Madrid cozy apartment', addr: 'Calle de la Oca, 10 1, 28025 Madrid, 西班牙', q: 'Calle de la Oca, 10 1, 28025 Madrid, Spain', note: '入住 15:00 起　退房 08:00–11:00' },
+  { label: '12/9 – 12/12', name: 'Happy People Sagrada Familia Apartments', addr: 'Carrer Sardenya 306, 08013 Barcelona, 西班牙', q: 'Carrer Sardenya 306, 08013 Barcelona, Spain',
+    tel: '+34 935 04 74 70', inout: '入住 15:00–24:00　退房 11:00 前',
+    room: '兩筆訂房：12/9–12/11 四人樓中樓公寓（2 晚）；12/11–12/12 七人公寓（1 晚，郵輪組三人一起住）',
+    rules: ['入住時要出示附照片的身分證件和信用卡。', '住宿方會寄租賃合約，要在抵達前簽好寄回；沒收到就打上面的電話。', '入住時用信用卡付 300 歐元損壞押金，退房檢查後 7 天內退還。', '請事先告訴住宿方預計幾點到。'],
+    note: '入住 15:00 起　退房 11:00 前', link: '' },
+  { label: '12/19 入住', name: "Avinguda d'Isabel la Catòlica, 65, 08905 L'Hospitalet de Llobregat, Barcelona", addr: "Avinguda d'Isabel la Catòlica, 65, 08905 L'Hospitalet de Llobregat, Barcelona, 西班牙", q: "Avinguda d'Isabel la Catòlica, 65, 08905 L'Hospitalet de Llobregat, Barcelona, Spain", note: '', link: '' },
+  { label: '12/22 入住', name: '塞維亞', addr: '西班牙塞維亞　Plus Code 92V8+Q2G（37°23\'40.0"N 5°59\'05.7"W）', q: '37.394444,-5.984917', note: '', link: '' },
+  { label: '12/26 入住', name: 'Plazuela los Bacas, 8, 18500 Guadix, Granada', addr: 'Plazuela los Bacas, 8, 18500 Guadix, Granada, 西班牙', q: 'Plazuela los Bacas, 8, 18500 Guadix, Granada, Spain', note: '', link: '' },
+  { label: '12/29 入住', name: 'Av. del Corregidor, 14, Poniente Sur, 14004 Córdoba', addr: 'Av. del Corregidor, 14, Poniente Sur, 14004 Córdoba, 西班牙', q: 'Av. del Corregidor, 14, 14004 Córdoba, Spain', note: '', link: '' },
+  { label: '12/31 – 1/6', name: 'Madrid cozy apartment', addr: 'Calle de la Oca, 10 1, Carabanchel, 28025 Madrid, 西班牙', q: '40.389283,-3.732533',
+    tel: '+34 613 01 04 20', inout: '入住 15:00–18:00　退房 08:00–11:00',
+    room: '三臥室公寓，4 人，6 晚',
+    rules: ['入住時間只到傍晚 6 點，從哥多華過來要算好時間；會晚到一定要先打電話。', '請事先告訴住宿方預計幾點到。', '公寓不接受派對、聚會。'],
+    note: '入住 15:00–18:00　退房 08:00–11:00', link: '' },
 ];
 /* 每天的行程。who:'trio' 表示只有三人（郵輪組）。tentative 表示還不確定或是推薦。aside 是延伸賞析。 */
 const PLAN = {
@@ -2978,7 +3697,8 @@ const PLAN = {
   '2026-12-11': [
     {
       "who": "trio",
-      "text": "三人抵達巴塞隆納"
+      "text": "三人抵達巴塞隆納",
+      "note": "晚上全家七人一起住 Happy People Sagrada Familia Apartments（Carrer Sardenya 306）。"
     },
     {
       "when": "白天",
@@ -3291,7 +4011,8 @@ const PLAN = {
       "text": "漫步綠意盎然的「麗池公園」（Parque del Retiro）、水晶宮與阿爾卡拉門",
       "spot": "麗池公園",
       "q": "Palacio de Cristal Retiro Madrid",
-      "aside": "水晶宮是 1887 年為了展覽菲律賓的植物而蓋的，那時菲律賓還是西班牙的殖民地。"
+      "aside": "水晶宮是 1887 年為了展覽菲律賓的植物而蓋的，那時菲律賓還是西班牙的殖民地。",
+      "note": "水晶宮整修中，預計 2027 年才重新開放，可以從外面看看。"
     },
     {
       "text": "百年老店 Chocolatería San Ginés 享用暖呼呼熱巧克力配吉拿棒",
@@ -3300,6 +4021,14 @@ const PLAN = {
     }
   ],
   '2027-01-02': [
+    {
+      "text": "參觀國立蘇菲亞王后藝術中心，親睹畢卡索反戰巨作《格爾尼卡》真跡",
+      "spot": "蘇菲亞王后",
+      "q": "Museo Reina Sofía Madrid",
+      "aside": "畢卡索的《格爾尼卡》畫的是 1937 年小鎮被轟炸，畢卡索規定西班牙恢復民主前不能回國，1981 年才回來。推薦海明威的《戰地鐘聲》（For Whom the Bell Tolls, 1940），故事發生在西班牙內戰。",
+      "when": "上午",
+      "note": "索菲亞王后藝術中心 12/31、1/1、1/6 和每週二休館，所以排在 1/2。出發前請再確認。"
+    },
     {
       "when": "14:00起",
       "text": "【免費時段】國立考古博物館（MAN，週六14:00後全面免費！看埃爾切夫人與瓜拉薩爾純金王冠）",
@@ -3357,7 +4086,8 @@ const PLAN = {
       "text": "參觀奢華的「西班牙王宮」（Palacio Real de Madrid）與皇家兵器庫",
       "spot": "馬德里王宮",
       "q": "Palacio Real de Madrid",
-      "aside": "有三千多個房間，是西歐最大的王宮之一。舊王宮在 1734 年的聖誕夜被大火燒光，名畫《侍女》據說是從窗戶丟出來才保住的。"
+      "aside": "有三千多個房間，是西歐最大的王宮之一。舊王宮在 1734 年的聖誕夜被大火燒光，名畫《侍女》據說是從窗戶丟出來才保住的。",
+      "note": "王宮 1/1、1/6 休館，12/31 下午 3 點就關門，1/5 去剛好。出發前請再確認。"
     },
     {
       "when": "18:30–21:00",
@@ -3372,12 +4102,6 @@ const PLAN = {
       "text": "【三王節主日】早晨全家享用傳統「國王蛋糕」（Roscón de Reyes），看誰吃到幸運陶偶",
       "q": "",
       "aside": "國王蛋糕裡藏著一個小陶偶和一顆豆子：吃到陶偶的人當一天國王，吃到豆子的人要付明年的蛋糕錢。"
-    },
-    {
-      "text": "參觀國立蘇菲亞王后藝術中心，親睹畢卡索反戰巨作《格爾尼卡》真跡",
-      "spot": "蘇菲亞王后",
-      "q": "Museo Reina Sofía Madrid",
-      "aside": "畢卡索的《格爾尼卡》畫的是 1937 年小鎮被轟炸，畢卡索規定西班牙恢復民主前不能回國，1981 年才回來。推薦海明威的《戰地鐘聲》（For Whom the Bell Tolls, 1940），故事發生在西班牙內戰。"
     },
     {
       "text": "整理行李、最後採買伴手禮，帶著滿滿歡笑與回憶平安返回台灣！",
@@ -3399,8 +4123,17 @@ route('/trip', () => {
     dates.push(iso);
     if (iso >= TRIP_END) break;
   }
-  const stays = STAYS.map((x) => `<div class="score-row" style="align-items:flex-start"><span class="name" style="white-space:normal"><b>${esc(x.label)}</b><br>${esc(x.name)}${x.note ? `<br><span class="sub">${esc(x.note)}</span>` : ''}</span>
-    <a class="btn small ghost" href="${esc(mapUrl(x.q))}" target="_blank" rel="noopener">地圖</a></div>`).join('');
+  const stays = STAYS.map((x) => `<details class="stay"><summary><span class="stay-date">${esc(x.label)}</span><span class="stay-name">${esc(x.name)}</span></summary>
+    <div class="stay-body">
+      <div class="stay-row"><span>地址</span><b>${esc(x.addr || x.name)}</b></div>
+      ${x.inout ? `<div class="stay-row"><span>時間</span><b>${esc(x.inout)}</b></div>` : ''}
+      ${x.room ? `<div class="stay-row"><span>房型</span><b>${esc(x.room)}</b></div>` : ''}
+      ${x.tel ? `<div class="stay-row"><span>電話</span><b><a href="tel:${esc(x.tel.replace(/\s/g, ''))}">${esc(x.tel)}</a></b></div>` : ''}
+      ${x.rules && x.rules.length ? `<ul class="stay-rules">${x.rules.map((r) => `<li>${esc(r)}</li>`).join('')}</ul>` : ''}
+      <div class="row" style="margin-top:10px"><a class="btn small ghost" href="${esc(mapUrl(x.q))}" target="_blank" rel="noopener">地圖</a>
+      ${x.tel ? `<a class="btn small ghost" href="tel:${esc(x.tel.replace(/\s/g, ''))}">打電話</a>` : ''}
+      ${x.link ? `<a class="btn small ghost" href="${esc(x.link)}" target="_blank" rel="noopener">房間介紹</a>` : ''}</div>
+    </div></details>`).join('');
   const rows = dates.map((date) => {
     const items = PLAN[date] || [];
     const label = cityLabel(date);
@@ -3420,11 +4153,14 @@ route('/trip', () => {
   view(`${back('#/', '首頁')}<h1>每日行程</h1>
     <div class="card"><b>提醒：</b>出發前在遊戲裡累積的分數，會在 <b>12/7</b> 清空。12/9 出發後才開始正式計分，請到時候再玩。</div>
     <div class="card"><b>博物館免費小撇步：</b>1/2 週六 14:00 後國立考古博物館免費、18:00–20:00 普拉多美術館免費；1/4 週一安排托雷多剛好避開市區休館！</div>
-    <h2>住宿</h2><div class="list">${stays}</div>
+    <h2>住宿</h2><div class="stays">${stays}</div>
+    <div class="card docs-card"><b>訂房確認單</b><p class="sub" style="margin:4px 0 8px">確認單放在家庭雲端，只有家人打得開。打開過一次就會存在手機裡，沒網路也看得到。</p>
+      <div id="docs">${docsCachedHtml()}</div><button class="btn small" type="button" id="docs-load">讀取確認單</button></div>
     <h2>每一天</h2><p class="sub">「三人」是只參加郵輪部分的三位家人（12/11 抵達，12/19 下船回台灣）。「未定／推薦」是還沒決定的或是建議的行程。點「延伸賞析」看這個地點的推薦閱讀和電影。每個景點的「行前閱讀」在任務卡裡，參觀前兩天開放。</p>
     <a class="btn ghost block" href="#/cruise" style="margin-bottom:12px">郵輪靠港：我想去哪裡（12/13–12/17）</a>
     <a class="btn ghost block" href="itinerario.html" target="_blank" style="margin-bottom:12px">🇪🇸 西班牙文 30 天完整行程頁（司機與導遊專用）</a>
     <div class="timeline">${rows}</div>`);
+  bindDocs();
   return 'home';
 });
 
@@ -3450,9 +4186,11 @@ function preReadHtml(card) {
   if (!preOpen(card)) {
     return `<div class="card"><b>行前閱讀</b><p class="sub" style="margin:4px 0 0">${fmtDate(preOpenDate(card))} 開放（參觀前兩天）。想先看的話，到「我的」打開「預覽全部」。</p></div>`;
   }
-  return `<details class="read pre" open><summary>行前閱讀 <span class="sub">大約 2 分鐘，點一下收起來</span></summary><div class="inner reading">
-    ${PRE_LABELS.filter(([k]) => p[k]).map(([k, l]) => `<p><span class="section-label">${l}</span><br>${esc(p[k])}</p>`).join('')}
-    <button type="button" class="btn small ghost" data-speak="${card.id}">念給我聽</button></div></details>`;
+  const paras = p.paras || PRE_LABELS.filter(([k]) => p[k]).map(([k]) => p[k]);
+  return `<details class="read pre" open><summary>行前閱讀 <span class="sub">大約 5 分鐘，點一下收起來</span></summary><div class="inner reading pre-body">
+    ${paras.map((x) => `<p>${esc(x)}</p>`).join('')}
+    ${p.tip ? `<div class="pre-tip"><b>提醒</b>${esc(p.tip)}</div>` : ''}
+    ${p.tagline ? `<p class="pre-tagline">${esc(p.tagline)}</p>` : ''}</div></details>`;
 }
 function bindSpeak() {
   $$('[data-speak]').forEach((b) => b.onclick = () => {
@@ -3536,6 +4274,7 @@ route('/cruise', () => {
         <div class="card"><b>怎麼選</b><p style="margin:4px 0 0">${esc(p.tip)}</p></div>${opts}`;
     }).join('');
     view(`${back('#/trip', '每日行程')}<h1>郵輪靠港：我想去哪裡</h1>${posterImg('ship')}
+      <a class="card cdex-promo" href="#/cruisedex"><b>🚢 郵輪大圖鑑</b><span>海上日出、劇院大秀、馬賽聖誕泥偶市集……看到就拍照點亮</span></a>
       <p class="sub">每個港口每個人想去的地方不一樣。先看「怎麼選」和行前閱讀，再按「我想去」，可以選不只一個，也可以改。大家選了什麼都看得到，方便約同伴一起走。</p>
       <p class="sub" id="cst">${S.server.url ? '' : '還沒連上家庭雲端，只看得到自己選的。'}</p>
       <div class="card"><b>船上的正式之夜要帶什麼</b><p style="margin:4px 0 0">我們搭的是 MSC Euribia。7 晚的航程通常會有 1 次正式之夜（Gala Night，有時 2 次），是哪一晚要上船後看每天的節目表才知道，一般不會排在第一晚或最後一晚。服裝不強制，但晚上進餐廳不能穿短褲、拖鞋和背心。建議男生帶一件有領襯衫或西裝外套，女生帶一件洋裝。船上也常辦白色派對，可以多帶一件白色衣服。</p></div>${ports}
@@ -3555,6 +4294,154 @@ route('/cruise', () => {
   }
   return 'home';
 });
+
+/* ---------- 小書架：也許出發前你會想看看 ---------- */
+let SHELF = {};
+const SHELF_VERB = { 文學: '我想閱讀', 電影: '我想看', 影集: '我想看', 音樂: '我想聽', 歌劇: '我想看', 音樂劇: '我想看', 芭蕾: '我想看' };
+const SHELF_TONE = { 文學: 'sd', 電影: 't', 影集: 'k', 音樂: 'o', 歌劇: 'r', 音樂劇: 'r', 芭蕾: 'o' };
+const SHELF_PLACE = { barcelona: 'Barcelona', sevilla: 'Sevilla', guadix: 'Granada', cordoba: 'Córdoba', madrid: 'Madrid',
+  馬賽: 'Marseille', 熱那亞: 'Genova', 那不勒斯與龐貝: 'Napoli', 巴勒摩: 'Palermo', 突尼西亞: 'Tunis' };
+function shelfPicked() { return LS.get('shelf', {}); }
+function shelfItem(id) {
+  for (const c of Object.keys(SHELF)) { const it = SHELF[c].find((x) => x.id === id); if (it) return [c, it]; }
+  return [null, null];
+}
+function spineHtml(it, i) {
+  const on = !!shelfPicked()[it.id];
+  const short = it.title.replace(/（.*?）/g, '').replace(/[《》「」]/g, '').split('：')[0].slice(0, 9);
+  const fs = short.length > 6 ? 12 : 14;
+  const h = Math.max(150 + ((i * 37) % 4) * 12, 64 + short.length * (fs + 3));
+  const w = 46 + ((i * 53) % 3) * 6;
+  return `<a class="spine ${SHELF_TONE[it.type] || 'sd'}${on ? ' glow' : ''}" href="#/shelf/${it.id}" style="height:${h}px;width:${w}px;--fs:${fs}px"
+    aria-label="${esc(it.type)}《${esc(it.title)}》${on ? '，已放進書單' : ''}"><span class="sp-title">${esc(short)}</span><span class="sp-type">${esc(it.type)}</span>${on ? '<i class="sp-star" aria-hidden="true">✦</i>' : ''}</a>`;
+}
+function shelfRow(items, label) {
+  return `<div class="shelf">${label ? `<div class="shelf-label">${esc(label)}</div>` : ''}<div class="shelf-row">${items.map(spineHtml).join('')}</div><div class="shelf-board"></div></div>`;
+}
+function shelfHtml(cityId) {
+  const items = SHELF[cityId] || [];
+  if (!items.length) return '';
+  const picked = items.filter((x) => shelfPicked()[x.id]).length;
+  let rows;
+  if (cityId === 'cruise') {
+    const ports = [];
+    items.forEach((x) => { if (!ports.includes(x.port)) ports.push(x.port); });
+    rows = ports.map((p) => shelfRow(items.filter((x) => x.port === p), p)).join('');
+  } else rows = shelfRow(items);
+  return `<h2>也許出發前你會想看看</h2>
+    <p class="sub">和這裡有關的書、電影、音樂和舞台作品。點一本書背看介紹；勾了「想看」的，會在書架上發亮。${picked ? `已勾選 ${picked} 本。` : ''}</p>
+    ${rows}<a class="shelf-link" href="#/shelf">我的書單 →</a>`;
+}
+route('/shelf/:id', (id) => {
+  const [cityId, it] = shelfItem(id);
+  if (!it) { location.hash = '#/'; return; }
+  const verb = SHELF_VERB[it.type] || '我想看';
+  const on = !!shelfPicked()[it.id];
+  const hint = SHELF_PLACE[it.port] || SHELF_PLACE[cityId] || '';
+  const meta = CITY_META[cityId] || TRIP_META;
+  view(`${back('#/city/' + cityId, CITY[cityId] ? CITY[cityId].name : '返回')}
+    <div class="kicker">SHELF · ${esc(meta.en)}${it.port ? ' · ' + esc(it.port) : ''}</div>
+    <div class="row"><span class="chip">${esc(it.type)}</span>${it.year ? `<span class="chip">${esc(it.year)}</span>` : ''}</div>
+    <h1>${esc(it.title)}</h1>
+    <p class="sub">${esc([it.original, it.creator].filter(Boolean).join('｜'))}</p>
+    <blockquote class="teaser">${esc(it.teaser)}</blockquote>
+    <div class="card reading"><p style="margin:0">${esc(it.body)}</p></div>
+    ${it.places && it.places.length ? `<h2>按圖索驥</h2><div class="list">${it.places.map((p) => `<div class="item" style="align-items:flex-start">
+      <div class="t"><b>${esc(p.name)}</b><span style="white-space:normal">${esc(p.text)}</span></div>
+      <a class="btn small ghost" href="${esc(mapUrl(p.name + ' ' + hint))}" target="_blank" rel="noopener">地圖</a></div>`).join('')}</div>` : ''}
+    ${it.think ? `<div class="card think"><b>邊走邊想</b><p style="margin:4px 0 0">${esc(it.think)}</p></div>` : ''}
+    <label class="want${on ? ' on' : ''}"><input type="checkbox" id="want" ${on ? 'checked' : ''}>
+      <span><b>${esc(verb)}</b><small>勾選後，書架上的這一本會閃閃發亮</small></span></label>`);
+  $('#want').onchange = (e) => {
+    const m = shelfPicked();
+    if (e.target.checked) m[it.id] = Date.now(); else delete m[it.id];
+    LS.set('shelf', m);
+    e.target.closest('.want').classList.toggle('on', e.target.checked);
+    toast(e.target.checked ? '放進書單了，回書架看看它在發亮' : '已從書單拿掉');
+  };
+  return 'home';
+});
+route('/shelf', () => {
+  const m = shelfPicked();
+  const list = Object.keys(m).map((id) => [m[id], ...shelfItem(id)]).filter((x) => x[1]).sort((a, b) => b[0] - a[0]);
+  view(`${back('#/', '首頁')}<h1>我的書單</h1><p class="sub">你在各城市書架上勾選的作品，都在這裡。</p>
+    ${list.length ? `<div class="list">${list.map(([, c, it]) => `<a class="item" href="#/shelf/${it.id}"><div class="t"><b>《${esc(it.title)}》</b>
+      <span>${esc(it.type)}・${esc(it.port || (CITY[c] ? CITY[c].name : ''))}</span></div>${CHEV}</a>`).join('')}</div>`
+      : '<div class="card"><p style="margin:0">還沒有勾選。到任何一座城市的頁面，點書架上的書背看看。</p></div>'}`);
+  return 'home';
+});
+
+/* ---------- WoW 筆記：自己的、全家的 ---------- */
+function dayOf(ts) { const d = new Date(ts); return d.getFullYear() + '-' + String(d.getMonth() + 1).padStart(2, '0') + '-' + String(d.getDate()).padStart(2, '0'); }
+function factLookup(fid) {
+  const [cid, i] = String(fid).split('#');
+  const c = CARD[cid];
+  const f = c && c.facts && c.facts[Number(i)];
+  return f ? { card: c, text: plain(f) } : null;
+}
+function wowGroupHtml(rows, withName) {
+  const days = {};
+  rows.forEach((r) => { (days[r.day] = days[r.day] || []).push(r); });
+  return Object.keys(days).sort().reverse().map((d) => `<div class="wow-day">${d === '更早' ? '更早' : esc(fmtDate(d))}</div>
+    <div class="list">${days[d].map((r) => `<a class="item" href="#/card/${r.f.card.id}"><div class="t"><b style="font-weight:600">${withName ? `<span class="chip" style="margin-right:6px">${esc(r.player)}</span>` : ''}${esc(r.f.text)}</b>
+      <span>${esc(r.f.card.title)}</span></div>${CHEV}</a>`).join('')}</div>`).join('');
+}
+function wowNotesHtml() {
+  const mine = Object.entries(LS.get('likes', {})).map(([id, ts]) => ({ f: factLookup(id), day: typeof ts === 'number' ? dayOf(ts) : '更早', ts: typeof ts === 'number' ? ts : 0 }))
+    .filter((r) => r.f).sort((a, b) => b.ts - a.ts);
+  return `<h2>我的 WoW 筆記</h2>
+    ${mine.length ? wowGroupHtml(mine, false) : '<div class="card"><p class="sub" style="margin:0">還沒有筆記。在景點卡的冷知識旁按「WoW 記!」，就會收進這裡。</p></div>'}
+    <h2>全家每天 WoW 了什麼</h2>
+    <div id="wow-family">${wowFamilyInner()}</div>`;
+}
+function wowFamilyInner() {
+  if (!S.server.url) return '<div class="card"><p class="sub" style="margin:0">連上家庭雲端後，就能看到全家每天覺得哪些資訊有趣。</p></div>';
+  const fam = (META.likeLog || []).map((x) => ({ f: factLookup(x.factId), player: x.player, day: x.ts ? dayOf(Number(x.ts)) : '更早', ts: Number(x.ts) || 0 }))
+    .filter((r) => r.f).sort((a, b) => b.ts - a.ts);
+  return fam.length ? wowGroupHtml(fam, true) : '<div class="card"><p class="sub" style="margin:0">還沒有人 WoW 記。（家人按過卻沒出現的話，請主辦人更新 Apps Script，見設定教學。）</p></div>';
+}
+
+/* ---------- 訂房確認單：從家庭雲端「住宿確認」資料夾讀取，存在手機 ---------- */
+function docsCachedHtml() {
+  const list = LS.get('docs', []);
+  if (!list.length) return '<p class="sub" style="margin:0 0 8px">還沒讀取過。</p>';
+  return `<div class="list">${list.map((d) => `<button type="button" class="item doc-open" data-doc="${esc(d.id)}" style="width:100%;border:0;background:none;text-align:left">
+    <div class="t"><b>${esc(d.name)}</b><span>${d.saved ? '已存在手機，沒網路也能開' : '點一下下載並打開'}</span></div>${CHEV}</button>`).join('')}</div>`;
+}
+function bindDocs() {
+  const paint = () => { const el = $('#docs'); if (el) { el.innerHTML = docsCachedHtml(); bindOpen(); } };
+  const bindOpen = () => $$('.doc-open').forEach((b) => b.onclick = async () => {
+    const id = b.dataset.doc;
+    let blob = await DB.get('doc:' + id);
+    if (!blob) {
+      if (!S.server.url) { toast('請先在「我的」連上家庭雲端'); return; }
+      try {
+        toast('下載中…', 20000);
+        const r = await apiGet({ action: 'doc', id });
+        blob = await (await fetch(r.dataUrl)).blob();
+        await DB.put('doc:' + id, blob);
+        const list = LS.get('docs', []).map((d) => (d.id === id ? Object.assign(d, { saved: true }) : d));
+        LS.set('docs', list);
+        toast('已存到手機');
+      } catch (e) { toast('讀取失敗：' + e.message); return; }
+    }
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a'); a.href = url; a.target = '_blank'; a.rel = 'noopener'; a.click();
+    paint();
+  });
+  const btn = $('#docs-load');
+  if (btn) btn.onclick = async () => {
+    if (!S.server.url) { toast('請先在「我的」連上家庭雲端'); return; }
+    try {
+      const r = await apiGet({ action: 'docs' });
+      const old = LS.get('docs', []);
+      LS.set('docs', (r.files || []).map((f) => ({ id: f.id, name: f.name, saved: !!(old.find((o) => o.id === f.id) || {}).saved })));
+      paint();
+      toast((r.files || []).length ? '找到 ' + r.files.length + ' 份確認單' : '雲端的「住宿確認」資料夾還是空的');
+    } catch (e) { toast('讀取失敗：' + e.message); }
+  };
+  bindOpen();
+}
 
 /* ---------- start ---------- */
 async function start() {

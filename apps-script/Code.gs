@@ -10,6 +10,8 @@ const RESET_AT = '2026-12-07T00:00:00+08:00';         // 台灣時間 12/7 00:00
 
 /* ---------- 以下不用改 ---------- */
 
+const DOCS_FOLDER = '住宿確認';   // 訂房確認單放這個子資料夾（在 FOLDER_ID 裡面），只有輸入家庭密碼的人讀得到
+
 const SHEETS = {
   '分數': ['id', 'player', 'points', 'label', 'cardId', 'date', 'ts'],
   '照片': ['id', 'player', 'kind', 'slot', 'city', 'cardId', 'cardTitle', 'theme', 'date', 'fileId', 'ts'],
@@ -21,9 +23,11 @@ const SHEETS = {
 function doGet(e) {
   const p = (e && e.parameter) || {};
   if (p.code !== FAMILY_CODE) return json_({ ok: false, error: '家庭密碼不對' });
-  if (p.action === 'ping') return json_({ ok: true, version: 2 });
+  if (p.action === 'ping') return json_({ ok: true, version: 3 });
   if (p.action === 'feed') return json_(feed_(p.date || ''));
   if (p.action === 'image') return json_(image_(p.id));
+  if (p.action === 'docs') return json_(docs_());
+  if (p.action === 'doc') return json_(doc_(p.id));
   return json_({ ok: false, error: 'unknown action' });
 }
 
@@ -74,7 +78,10 @@ function resetCore_() {
   setSetting_('deleted', '[]');   // 被刪掉的玩家名單也清空
   const root = DriveApp.getFolderById(FOLDER_ID);
   const it = root.getFolders();
-  while (it.hasNext()) it.next().setTrashed(true);   // 日期資料夾整包丟到垃圾桶
+  while (it.hasNext()) {
+    const f = it.next();
+    if (f.getName() !== DOCS_FOLDER) f.setTrashed(true);   // 日期資料夾整包丟到垃圾桶；住宿確認保留
+  }
   const props = PropertiesService.getScriptProperties();
   props.setProperty('EPOCH', String(Number(props.getProperty('EPOCH') || 0) + 1));
 }
@@ -243,9 +250,11 @@ function feed_(date) {
     collages.push({ player: r[1], city: r[4], cardTitle: r[6], theme: r[7], date: dateStr_(r[8]), fileId: r[9] });
   }
   const likes = {};
+  const likeLog = [];
   dataRows_(sheet_('讚', SHEETS['讚']), 3).forEach(function (r) {
     if (deleted.has(r[1])) return;
     (likes[r[0]] = likes[r[0]] || []).push(r[1]);
+    if (String(r[0]).indexOf('#') > 0) likeLog.push({ factId: r[0], player: r[1], ts: Number(r[2]) || 0 });
   });
   const comments = {};
   dataRows_(sheet_('留言', SHEETS['留言']), 5).forEach(function (r) {
@@ -261,6 +270,7 @@ function feed_(date) {
     collages: collages,
     recent: recent,
     likes: likes,
+    likeLog: likeLog.slice(-400),
     comments: comments,
     cutoff: getSetting_('cutoff'),
     epoch: Number(props.getProperty('EPOCH') || 0),
@@ -274,6 +284,35 @@ function image_(id) {
   const file = DriveApp.getFileById(id);
   const blob = file.getBlob();
   return { ok: true, dataUrl: 'data:' + blob.getContentType() + ';base64,' + Utilities.base64Encode(blob.getBytes()) };
+}
+
+function docsFolder_() {
+  const it = DriveApp.getFolderById(FOLDER_ID).getFoldersByName(DOCS_FOLDER);
+  return it.hasNext() ? it.next() : null;
+}
+
+function docs_() {
+  const folder = docsFolder_();
+  if (!folder) return { ok: true, files: [] };
+  const files = [];
+  const it = folder.getFiles();
+  while (it.hasNext()) { const f = it.next(); files.push({ id: f.getId(), name: f.getName() }); }
+  files.sort(function (a, b) { return a.name < b.name ? -1 : 1; });
+  return { ok: true, files: files };
+}
+
+function doc_(id) {
+  const folder = docsFolder_();
+  if (!folder) return { ok: false, error: '找不到「' + DOCS_FOLDER + '」資料夾' };
+  const it = folder.getFiles();
+  while (it.hasNext()) {
+    const f = it.next();
+    if (f.getId() === String(id)) {
+      const blob = f.getBlob();
+      return { ok: true, name: f.getName(), dataUrl: 'data:' + blob.getContentType() + ';base64,' + Utilities.base64Encode(blob.getBytes()) };
+    }
+  }
+  return { ok: false, error: '找不到這份確認單' };
 }
 
 function dateStr_(v) {
