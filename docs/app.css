@@ -516,3 +516,44 @@ details.stay[open] summary{border-bottom:1px solid var(--line)}
 .cdex-card.locked{opacity:1;filter:none}
 .cdex-card.locked .poke-icon{filter:grayscale(70%);opacity:.7}
 .cdex-card .poke-name{font-size:15.5px}
+
+/* ---------- v2.6：下船路線、記帳 ---------- */
+.rplan{border:1.5px solid var(--line);background:var(--card);padding:12px 14px;margin:0 0 14px}
+.rplan>summary{cursor:pointer;display:flex;flex-direction:column;gap:2px;list-style:none}
+.rplan>summary::-webkit-details-marker{display:none}
+.rplan>summary b{font-size:17px}
+.rplan>summary b::before{content:'▸ ';color:var(--primary)}
+.rplan[open]>summary b::before{content:'▾ '}
+.rplan>summary span{font-size:13.5px;color:var(--muted)}
+.rroute{display:flex;flex-direction:column;gap:6px;margin:10px 0}
+.rroute .btn{white-space:normal;text-align:left;height:auto;min-height:40px;padding:8px 12px;line-height:1.4}
+.rstep{border-top:1px solid var(--line);padding:12px 0}
+.rstep-head{display:flex;gap:10px;align-items:flex-start}
+.rstep-n{flex:0 0 auto;min-width:46px;text-align:center;font-weight:800;font-size:13px;padding:3px 4px;border:1.5px solid var(--primary);color:var(--primary)}
+.rstep-t{display:flex;flex-direction:column;min-width:0}
+.rstep-t b{font-size:16px;line-height:1.4}
+.rstep-t span{font-size:13px;color:var(--muted)}
+.rstep p{margin:8px 0 6px;line-height:1.75;font-size:15px}
+.rstep-info{font-size:13.5px;line-height:1.6;padding:6px 8px;background:var(--sunken);border:1px solid var(--line);margin:4px 0}
+.rstep-walk{font-size:13.5px;color:var(--muted);margin:4px 0}
+.rstep-btns{display:flex;gap:8px;flex-wrap:wrap;margin-top:6px}
+.rtips{margin:6px 0 0;padding-left:20px;line-height:1.7}
+.rtips li{margin:0 0 6px}
+.money-form .field{display:block;margin:0 0 12px}
+.money-form .field>span{display:block;font-weight:700;margin:0 0 6px}
+.money-amtrow{display:flex;gap:10px}
+.money-chips{display:flex;flex-wrap:wrap;gap:8px}
+.mchip{min-height:40px;padding:0 14px;border:1.5px solid var(--line);background:var(--card);color:var(--fg);font-weight:800;cursor:pointer}
+.mchip.on{background:var(--primary);border-color:var(--primary);color:#fff}
+.money-quick{display:flex;flex-wrap:wrap;gap:6px;margin-top:8px}
+.money-sum{border:1.5px solid var(--line);background:var(--card);padding:12px 14px;margin:0 0 10px}
+.money-line{font-size:16px;line-height:1.6;margin:0 0 8px}
+.money-big{font-size:20px;color:var(--primary)}
+.money-tbl{width:100%;border-collapse:collapse;font-size:14px}
+.money-tbl th,.money-tbl td{border-top:1px solid var(--line);padding:6px 4px;text-align:right}
+.money-tbl th:first-child,.money-tbl td:first-child{text-align:left}
+.money-row{display:flex;gap:8px;align-items:center;border-top:1px solid var(--line);padding:10px 0}
+.money-main{flex:1;min-width:0;display:flex;flex-direction:column}
+.money-main span{font-size:13px;color:var(--muted);line-height:1.5}
+.money-amt{font-weight:800;white-space:nowrap}
+.money-del{border:0;background:none;color:var(--muted);font-size:18px;width:36px;height:36px;cursor:pointer}

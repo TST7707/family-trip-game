@@ -1,6 +1,6 @@
 'use strict';
 /* 家族任務遊戲 — single-page app. Content comes from content.json (generated from the script). */
-const APP_VERSION = '2.5.0';
+const APP_VERSION = '2.6.0';
 const TRIP_START = '2026-12-09';
 const TRIP_END = '2027-01-06';
 const RESET_DATE = '2026-12-07';
@@ -296,7 +296,7 @@ function handleJoin() {
     const j = JSON.parse(b64urlDecode(h.slice(6)));
     if (j.u) LS.set('server', { url: j.u, code: j.c || '' });
     if (Array.isArray(j.f)) LS.set('family', j.f);
-    toast('已加入全家的遊戲');
+    toast('已加入大家的遊戲');
   } catch (e) { toast('邀請連結看不懂，請再傳一次'); }
   history.replaceState(null, '', location.pathname + location.search + '#/');
   return true;
@@ -335,6 +335,7 @@ function view(html) {
       <a class="chip" href="#/airports" style="font-weight:700">✈️ 四大機場</a>
       <a class="chip" href="#/cruisedex" style="font-weight:700">🚢 郵輪圖鑑</a>
       <a class="chip" href="#/pack" style="font-weight:700">🧳 行前清單</a>
+      <a class="chip" href="#/money" style="font-weight:700">💰 記帳</a>
     </div>
     <a class="btn small ghost" href="itinerario.html" target="_blank" style="min-height:36px;font-size:13px;padding:0 10px;border-color:var(--primary);color:var(--primary)">🇪🇸 西文行程（同事專用）</a>
   </div>`;
@@ -432,13 +433,13 @@ const TAPAS_LIST = [
   { id: 1, icon: '🍫', name: '濃郁熱巧克力配剛出爐現炸吉拿棒', desc: '熱騰騰剛出爐的脆吉拿棒，沾滿濃到像融化布丁的熱巧克力，第一口幸福感爆發！' },
   { id: 2, icon: '🍊', name: '西班牙甜甜鮮榨柳橙汁', desc: '街邊咖啡館或超市現榨的甜橘汁，滿滿南歐陽光維他命C，好喝又解渴！' },
   { id: 3, icon: '🥪', name: '厚切香嫩馬鈴薯烘蛋', desc: '厚厚軟軟的馬鈴薯烘蛋切塊，香氣撲鼻，弟弟和爸媽都一吃就愛上！' },
-  { id: 4, icon: '🍓', name: '市場買一盒鮮甜紅草莓', desc: '在水果攤挑一盒紅通通又大又甜的新鮮草莓，回旅館洗乾淨全家一起分著吃。' },
+  { id: 4, icon: '🍓', name: '市場買一盒鮮甜紅草莓', desc: '在水果攤挑一盒紅通通又大又甜的新鮮草莓，回旅館洗乾淨大家一起分著吃。' },
   { id: 5, icon: '🥓', name: '一片頂級伊比利火腿配烤麵包', desc: '油花在大理石花紋上發亮，放進嘴裡油脂自然融化，濃濃橡實香氣。' },
   { id: 6, icon: '🌞', name: '在廣場長椅上曬 5 分鐘冬陽', desc: '閉上眼睛，在西班牙暖呼呼的冬日陽光下靜靜坐著，放鬆心情。' },
   { id: 7, icon: '🐶', name: '向街上散步的可愛小狗微笑搖手', desc: '西班牙人超愛狗，在街頭遇到散步的小狗，對牠友善地笑一個吧！' },
   { id: 8, icon: '🍮', name: '香滑柔嫩的西班牙焦糖烤布丁', desc: '軟嫩細緻的布丁淋滿焦糖漿，入口即化，甜蜜又溫暖。' },
   { id: 9, icon: '🍨', name: '挑一球最喜歡顏色的冰淇淋', desc: '走進冰淇淋店，挑一球你最喜歡的口味（巧克力、草莓或開心果）慢慢享用！' },
-  { id: 10, icon: '🔔', name: '靜靜數古老教堂的鐘聲響了幾下', desc: '噹～噹～噹～當教堂鐘聲響起時，全家一起停下腳步數數看敲了幾響。' },
+  { id: 10, icon: '🔔', name: '靜靜數古老教堂的鐘聲響了幾下', desc: '噹～噹～噹～當教堂鐘聲響起時，大家一起停下腳步數數看敲了幾響。' },
   { id: 11, icon: '🍇', name: '甜甜多汁的無籽綠葡萄', desc: '洗一串冰涼香甜的無籽綠葡萄，每個人拿一顆放在嘴裡咬開！' },
   { id: 12, icon: '🥐', name: '香酥可頌配暖呼呼熱牛奶', desc: '早晨在街角咖啡館，烤得酥脆的可頌撕一塊泡一下熱牛奶，溫暖你的胃。' },
   { id: 13, icon: '🌰', name: '冬天街角紙袋裝的熱烤栗子', desc: '街頭大鐵桶碳火烤出來的熱栗子，用紙袋裝著捧在手心裡暖手又香甜。' },
@@ -458,188 +459,188 @@ const TAPAS_LIST = [
   { id: 27, icon: '🍬', name: '三王節大遊行搶到的水果糖', desc: '在遊行花車下倒撐雨傘接到的幸運糖果，放一顆在嘴裡甜進心坎。' },
   { id: 28, icon: '🥨', name: '千層香酥小蝴蝶餅 (Palmeritas)', desc: '烤得酥香透薄的愛心蝴蝶酥，外面刷一層焦糖脆光。' },
   { id: 29, icon: '🧇', name: '街頭熱騰騰比利時糖粒鬆餅', desc: '熱壓鐵盤出爐的鬆餅，咬得到脆脆的珍珠糖粒，香飄整條街。' },
-  { id: 30, icon: '👨‍👩‍👧‍👦', name: '全家 7 人圍在一起笑嘻嘻大合照', desc: '找個好風景，7 個人擠在一起對著鏡頭大喊「¡Patata!」（拍下最棒的笑容）！' }
+  { id: 30, icon: '👨‍👩‍👧‍👦', name: '7 個人圍在一起笑嘻嘻大合照', desc: '找個好風景，7 個人擠在一起對著鏡頭大喊「¡Patata!」（拍下最棒的笑容）！' }
 ];
 
 /* ---------- 30 REGIONAL/CITY FLAGS, LORE & SVGS ---------- */
 const FLAGS_LIST = [
   {
-    id: 1, city: '巴塞隆納', title: '聖佐治十字與加泰隆尼亞令旗市旗',
+    id: 1, kind: 'flag', city: '巴塞隆納', title: '巴塞隆納市旗（聖佐治十字＋加泰隆尼亞紅黃紋）',
     origin: '左上與右下為守護聖人聖佐治（Sant Jordi）的白底紅十字；右上與左下為加泰隆尼亞的四道紅紋。紅十字代表抵禦外敵的虔誠勇氣，四道紅紋則代表中世紀加泰隆尼亞與亞拉岡王國傳承逾千年的自治王權。',
     spotGuide: '聖雅各廣場（Plaça de Sant Jaume）的巴塞隆納市政廳主樓頂、老城巡邏警車車門徽章、以及巴塞隆納足球俱樂部（FC Barcelona）隊徽左上角，皆能親眼看見此官方標誌！',
     trivia: '相傳西元897年巴塞隆納伯爵「多毛者吉弗雷」英勇抗擊諾曼海盜重傷瀕死，法蘭克國王查理二世前來慰問，將手掌浸入伯爵胸口汩汩鮮血，在金黃色純金盾牌上一抹劃出四道血手印，封為這片土地永恆的榮譽徽章！'
   },
   {
-    id: 2, city: '擴建區 (Eixample)', title: '塞爾達切角幾何街區旗',
-    origin: '象徵工程師塞爾達（Ildefons Cerdà）於1859年開創現代都市規劃（Urbanismo）的八角形切角街區。這面旗幟代表著「陽光、空氣與階級平等」，主張無論貧富，每個人都該享有採光與通風的花園庭院。',
-    spotGuide: '漫步米拉之家、巴特婁之家周邊，低頭看人行道幾何六角地磚，或抬頭觀察每個十字路口的45度切角建築，整座擴建區就是這面旗幟的真實立體模型！',
+    id: 2, kind: 'code', city: '擴建區 (Eixample)', title: '塞爾達切角街區符碼',
+    origin: '象徵工程師塞爾達（Ildefons Cerdà）於1859年開創現代都市規劃（Urbanismo）的八角形切角街區。這個符碼代表著「陽光、空氣與階級平等」，主張無論貧富，每個人都該享有採光與通風的花園庭院。',
+    spotGuide: '漫步米拉之家、巴特婁之家周邊，低頭看人行道幾何六角地磚，或抬頭觀察每個十字路口的45度切角建築，整座擴建區就是這個符碼的真實立體模型！',
     trivia: '塞爾達削切街角45度，在1859年汽車尚未發明的時代，是為了讓未來的蒸汽路面電車轉彎半徑更順暢，並讓每個路口都變成寬敞明亮的八角小廣場，方便街坊鄰居聚在街角曬太陽聊天！'
   },
   {
-    id: 3, city: '加泰隆尼亞', title: 'Senyera 金黃紅紋旗',
+    id: 3, kind: 'flag', city: '加泰隆尼亞', title: 'Senyera 金黃紅紋旗',
     origin: '純金黃底配上四道鮮紅水平條紋，是歐洲至今仍在官方使用的最古老旗幟之一（最早文獻可追溯至1150年）。它代表加泰隆尼亞民族深厚的憲政傳統、法典制度與語言文化自豪。',
     spotGuide: '走在巴塞隆納任何街道抬頭望，老百姓民宅陽台上掛滿這面旗幟；加泰隆尼亞自治區政府大樓、蘭布拉大道書報攤與重大慶典上隨處可見。',
     trivia: '在佛朗哥獨裁統治時期（1939–1975），這面旗幟曾被嚴格禁止懸掛。加泰隆尼亞人想出妙計：把巴塞隆納足球隊的紅藍條紋球衣當成象徵，諾坎普球場也因此成為唯一能公開宣洩民族驕傲的避難所！'
   },
   {
-    id: 4, city: '巴塞隆納港', title: '海事領事館導航旗 (Consolat de Mar)',
-    origin: '深邃地中海藍底配上海軍金色船錨，源自中世紀巴塞隆納海洋領事館（Consolat de Mar）的榮光。它是西地中海歷史最悠久的海事公會，曾掌控從直布羅陀到黎凡特的黃金海上貿易網絡。',
+    id: 4, kind: 'code', city: '巴塞隆納港', title: '海事領事館船錨符碼 (Consolat de Mar)',
+    origin: '以船錨為象徵，源自中世紀巴塞隆納海洋領事館（Consolat de Mar）的榮光。它是西地中海歷史最悠久的海事公會，曾掌控從直布羅陀到黎凡特的黃金海上貿易網絡。',
     spotGuide: '在貝爾港（Port Vell）碼頭桅杆、港務局大樓、水上巡邏艇、以及海洋聖母聖殿（Santa María del Mar）外牆古代海員公會浮雕上均能看到。',
-    trivia: '巴塞隆納於13世紀編纂的《海洋領事法典》是全球最早的海事商法典籍。當年港口法規極為嚴苛：若引航員因疏忽導致商船觸礁擱淺，船長有權在全體船員見證下當場將該領航員斬首示眾！'
+    trivia: '巴塞隆納在中世紀編出的《海洋領事法典》（Llibre del Consolat de Mar）是地中海最有名的海商法典之一，各地商人都拿它來解決船貨糾紛。'
   },
   {
-    id: 5, city: '凱旋門與城堡公園', title: '1888 世博會迎賓紅磚旗',
-    origin: '溫暖的新摩爾式（Neo-Mudéjar）紅磚色與金色雙翼，象徵巴塞隆納邁向近代工業與藝術顛峰的里程碑。這座凱旋門不是為了慶祝戰爭屠殺，而是世界博覽會的大門，象徵向全球文明張開懷抱。',
+    id: 5, kind: 'code', city: '凱旋門與城堡公園', title: '1888 世博會紅磚凱旋門符碼',
+    origin: '凱旋門用新穆德哈爾式（Neo-Mudéjar）紅磚蓋成，是 1888 年世界博覽會的主要入口，象徵巴塞隆納邁向近代工業與藝術顛峰的里程碑。這座凱旋門不是為了慶祝戰爭屠殺，而是世界博覽會的大門，象徵向全球文明張開懷抱。',
     spotGuide: '沿著路易斯·孔帕尼斯大道（Passeig de Lluís Companys）走向凱旋門，正立面頂部石雕銘刻著「巴塞隆納歡迎各國（Barcelona rep les nacions）」。',
     trivia: '據傳建築大師艾菲爾最初在設計巴黎鐵塔前，曾優先向巴塞隆納市議會提案在1888世博會建造這座鐵塔，但被市議會以「造型過於古怪且鋼架昂貴」為由婉拒，轉而建造了這座典雅的紅磚凱旋門！'
   },
   {
-    id: 6, city: '蘭布拉大道', title: '舊河道變身的花神紋章旗',
-    origin: '黃綠交織的花卉波浪圖紋。蘭布拉在阿拉伯語（Ramla）原意為「乾涸沙河」，中世紀原是城牆外排洪的雨水溝渠，18世紀拆牆後蛻變為全世界最繽紛浪漫的花卉漫步大道。',
+    id: 6, kind: 'code', city: '蘭布拉大道', title: '舊河道變身的花卉大道符碼',
+    origin: '蘭布拉在阿拉伯語（Ramla）原意為「乾涸沙河」，中世紀原是城牆外排洪的雨水溝渠，18世紀拆牆後蛻變為全世界最繽紛浪漫的花卉漫步大道。',
     spotGuide: '漫步蘭布拉大道中段的花攤（Flors de la Rambla）、米羅在地面鋪設的圓形彩色馬賽克地磚旁、以及百年波蓋利亞市場入口挑高拱門上方。',
-    trivia: '大文豪海明威與西班牙詩人羅卡曾讚嘆：「蘭布拉是世界上唯一一條我希望永遠走不到盡頭的街道。」在19世紀，蘭布拉賣花的老闆娘是全城最受尊敬的市民，紳士貴族路過都必須脫帽行禮！'
+    trivia: '西班牙詩人羅卡（Federico García Lorca）據說稱讚過：蘭布拉是世界上唯一一條他希望永遠走不完的街道。'
   },
   {
-    id: 7, city: '聖誕慶典', title: '聖誕大樂透「大胖子」吉慶金幣旗',
-    origin: '深緋紅底色映襯著巨大純金樂透滾輪與傾瀉而出的金幣，代表全世界總獎金最高、歷史逾兩百年的西班牙聖誕彩券「El Gordo」（大胖子樂透）。',
+    id: 7, kind: 'code', city: '聖誕慶典', title: '聖誕大樂透「大胖子」金幣符碼',
+    origin: '以樂透滾輪和金幣為象徵，代表全世界總獎金最高、歷史逾兩百年的西班牙聖誕彩券「El Gordo」（大胖子樂透）。',
     spotGuide: '每年12月在西班牙城鎮漫步，只要看見彩券行門口排了幾百公尺人龍、櫥窗貼滿彩券號碼與綠袍幸運小女巫（Doña Manolita），就是它的駐地！',
     trivia: '這張彩券誕生於1812年西班牙抗擊拿破崙戰爭的加的斯議會，為了籌措抗法軍費，被譽為「全天下唯一無人抱怨的自願稅」。開獎時由馬德里孤兒院孩童以獨特童聲唱號，成為全西全民年度狂歡！'
   },
   {
-    id: 8, city: '法國馬賽', title: '天藍十字十字軍港旗',
+    id: 8, kind: 'flag', city: '法國馬賽', title: '馬賽市旗：白底天藍十字',
     origin: '純潔白底配上一道澄澈天藍色十字（Croix d\'azur sur fond blanc），純淨如普羅旺斯晴空與地中海浪花。源自11世紀十字軍東征時期，馬賽艦隊開拔前往黎凡特所佩戴的軍徽。',
     spotGuide: '郵輪靠泊馬賽舊港（Vieux-Port），眺望岸邊碼頭燈塔、守護聖母聖殿（Notre-Dame de la Garde）山頂、以及馬賽市政廳正面旗桿上隨風飄揚。',
     trivia: '馬賽是法國現存最古老的城市（西元前600年由希臘水手建立）。法國國歌《馬賽曲》便是1792年馬賽志願軍自南方向巴黎長征五百公里時一路高唱的戰歌，這座古港的血液裡刻滿了反叛與自由！'
   },
   {
-    id: 9, city: '義大利熱那亞', title: '聖喬治紅十字海上霸王旗',
+    id: 9, kind: 'flag', city: '義大利熱那亞', title: '熱那亞市旗：白底紅十字（聖喬治旗）',
     origin: '純白底色配上醒目鮮紅正十字（Crux de San Zorzo），是中世紀威震西地中海的海上霸主「熱那亞海洋共和國」的驕傲圖騰。',
     spotGuide: '郵輪抵達熱那亞港口，在舊港燈塔（Lanterna）、總督宮門楣雕刻、以及聖羅倫佐大教堂正立面大理石浮雕上，處處可見此紅十字。',
-    trivia: '大家都以為英格蘭的聖喬治紅十字旗是英國原創，其實是1190年英國國王理查一世為了讓英國船隊在地中海航行時免受穆斯林與海盜襲擊，向熱那亞共和國付費「承租」其旗幟護身，英國每年還得按時向熱那亞繳納保護租金！'
+    trivia: '英格蘭的聖喬治旗和熱那亞旗一模一樣。有一個流傳很廣的說法：英國船隻曾付錢給熱那亞，掛它的旗子保平安。不過歷史學家找不到可靠證據，聽聽就好。'
   },
   {
-    id: 10, city: '義大利那不勒斯', title: '維蘇威金黃與緋紅雙色旗',
-    origin: '上黃下紅雙色旗自13世紀沿用至今。金黃象徵坎帕尼亞平原燦爛陽光與肥沃火山土壤，鮮紅代表維蘇威火山熔岩與那不勒斯人血液中的奔放熱情。',
+    id: 10, kind: 'flag', city: '義大利那不勒斯', title: '拿坡里市旗：金黃與紅色雙色旗',
+    origin: '左半金黃、右半紅色的直式雙色旗，1821 年起成為拿坡里的城市旗。金黃與紅色常被說成象徵太陽與維蘇威火山，但這只是民間說法，顏色的真正來源眾說紛紜。',
     spotGuide: '郵輪駛入那不勒斯灣，岸邊新堡（Castel Nuovo）、平民表決廣場、甚至是傳統披薩店烤爐上的彩繪磁磚上，都能見到這抹鮮亮雙色。',
-    trivia: '舉世聞名的瑪格麗特披薩便誕生於此！1889年義大利王后瑪格麗特造訪那不勒斯，披薩大師布蘭迪以番茄（紅）、莫札瑞拉起司（白）與羅勒葉（綠）烤出義大利國旗三色，王后讚不絕口，從此披薩風靡全球！'
+    trivia: '拿坡里是披薩的故鄉。據說 1889 年瑪格麗特王后造訪時，披薩師傅用番茄（紅）、莫札瑞拉起司（白）和羅勒（綠）做出義大利國旗三色的披薩，就是今天的瑪格麗特披薩。'
   },
   {
-    id: 11, city: '西西里島巴勒摩', title: '三曲腿美杜莎神聖三芒旗 (Trinacria)',
-    origin: '紅黃對角切面中央嵌著古希臘三曲腿符號（Triskelion）：中央為蛇髮美杜莎頭像，向外延伸出三條奔馳的人腿，分別指向西西里島的三個海角（佩洛羅、帕西羅與利利貝奧）。',
+    id: 11, kind: 'flag', city: '西西里島巴勒摩', title: '西西里區旗（Trinacria 三腿美杜莎）',
+    origin: '紅黃對角兩色，中央是古希臘的三腿符號（Trinacria）：中間一顆美杜莎頭像，伸出三條奔跑的腿，代表西西里島的三個海角。2000 年起正式成為西西里自治區的區旗。',
     spotGuide: '在巴勒摩街頭的彩繪陶盤、傳統民俗彩繪馬車（Carretto Siciliano）、以及西西里自治區政府各大歷史建物外牆隨處可尋。',
     trivia: '美杜莎頭部兩旁長出的羽毛代表時間流轉，麥穗則是羅馬帝國統治時期西西里島作為「帝國大糧倉」的富庶豐收象徵；三條腿順時針奔馳，代表四季輪迴與地中海永不熄滅的生命力！'
   },
   {
-    id: 12, city: '突尼西亞', title: '迦太基紅底白新月五星旗',
+    id: 12, kind: 'flag', city: '突尼西亞', title: '突尼西亞國旗：紅底白圓新月五星',
     origin: '深紅底色中央一枚純白圓盤，環抱著紅色新月與五角星。起源於1831年突尼斯貝伊侯賽因二世統治時期，紅底紀念抗擊外敵的烈士熱血，白月與星象徵和平與伊斯蘭傳統。',
     spotGuide: '突尼斯老城麥地那（Medina）石拱門、藍白小鎮西迪布賽義德（Sidi Bou Said）白色拱門與蔚藍窗櫺旁、以及迦太基遺址海岸高處高高飄揚。',
     trivia: '藍白小鎮西迪布賽義德被譽為地中海最夢幻小鎮，當年突尼斯政府特地頒布法令：全鎮所有房屋牆面必須粉刷純白，門窗一律塗成專屬地中海鈷藍色，塗抹任何其他顏色都屬違法行為！'
   },
   {
-    id: 13, city: '地中海巡航', title: '航海風向羅盤星旗 (Rosa de los Vientos)',
-    origin: '深藍海浪底色上八個金銀雙色箭頭構成的航海風向羅盤，是古代腓尼基、希臘與熱那亞航海家征服無垠地中海的生存星盤。',
+    id: 13, kind: 'code', city: '地中海巡航', title: '航海風向羅盤符碼 (Rosa de los Vientos)',
+    origin: '八個方位箭頭構成的航海風向羅盤，是古代腓尼基、希臘與熱那亞航海家征服無垠地中海的生存星盤。',
     spotGuide: '在郵輪甲板指南針觀景台、港口水文站立牌、以及巴塞隆納貝爾港海事博物館的古代航海羊皮紙海圖上皆能見其精密刻度。',
     trivia: '古代地中海水手用八個方位為風命名：東北風叫「希臘風（Greco）」、東南風叫「敘利亞風（Scirocco）」、西北風叫「大師之風（Maestrale）」。經驗豐富的老舵手只需聞風中的濕氣與泥土味，便知航向何方！'
   },
   {
-    id: 14, city: '蒙特惠克山', title: '猶太山要塞俯瞰城旗',
-    origin: '金黃與湛藍海平線上巍峨矗立的三座要塞石塔。蒙特惠克山高踞海港173公尺之上，在加泰隆尼亞語意為「猶太山」，自古便是扼守海陸要道的軍事巨壁。',
-    spotGuide: '搭乘蒙特惠克纜車登頂城堡砲台，俯瞰整個巴塞隆納貨櫃海港與老城區天際線，城堡正中心高聳旗桿每日迎風升起此旗。',
-    trivia: '1792年法國天文學家梅尚在蒙特惠克要塞頂端觀測星象測量子午線長度，推算出「一公尺」等於地球北極到赤道距離的千萬分之一，現代公制「公尺（Meter）」就是誕生在這座城堡上！'
+    id: 14, kind: 'code', city: '蒙特惠克山', title: '蒙特惠克山要塞符碼',
+    origin: '蒙特惠克山高踞海港173公尺之上，在加泰隆尼亞語意為「猶太山」，自古便是扼守海陸要道的軍事巨壁。',
+    spotGuide: '搭乘蒙特惠克纜車登頂城堡砲台，俯瞰整個巴塞隆納貨櫃海港與老城區天際線，也可以看看城堡的砲台和城牆。',
+    trivia: '1792 年起，法國天文學家梅尚（Méchain）曾在蒙特惠克城堡上做觀測，參與測量經線長度的計畫，那次測量就是後來定出「一公尺」有多長的依據之一。'
   },
   {
-    id: 15, city: '哥德區', title: '奧古斯都羅馬柱古殖民徽 (Barcino)',
-    origin: '深紅底色刻印著四根羅馬科林斯式神廟石柱與月桂冠。西元前15年羅馬皇帝奧古斯都在此設立殖民古城「巴爾奇諾（Barcino）」，是巴塞隆納兩千年的城市之根。',
+    id: 15, kind: 'code', city: '哥德區', title: '奧古斯都羅馬柱古城符碼 (Barcino)',
+    origin: '以四根羅馬神廟石柱為象徵。西元前15年羅馬皇帝奧古斯都在此設立殖民古城「巴爾奇諾（Barcino）」，是巴塞隆納兩千年的城市之根。',
     spotGuide: '隱身在哥德區天堂街（Carrer del Paradís 10號）加泰隆尼亞登山會庭院內，四根保存完好的兩千年神廟巨柱直插天井，令人震撼。',
     trivia: '這四根神殿石柱深埋在中世紀民宅牆體中近一千年，直到19世紀老屋改建拆除隔間時，工人才驚愕發現自家客廳牆壁裡居然嵌著兩千年前羅馬大理石巨柱！'
   },
   {
-    id: 16, city: '塞維亞', title: 'NO8DO 傳奇忠誠市旗 (Bandera de Sevilla)',
-    origin: '深緋紅底色中央閃耀著金色字符：字母「NO」、金色毛線結（Madeja）、以及字母「DO」。連起來讀作「No-madeja-do」，諧音西語「No me ha dejado」（她未曾棄我而去）。',
+    id: 16, kind: 'flag', city: '塞維亞', title: '塞維亞市旗：緋紅底 NO8DO',
+    origin: '緋紅色旗面，中央是黃色的「NO8DO」：字母 NO、一束毛線（madeja，畫成像數字 8 的形狀）、字母 DO，連起來唸像「No me ha dejado」（她沒有離棄我）。1995 年正式成為塞維亞市旗。',
     spotGuide: '塞維亞街頭最神奇的尋寶！市政廳、復古鑄鐵路燈基座、警車標記、公車站牌、甚至腳底下的下水道人孔蓋上，100% 都能看見這串字符！',
     trivia: '1282年卡斯提爾國王阿方索十世（智者阿方索）遭親生兒子叛亂篡位，全西班牙各大城相繼背叛，唯獨塞維亞市民誓死保衛國王。老國王臨終前熱淚盈眶，將這句密碼賜為塞維亞永恆市徽！'
   },
   {
-    id: 17, city: '塞維亞大教堂', title: '吉拉達風向女神旗 (El Giraldillo)',
+    id: 17, kind: 'code', city: '塞維亞大教堂', title: '吉拉達風向女神符碼 (El Giraldillo)',
     origin: '聳立在塞維亞大教堂鐘樓頂端、重達1.2噸的青銅風向女神雕像。它原是12世紀摩爾清真寺的喚拜樓，頂端加建文藝復興鐘樓與青銅雕像，隨風旋轉（Girar）因而得名。',
     spotGuide: '大教堂聖克里斯多福門口放置了一尊 1:1 等身復刻青銅雕像供遊客觸摸拍照；抬頭仰望104公尺高空雲端處則是真品。',
     trivia: '吉拉達鐘樓內部完全沒有樓梯台階，而是由35道寬敞平緩的斜坡盤旋而上！這是為了讓當年中世紀穆斯林教士不必徒步爬梯，而是每天騎著毛驢直接騎到百米塔頂播報祈禱時間！'
   },
   {
-    id: 18, city: '安達魯西亞', title: '綠白相間之旗 (Verde, Blanca y Verde)',
-    origin: '綠、白、綠三條水平條紋，中央為海格力斯降伏兩隻雄獅的國徽。綠色象徵安達魯西亞廣袤無垠的橄欖樹田與希望，白色代表純潔與和平，由安達魯西亞國父因凡特於1918年確立。',
+    id: 18, kind: 'flag', city: '安達魯西亞', title: '安達魯西亞區旗：綠白綠 (Verde, Blanca y Verde)',
+    origin: '綠、白、綠三條橫紋，中央是海格力斯與兩頭獅子的徽章。由安達魯西亞自治運動的推手布拉斯・因凡特（Blas Infante）在 1918 年提出，1981 年成為自治區正式區旗。',
     spotGuide: '塞維亞西班牙廣場（Plaza de España）圓弧長廊中央、聖十字區白牆民宅中庭花園、以及隆達天生橋頭均有懸掛。',
     trivia: '徽章中海格力斯腳踩兩根石柱，代表直布羅陀海峽兩側的「海格力斯之柱」，柱上纏繞拉丁銘文「Plus Ultra」（向更遠方前進），是西班牙大航海時代打破古代「世界盡頭」禁忌的開拓精神！'
   },
   {
-    id: 19, city: '瓜達幾維河', title: '黃金塔與環球航行啟航旗 (Torre del Oro)',
-    origin: '深藍波浪上坐落著十二面體的金色防禦塔。塔身原覆蓋著金色釉面磁磚，在陽光照射下如黃金般璀璨耀眼，是瓜達幾維河守護塞維亞海門的要塞。',
+    id: 19, kind: 'code', city: '瓜達幾維河', title: '黃金塔與環球航行符碼 (Torre del Oro)',
+    origin: '黃金塔是一座十二邊形的防禦塔，塔身原覆蓋著金色釉面磁磚，在陽光照射下如黃金般璀璨耀眼，是瓜達幾維河守護塞維亞海門的要塞。',
     spotGuide: '漫步塞維亞瓜達幾維河畔林蔭步道，黃金塔就矗立在河岸轉角處，現在館內為海事博物館。',
     trivia: '1519年8月10日，麥哲倫率領五艘帆船就是從黃金塔下的碼頭拔錨啟航展開環球航行！三年後僅剩「維多利亞號」載著18位倖存水手回到黃金塔，完成了人類史上第一次環繞地球的偉大壯舉！'
   },
   {
-    id: 20, city: '瓜迪斯 (Guadix)', title: '紅土高原白煙囪窯洞旗',
+    id: 20, kind: 'code', city: '瓜迪斯 (Guadix)', title: '紅土高原白煙囪窯洞符碼',
     origin: '雪白內華達山脈下，千溝萬壑的赤褐色紅土高原，探出一支支圓柱形雪白煙囪。這是安達魯西亞最奇幻的人居地景，記錄了摩爾人避難與安土重遷的智慧。',
     spotGuide: '走入瓜迪斯窯洞區（Barrio de las Cuevas），站在觀景台遠眺，數百根雪白煙囪從地下鑽出地面，宛如童話小人國。',
     trivia: '瓜迪斯至今仍有兩千多戶居民長年住在地下窯洞中！由於紅土質地黏韌且具有極佳隔熱性，室外夏天高達40度酷暑或冬天下雪結冰，室內一年四季始終維持在攝氏18–20度天然恆溫！'
   },
   {
-    id: 21, city: '格拉那達', title: '成熟開裂紅石榴市旗 (Bandera de Granada)',
-    origin: '左緋紅、右翡翠綠對半垂直分割，中央是一顆裂開露出鮮紅寶石果實的加冕石榴（Granada 在西語就是石榴之意），象徵收復失地運動最後一顆收回的伊斯蘭明珠。',
+    id: 21, kind: 'flag', city: '格拉那達', title: '格拉納達市旗：緋紅與綠 (Bandera de Granada)',
+    origin: '左半緋紅、右半綠色的直式雙色旗，正中央是格拉納達市徽（市徽裡有一顆石榴，Granada 在西班牙文就是石榴）。1983 年由市議會通過。',
     spotGuide: '在新廣場（Plaza Nueva）、阿爾拜辛區石板路街角柱、路燈基座、甚至是街頭鐵鑄人行路樁頂端，全是一顆顆精巧立體石榴！',
     trivia: '西班牙現行國徽最下方底部那一顆小小的金黃裂口石榴，正是天主教雙王在1492年攻克格拉那達後特地加進西班牙國徽的，象徵伊比利半島八百年收復失地運動（Reconquista）最後一塊完整拼圖！'
   },
   {
-    id: 22, city: '格拉那達', title: '阿爾罕布拉奈斯爾王朝旗 (Estandarte Nazarí)',
-    origin: '深赤紅底色橫貫金色斜紋，上書安達魯斯古典阿拉伯書法：«ولا غالب إلا الله»（除真主外，別無勝者），是格拉那達王國最後的王室旗幟。',
+    id: 22, kind: 'code', city: '格拉那達', title: '阿爾罕布拉「唯有真主是勝者」符碼',
+    origin: '阿爾罕布拉宮牆上反覆雕刻的阿拉伯文書法：«ولا غالب إلا الله»（除真主外，別無勝者），是奈斯爾王朝的格言。',
     spotGuide: '踏進阿爾罕布拉宮桃金孃中庭與獅子庭院，仔細觀察石膏雕花牆面、彩色磁磚腰線、以及木雕天花板，這句經文重複雕刻了上萬次！',
     trivia: '奈斯爾王朝開國君主穆罕默德一世攻下格拉那達時，百姓夾道歡呼稱他為「偉大的征服者」，國王謙遜搖頭回答道：「除真主外，別無勝者。」從此這句話成為王室信條，刻滿整座王宮！'
   },
   {
-    id: 23, city: '哥多華', title: '加冕昂首紅獅市旗 (Bandera de Córdoba)',
-    origin: '純白旗底上一隻頭戴金冠、昂首咆哮的直立紅獅（León rampante），象徵基督徒軍隊自摩爾人手中光復古都時的英勇與王室特許特權。',
+    id: 23, kind: 'code', city: '哥多華', title: '哥多華城徽符碼：羅馬橋與清真寺塔',
+    origin: '哥多華的城徽像一枚蠟封印章，上面畫著橫跨瓜達幾維河的羅馬橋、阿拉伯時代的水車、橋門和清真寺大教堂的鐘樓。這是城市的徽章，不是一面旗子。',
     spotGuide: '在哥多華羅馬古橋頭、古城牆防衛門、百花巷入口陶罐牆面、以及哥多華市政廳頂部均可見其威嚴身影。',
     trivia: '哥多華在西元10世紀是全歐洲最大、最富庶繁華的都會，擁有百萬人口、三千座公共浴室與全歐最大的皇家圖書館（藏書四十萬冊，當時巴黎最大圖書館僅數千冊），其文明之光照亮了中世紀黑暗歐洲！'
   },
   {
-    id: 24, city: '哥多華', title: '清真寺雙層馬蹄石拱旗 (Mezquita)',
+    id: 24, kind: 'code', city: '哥多華', title: '清真寺雙色馬蹄拱符碼 (Mezquita)',
     origin: '白色石灰岩與紅色燒磚交替砌成的馬蹄形雙層拱券圖紋。靈感汲取自古羅馬水道橋力學結構，創造出支撐極高挑穹頂的建築奇蹟。',
     spotGuide: '踏進大清真寺主殿，眼前856根斑岩、碧玉與大理石柱排列如無邊無際的石柱森林，紅白相間的馬蹄石拱令人嘆為觀止。',
     trivia: '16世紀查理五世皇帝批准在清真寺正中心硬生生插入一座文藝復興基督教堂，但他親自前來視察完工成果時卻後悔萬分，嘆息道：「你們摧毀了世間絕無僅有的奇蹟，建造了一座在任何地方都能建的普通教堂！」'
   },
   {
-    id: 25, city: '馬德里', title: '大熊七星緋紅旗 (Bandera de Madrid)',
-    origin: '高貴深緋紅底色上排列著七顆純銀色五角星（上四下三）。七顆星代表大熊星座（北斗七星），象徵馬德里坐落於卡斯提爾北境瓜達拉馬山脈下的天象方位。',
+    id: 25, kind: 'flag', city: '馬德里', title: '馬德里自治區旗：緋紅底七顆白星',
+    origin: '緋紅色旗面上排著七顆白色五角星（上四下三），是馬德里自治區（Comunidad de Madrid）的區旗，1983 年設立。七顆星來自馬德里城徽上的星星，一般認為代表北斗七星所在的大熊座。',
     spotGuide: '在太陽門廣場的「黑熊與野草莓樹」青銅雕像旁、馬德里市政警車車門、以及各大公車站牌立柱上都能看到這七顆銀星！',
     trivia: '古代馬德里周邊山林裡曾有大量野生棕熊棲息，市徽上的黑熊站立擁抱一棵結滿紅色果實的野草莓樹（Madroño）。這棵樹的果實發酵後含有微量天然酒精，因此古時馬德里常有棕熊偷吃果實醉倒在草地上的趣味傳聞！'
   },
   {
-    id: 26, city: '普拉多博物館', title: '宮廷畫家委拉斯蓋茲聖雅各騎士旗',
-    origin: '墨黑底色襯托著深紅色佩劍與百合花雕飾的佩劍十字。西班牙三大騎士團之一「聖雅各騎士團」的崇高榮譽徽章。',
+    id: 26, kind: 'code', city: '普拉多博物館', title: '聖雅各騎士團紅十字符碼',
+    origin: '紅色的劍形十字，末端像百合花。西班牙三大騎士團之一「聖雅各騎士團」的崇高榮譽徽章。',
     spotGuide: '在普拉多博物館內欣賞委拉斯蓋茲傳世國寶《宮女》（Las Meninas），注意畫中站在大畫架前的畫家本人，其胸口長袍上那枚鮮紅耀眼的十字。',
     trivia: '在17世紀西班牙，平民畫家地位卑微，委拉斯蓋茲一生渴望獲頒貴族階級的聖雅各十字勳章，直到晚年才如願。相傳在畫家逝世後，西班牙國王腓力四世親自拿起畫筆，在《宮女》真跡畫像上親手為過世的愛卿補畫上這枚紅色十字勳章！'
   },
   {
-    id: 27, city: '塞哥維亞', title: '羅馬萬年水道橋藍盾旗 (Bandera de Segovia)',
-    origin: '天藍色盾牌上雕刻著銀白色的雙層羅馬花崗岩水道橋與城堡。水道橋是這座世界遺產古城兩千年的生命之源與靈魂圖騰。',
+    id: 27, kind: 'flag', city: '塞哥維亞', title: '塞哥維亞市旗：天藍底水道橋城徽',
+    origin: '天藍色旗面，中間是塞哥維亞市徽：羅馬水道橋，上方有一個人頭像。2011 年市議會的規章正式訂下這面旗。',
     spotGuide: '抵達阿索格霍廣場（Plaza del Azoguejo），高達28公尺的水道橋巍峨矗立眼前；在當地百年烤乳豬名店 Candido 的餐盤徽章上也能看到。',
     trivia: '這座建於西元1世紀的水道橋總共用了20,400塊巨大花崗岩石塊，最不可思議的是——整座宏偉工程「沒有使用一滴泥漿或水泥灰粉」，全憑羅馬工程師神乎其技的重力精準咬合，屹立兩千年不倒，直到20世紀中葉仍在為小鎮引水灌溉！'
   },
   {
-    id: 28, city: '托雷多', title: '查理五世雙頭金鷹帝國盾 (Bandera de Toledo)',
-    origin: '神聖羅馬帝國皇帝查理五世賜予古都托雷多的皇家市旗，象徵托雷多作為日不落帝國世界權力中心的巔峰歲月。雙頭鷹一頭注視東方、一頭注視西方。',
+    id: 28, kind: 'code', city: '托雷多', title: '托雷多雙頭鷹帝國城徽符碼',
+    origin: '托雷多的城徽是一隻戴皇冠的黑色雙頭鷹，胸前是卡斯提爾、雷昂和格拉納達的紋章。一般認為是神聖羅馬帝國皇帝查理五世（也是西班牙國王卡洛斯一世）賜給城市的，象徵托雷多曾是帝國的重要首都。這是城徽，不是旗子。',
     spotGuide: '托雷多比薩格拉新門（Puerta Nueva de Bisagra）巨型石雕大門正中央、大馬士革刀劍工藝品工坊櫥窗、市政廳正立面懸掛。',
     trivia: '托雷多自中世紀便以鍛造全世界最銳利的大馬士革金銀鑲嵌鋼劍聞名。羅馬軍團的短劍、查理五世的精鋼盔甲、甚至《魔戒》與好萊塢史詩電影中的騎士寶劍，許多都是特地委託托雷多老工匠以古法打造！'
   },
   {
-    id: 29, city: '西班牙王宮', title: '波旁王朝皇家旗 (Estandarte Real de España)',
-    origin: '匯聚卡斯提爾（城堡）、雷昂（紅獅）、亞拉岡（紅黃四紋）、納瓦拉（金鏈金字塔）與格拉那達（石榴），核心嵌波旁王朝三朵金百合，象徵伊比利半島各大王國合而為一的壯麗歷史。',
-    spotGuide: '走訪馬德里西班牙王宮（Palacio Real de Madrid）與武器廣場，當國王在宮內時，主樓穹頂最高處便會升起這面皇家旗幟。',
+    id: 29, kind: 'flag', city: '西班牙王宮', title: '西班牙國王旗 (Guion / Estandarte Real)',
+    origin: '西班牙國王個人的旗幟（Guion），緋紅底，中間是國王的紋章，集合了卡斯提爾（城堡）、雷昂（獅子）、亞拉岡（紅黃條紋）、納瓦拉（金鏈）和格拉納達（石榴）。',
+    spotGuide: '王宮是國家典禮用的地方，國王平常不住這裡。國王親自出席活動時，現場才會升起這面國王旗；平常在王宮看到的是西班牙國旗。',
     trivia: '納瓦拉王國的「金鏈」徽章源自1212年托洛薩拉斯納瓦斯大戰（Las Navas de Tolosa），納瓦拉國王桑喬七世親率騎士殺入摩爾人軍帳，用巨劍斬斷穆斯林親衛隊拴住哈里發帳篷的粗壯防禦鐵鏈，從此金鏈被榮耀地刻入西班牙王室血脈！'
   },
   {
-    id: 30, city: '三王節 (Reyes Magos)', title: '東方三博士伯利恆之星旗',
-    origin: '深邃夜空藍底色，中央綻放著指引東方三博士尋找聖嬰的八角金芒星，下方是代表梅爾基奧、加斯帕與巴爾塔沙的三頂珠寶王冠。',
+    id: 30, kind: 'code', city: '三王節 (Reyes Magos)', title: '東方三博士伯利恆之星符碼',
+    origin: '指引東方三博士找到聖嬰的伯利恆之星，以及梅爾基奧、加斯帕、巴爾塔沙三位國王的王冠。',
     spotGuide: '1月5日夜晚馬德里與塞維亞街頭「三王節大遊行（Cabalgata de Reyes）」的花車主帆、街邊彩燈裝飾、以及麵包店國王蛋糕盒蓋上。',
     trivia: '1月5日夜晚是西班牙小朋友一年中最興奮的夜晚！睡前孩子們會在陽台擺好乾草和水給三位國王的駱駝解渴，並把擦得乾乾淨淨的鞋子擺在客廳。第二天醒來，鞋子裡就會塞滿三位國王送來的玩具或糖果；如果這一年不乖，國王就會送來黑漆漆的「煤炭糖（Carbón dulce）」！'
   }
@@ -700,11 +701,11 @@ function getFlagSvg(id) {
     case 26:
       return `<svg viewBox="0 0 120 80"><rect width="120" height="80" fill="#212121"/><path d="M60 14c-4 6-10 6-6 12h8c4-6-2-6-2-12zm-22 22c6-4 6-10 12-6v8c-6 4-6-2-12-2zm44 0c-6-4-6-10-12-6v8c6 4 6-2 12-2zM56 36h8v24l-4 12-4-12z" fill="#D32F2F"/></svg>`;
     case 27:
-      return `<svg viewBox="0 0 120 80"><rect width="120" height="80" fill="#1565C0"/><rect x="20" y="44" width="80" height="8" fill="#ECEFF1"/><rect x="20" y="64" width="80" height="8" fill="#ECEFF1"/><path d="M26 44v28h8V44zm16 0v28h8V44zm16 0v28h8V44zm16 0v28h8V44zm16 0v28h8V44z" fill="#CFD8DC"/><path d="M52 24h16v14H52z" fill="#ECEFF1"/></svg>`;
+      return `<svg viewBox="0 0 120 80"><rect width="120" height="80" fill="#5DADE2"/><rect x="20" y="44" width="80" height="8" fill="#ECEFF1"/><rect x="20" y="64" width="80" height="8" fill="#ECEFF1"/><path d="M26 44v28h8V44zm16 0v28h8V44zm16 0v28h8V44zm16 0v28h8V44zm16 0v28h8V44z" fill="#CFD8DC"/><path d="M52 24h16v14H52z" fill="#ECEFF1"/></svg>`;
     case 28:
       return `<svg viewBox="0 0 120 80"><rect width="120" height="80" fill="#C2185B"/><path d="M60 30c-8-12-18-10-22-4 4 6 10 4 10 10-10-2-18 8-16 16 8 8 16 0 18-6v16h20V46c2 6 10 14 18 6 2-8-6-18-16-16 0-6 6-4 10-10-4-6-14-8-22 4z" fill="#212121"/><polygon points="40,20 44,16 48,20 44,24" fill="#FFD54F"/><polygon points="72,20 76,16 80,20 76,24" fill="#FFD54F"/><circle cx="60" cy="48" r="6" fill="#C2185B" stroke="#FFD54F" stroke-width="2"/></svg>`;
     case 29:
-      return `<svg viewBox="0 0 120 80"><rect width="120" height="20" fill="#AA151B"/><rect y="20" width="120" height="40" fill="#F1BF00"/><rect y="60" width="120" height="20" fill="#AA151B"/><rect x="30" y="30" width="16" height="20" fill="#AA151B" rx="2"/><circle cx="38" cy="36" r="3" fill="#F1BF00"/><rect x="25" y="32" width="2" height="16" fill="#757575"/><rect x="49" y="32" width="2" height="16" fill="#757575"/><polygon points="34,26 38,23 42,26" fill="#F1BF00"/></svg>`;
+      return `<svg viewBox="0 0 120 80"><rect width="120" height="80" fill="#8E1B2A"/><g transform="translate(42,14)"><rect width="36" height="44" rx="3" fill="#F1BF00" stroke="#5a0f18" stroke-width="1.5"/><rect x="2" y="2" width="15" height="20" fill="#C8102E"/><rect x="19" y="2" width="15" height="20" fill="#ffffff"/><rect x="2" y="24" width="15" height="18" fill="#F1BF00"/><g fill="#C8102E"><rect x="4" y="24" width="2" height="18"/><rect x="8" y="24" width="2" height="18"/><rect x="12" y="24" width="2" height="18"/></g><rect x="19" y="24" width="15" height="18" fill="#C8102E"/><circle cx="18" cy="38" r="4" fill="#E57373" stroke="#2E7D32" stroke-width="1"/></g><path d="M48 12 l4-6 4 4 4-6 4 6 4-4 4 6z" fill="#F1BF00"/></svg>`;
     case 30:
       return `<svg viewBox="0 0 120 80"><rect width="120" height="80" fill="#1A237E"/><polygon points="60,10 63,26 78,20 67,31 82,38 67,42 75,56 61,48 58,62 55,48 42,56 49,42 35,38 49,31 40,20 54,26" fill="#FFD54F"/><circle cx="60" cy="36" r="4" fill="#FFF9C4"/><circle cx="36" cy="64" r="5" fill="#FFA000"/><circle cx="60" cy="64" r="5" fill="#FFE082"/><circle cx="84" cy="64" r="5" fill="#FFA000"/></svg>`;
     default:
@@ -734,7 +735,7 @@ const POKEDEX_ITEMS = [
   { id: 18, icon: '⛰️', name: '瓜迪斯白色煙囪窯洞屋', desc: '從山坡土丘裡鑽出來的一支支雪白圓形煙囪。' },
   { id: 19, icon: '🏰', name: '阿爾罕布拉宮幾何馬蹄拱', desc: '精緻得像蕾絲花邊一樣的伊斯蘭石膏雕刻拱門。' },
   { id: 20, icon: '🏛️', name: '哥多華清真寺紅白雙層石拱', desc: '像森林一樣綿延不絕的紅磚與白石交替拱門。' },
-  { id: 21, icon: '🍇', name: '跨年夜 12 顆青葡萄罐或盤', desc: '超市賣的小罐裝 12 顆開運葡萄或全家分好的盤子。' },
+  { id: 21, icon: '🍇', name: '跨年夜 12 顆青葡萄罐或盤', desc: '超市賣的小罐裝 12 顆開運葡萄或大家分好的盤子。' },
   { id: 22, icon: '👑', name: '圓圈形三王節國王蛋糕', desc: '點綴著紅綠糖漬水果乾的大花環蛋糕與紙皇冠。' },
   { id: 23, icon: '🍬', name: '三王節遊行搶到的彩色糖果', desc: '從遊行花車上空如雨般落下的各色包裝糖果。' },
   { id: 24, icon: '🐻', name: '馬德里抱野草莓樹的黑熊雕像', desc: '太陽門廣場上站著啃草莓樹的青銅小黑熊。' },
@@ -743,7 +744,7 @@ const POKEDEX_ITEMS = [
   { id: 27, icon: '🚋', name: '馬德里老地鐵紅白菱形站牌', desc: '街角入口處寫著 METRO 的經典紅白藍菱形立牌。' },
   { id: 28, icon: '🌰', name: '街頭煙霧繚繞的熱烤栗子攤', desc: '冒著白煙、飄著炭烤焦香的冬天路邊小火爐。' },
   { id: 29, icon: '🚢', name: '地中海郵輪甲板的落日海平線', desc: '站在大船甲板上，看著金紅色夕陽慢慢沈入大海。' },
-  { id: 30, icon: '👨‍👩‍👧‍👦', name: '全家 7 人全員到齊的燦爛笑容', desc: '我們全家人在西班牙旅途中的大合照！' }
+  { id: 30, icon: '👨‍👩‍👧‍👦', name: '7 個人全員到齊的燦爛笑容', desc: '我們全家人在西班牙旅途中的大合照！' }
 ];
 
 /* ---------- AIRPORTS DATA (四大國際機場手帳：建築、總體經濟與文化觀察) ---------- */
@@ -756,7 +757,7 @@ const AIRPORTS_DATA = [
     flag: '🇹🇼',
     terminal: '第一航廈 / 第二航廈 / 第三航廈北登機廊廳',
     role: '啟程出發站（2026/12/08–12/09）',
-    theme: '候機門文化主題巡禮與全家啟程合照',
+    theme: '候機門文化主題巡禮與啟程大合照',
     lore: `
       <p>桃園機場在 1979 年啟用，當年叫「中正國際機場」，是為了取代已經太擠的臺北松山機場而新蓋的國際機場；2006 年改成現在的名字。到 2024 年，它一年接待約 4,470 萬名國際旅客，在國際機場協會（ACI）的統計裡排全球第 13；航空貨運量約 227 萬公噸，排全球第 10。</p>
       <p>為什麼一個不算大的島，貨運量能排進世界前十？因為臺灣做的晶片、伺服器和電子零件又小又貴，客人又等不及，很多都是坐飛機出國的。我們出發這天，腳下這座機場也正忙著把「臺灣製造」送到全世界。</p>
@@ -1273,7 +1274,7 @@ route('/', () => {
     hero = `<div class="hero"><div class="kicker">COUNTDOWN · 12.09.2026</div><div class="sub">距離出發還有</div><div class="big-num">${days}<small> 天</small></div>
       <p style="margin:8px 0 0">城市卡會在當天早上解鎖。想先看看，可以到「我的」打開「預覽全部」。</p></div>`;
   } else if (tToday > TRIP_END) {
-    hero = `<div class="hero"><h2 style="margin:0 0 8px">旅程結束了</h2><p style="margin:0">到「排行」看看全家的總分和所有九宮格。</p></div>`;
+    hero = `<div class="hero"><h2 style="margin:0 0 8px">旅程結束了</h2><p style="margin:0">到「排行」看看大家的總分和所有九宮格。</p></div>`;
   }
   const tiles = C.cities.map((c) => {
     const m = CITY_META[c.id] || TRIP_META;
@@ -1295,7 +1296,7 @@ route('/', () => {
       <div style="font-size:36px">🍢</div>
       <div style="flex:1">
         <b style="color:var(--fg);font-size:17px">今日美味 Tapa 刮刮樂</b>
-        <p class="sub" style="margin:2px 0 0">每天為全家刮出一道暖心西班牙美食或好運！</p>
+        <p class="sub" style="margin:2px 0 0">每天為大家刮出一道暖心西班牙美食或好運！</p>
       </div>
       ${CHEV}
     </a>
@@ -1308,21 +1309,21 @@ route('/', () => {
           <b style="color:var(--fg);font-size:17px">啟程飛行與四大國際機場手帳</b>
           <span class="chip" style="font-size:11px">建築與文化</span>
         </div>
-        <p class="sub" style="margin:2px 0 0">桃園候機室全家合照、杜拜轉機極致建築、巴塞隆納與馬德里天光巡禮</p>
+        <p class="sub" style="margin:2px 0 0">桃園候機室大合照、杜拜轉機極致建築、巴塞隆納與馬德里天光巡禮</p>
       </div>
       ${CHEV}
     </a>
 
-    <!-- 全家 30 萬步合作里程碑卡 -->
+    <!-- 大家的 30 萬步合作里程碑卡 -->
     <div class="milestone-card">
       <div style="display:flex;justify-content:space-between;align-items:center">
-        <b>🏆 全家 30 萬步大挑戰</b>
+        <b>🏆 大家的 30 萬步大挑戰</b>
         <span class="chip good">${pct}%</span>
       </div>
       <div class="progress-outer"><div class="progress-inner" style="width:${pct}%"></div></div>
       <div class="progress-labels"><span>0</span><span>10萬 (吉拿棒)</span><span>20萬 (火腿盤)</span><span>30萬 步 🏆</span></div>
       <div style="margin-top:10px;display:flex;justify-content:space-between;align-items:center">
-        <span class="sub">全家累計步數：<b>${curSteps.toLocaleString()}</b> 步</span>
+        <span class="sub">大家累計步數：<b>${curSteps.toLocaleString()}</b> 步</span>
         <button class="btn small ghost" id="btn-quick-steps" type="button">+ 登記今日步數</button>
       </div>
     </div>
@@ -1336,13 +1337,13 @@ route('/', () => {
     <div class="colophon"><span>ARCHITECTURE<br>CITY<br>MEMORY</span><span>V ${APP_VERSION}</span></div>`);
 
   $('#btn-quick-steps').onclick = () => {
-    const s = prompt('想登記幾步加入全家累計？');
+    const s = prompt('想登記幾步加入大家的累計？');
     if (!s) return;
     const n = parseInt(s.replace(/,/g, ''), 10);
     if (isNaN(n) || n <= 0) return toast('請輸入正確的數字');
     S.familySteps += n;
     award({ key: 'steps|' + uid(), points: 15, label: '步行貢獻：' + n + ' 步' });
-    toast('已登記 ' + n + ' 步進全家大挑戰！');
+    toast('已登記 ' + n + ' 步進大家的大挑戰！');
     render();
   };
   return 'home';
@@ -1394,7 +1395,7 @@ function safetyBannerHtml() {
       <b>出發作答前重要安全提醒（歐洲防盜守則）</b>
     </div>
     <div class="safety-banner-body">
-      歐洲治安遠不如臺灣安全，當地警察通常不會受理或追查強盜、偷竊案件！<b>低頭看手機前，請全家務必確認：</b>
+      歐洲治安遠不如臺灣安全，當地警察通常不會受理或追查強盜、偷竊案件！<b>低頭看手機前，請每個人務必確認：</b>
       <div class="safety-check-item">✅ 目前位於<b>需要門票或點餐付費的封閉場域</b>（如已驗票入內的博物館展廳、已入座的付費餐廳或咖啡館）。<b>切勿在戶外路邊或街頭人潮中低頭看手機！</b></div>
       <div class="safety-check-item">✅ 身體請盡量<b>背靠牆壁</b>，確保後方無死角，防止扒手從身後無聲順走手機或隨身包包！</div>
     </div>
@@ -1413,24 +1414,24 @@ const PRAISE_CYCLES = [
     title: '🌟 神級觀察力！細節完全逃不過你的法眼！',
     praises: [
       '太厲害了！你的眼睛比老鷹還敏銳，連藏在歷史細節裡的蛛絲馬跡都被你一眼識破！👏',
-      '觀察力滿分！這題考得這麼細，你竟然瞬間鎖定真相，全家最細心的觀察家非你莫屬！🔍',
+      '觀察力滿分！這題考得這麼細，你竟然瞬間鎖定真相，大家當中最細心的觀察家非你莫屬！🔍',
       '太強了！你這份敏銳的洞察力，如果回到古代，一定是宮廷裡最受器重的皇家鑒寶大師！✨'
     ]
   },
   {
     title: '👑 博學多聞！這份學識太讓人驚艷了！',
     praises: [
-      '太有深度了！連幾百年前歐洲宮廷與老百姓的生活小秘密都難不倒你，全家的文化智庫就是你！📚',
+      '太有深度了！連幾百年前歐洲宮廷與老百姓的生活小秘密都難不倒你，大家的文化智庫就是你！📚',
       '這題連很多歐洲在地導遊都不一定答得出來！你到底是怎麼知道的？記憶力簡直是神級的！💡',
       '知識庫大爆發！才剛聽完故事就能融會貫通，你對歐洲歷史文化的理解力讓人由衷佩服！🎓'
     ]
   },
   {
-    title: '🏆 關鍵一擊！為全家贏得無比驕傲的高分！',
+    title: '🏆 關鍵一擊！為大家贏得無比驕傲的高分！',
     praises: [
-      '太棒了！沉著、自信又精準，爸媽和弟弟都在為你熱烈鼓掌，這一題為全家拿下了超關鍵得分！💪',
-      '全家的幸運之星！你一出手就穩穩拿下這題，旅途的幸運女神今天完全站在你身後護航！🍀',
-      '太帥氣了！弟弟在一旁看得眼睛發亮，你就是全家最值得崇拜的解題大英雄！🥳'
+      '太棒了！沉著、自信又精準，爸媽和弟弟都在為你熱烈鼓掌，這一題為大家拿下了超關鍵得分！💪',
+      '大家的幸運之星！你一出手就穩穩拿下這題，旅途的幸運女神今天完全站在你身後護航！🍀',
+      '太帥氣了！弟弟在一旁看得眼睛發亮，你就是大家最崇拜的解題大英雄！🥳'
     ]
   },
   {
@@ -1460,7 +1461,7 @@ const PRAISE_CYCLES = [
   {
     title: '🎖️ 完美絕殺！首席軍師的傳奇級表現！',
     praises: [
-      '大獲全勝！你就是全家旅行團的首席總參謀長，冷靜、精準、毫不猶豫，太令人心悅誠服了！👑',
+      '大獲全勝！你就是這個旅行團的首席總參謀長，冷靜、精準、毫不猶豫，太令人心悅誠服了！👑',
       '魔王題直接瓦解！這道題本來是設計來考倒大家的，結果在你面前撐不過一秒，請收下膝蓋！🙇‍♂️',
       '傳奇級答題！這趟旅行有你在身旁解題，大家玩得既充實又放心，你是全西班牙最棒的探險家！🏰'
     ]
@@ -1475,7 +1476,7 @@ const SPOT_FLAVORS = [
   { match: /考古|MAN|埃爾切/, text: '這件萬年前的古代瑰寶被你一眼參透，你簡直就是現代伊比利半島的印第安納·瓊斯！🏺' },
   { match: /托雷多|葛雷柯/, text: '托雷多千年古都的石板路上，今天又誕生了一位智勇雙全的聖殿騎士！🗡️' },
   { match: /清真寺|哥多華/, text: '穿過八百根紅白馬蹄拱門，你的智慧在伊斯蘭繁星幾何中閃閃發光！🕌' },
-  { match: /阿爾罕布拉|格拉那達/, text: '格拉那達蘇丹皇宮的微風，正在為全家最博學多聞的你吹拂奏樂！🏰' },
+  { match: /阿爾罕布拉|格拉那達/, text: '格拉那達蘇丹皇宮的微風，正在為最博學多聞的你吹拂奏樂！🏰' },
   { match: /塞維亞|吉拉達/, text: '塞維亞大教堂的橘花香氣與佛朗明哥熱烈掌聲，都在為你的勝利熱情狂歡！🍊' },
   { match: /巴特略|米拉|屋頂/, text: '巨龍屋頂上的五彩陶瓦鱗片，正因為你的機智閃爍出繽紛光芒！🐉' },
   { match: /波蓋利亞|市場|美食|火腿/, text: '這份敏銳太棒了！待會逛完市場一定要點一盤現炸熱吉拿棒犒賞自己！🍫' },
@@ -1496,7 +1497,7 @@ function getPraise(card, q) {
 
 const WRONG_FEEDBACKS = [
   '差一點點！這題真的太刁鑽、太考驗人了，連很多歷史學教授第一次看也答錯！不過現在你已經把這個冷知識牢牢記在腦海裡了，超有收穫！🌟',
-  '沒關係！這題本來就是魔王級陷阱題，你敢於挑戰的勇氣已經為全家贏得了尊敬！看懂解說我們就學會了！💪',
+  '沒關係！這題本來就是魔王級陷阱題，你敢於挑戰的勇氣已經為大家贏得了尊敬！看懂解說我們就學會了！💪',
   '別氣餒！連高第和哥雅當年創作時都改稿了好幾次呢！這題讓你認識了不一樣的西班牙，答錯也是珍貴的收穫，繼續前進！✨'
 ];
 function getWrongFeedback(seed) {
@@ -1543,7 +1544,7 @@ function quizHtml(card, sec, title) {
       <div class="res"></div>
       <div class="q-card-footer" style="display:none">
         <button type="button" class="btn-next-step" data-next-idx="${i + 1}">
-          ${i < qs.length - 1 ? `👉 前進下一題 (${i + 2}/${qs.length})` : `🎉 完成本區挑戰！領取全家積分`}
+          ${i < qs.length - 1 ? `👉 前進下一題 (${i + 2}/${qs.length})` : `🎉 完成本區挑戰！領取積分`}
         </button>
       </div>
     </div>`;
@@ -1693,7 +1694,7 @@ function bindQuiz(card) {
           const nextCard = $$('.q-card', deckEl)[nextIdx];
           if (nextCard) nextCard.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
         } else {
-          toast('🎉 本區題目已全數挑戰完畢！全家太厲害了！', 3500);
+          toast('🎉 本區題目已全數挑戰完畢！大家太厲害了！', 3500);
         }
       };
     }
@@ -2135,7 +2136,7 @@ route('/tapa', () => {
     </div>
 
     <div class="card" style="margin-top:20px">
-      <h3>💡 專為全家打造的溫馨小儀式</h3>
+      <h3>💡 專為大家打造的溫馨小儀式</h3>
       <p class="sub">出國旅行最幸福的就是每一頓好吃的和舒服的陽光。每天早上點開刮一刮，帶著弟弟和爸媽一起找尋今天的美食吧！</p>
     </div>`);
 
@@ -2201,13 +2202,13 @@ route('/flags', async () => {
         <div class="flag-lore-sec"><b>💡 奇聞冷知識：</b>${esc(f.trivia)}</div>
       </div>` : `
       <div class="flag-lore" style="opacity:.65">
-        <div class="flag-lore-sec">🔒 <b>第 ${i + 1} 天解鎖：</b>連續登入打卡至第 ${i + 1} 天，即可解鎖此旗幟完整的歷史傳奇、街頭尋寶攻略與奇聞冷知識。</div>
+        <div class="flag-lore-sec">🔒 <b>第 ${i + 1} 天解鎖：</b>連續登入打卡至第 ${i + 1} 天，即可解鎖完整的歷史傳奇、街頭尋寶攻略與奇聞冷知識。</div>
       </div>`;
 
     return `<div class="flag-card ${unlocked ? '' : 'locked'}">
       <div class="flag-header">
         <div class="flag-title-wrap">
-          <span class="chip" style="font-size:12px;font-weight:700;margin-bottom:4px">第 ${f.id} 面旗幟</span>
+          <span class="chip" style="font-size:12px;font-weight:700;margin-bottom:4px">${f.kind === 'flag' ? '🚩 真實旗幟 No.' + f.id : '🔣 城市符碼 No.' + f.id}</span>
           <div class="flag-title">${esc(f.title)}</div>
           <div class="flag-city">📍 ${esc(f.city)}</div>
         </div>
@@ -2219,11 +2220,11 @@ route('/flags', async () => {
 
       <div class="flag-visual-grid">
         <div class="flag-visual-box">
-          <div class="flag-visual-label">📖 官方真實圖鑑</div>
+          <div class="flag-visual-label">${f.kind === 'flag' ? '📖 旗幟示意圖' : '📖 符碼示意圖'}</div>
           <div class="flag-guide-frame">
             ${getFlagSvg(f.id)}
           </div>
-          <div class="sub" style="font-size:11.5px;margin-top:6px;color:var(--muted)">依循此官方紋章在街頭尋寶</div>
+          <div class="sub" style="font-size:11.5px;margin-top:6px;color:var(--muted)">${f.kind === 'flag' ? '照這個樣子在街頭找真的旗子' : '這不是正式旗幟，是代表這裡的符碼；街頭要找的是相關的雕刻、徽章或建築'}</div>
         </div>
         ${photoHtml}
       </div>
@@ -2232,13 +2233,13 @@ route('/flags', async () => {
     </div>`;
   }));
 
-  view(`${back('#/', '首頁')}<h1>城市旗幟與傳奇故事</h1>
-    <p class="sub">西班牙與地中海 30 款標誌性旗幟與紋章圖鑑！每天解鎖一面旗幟的深度故事，走在街頭看見真實旗幟就拍照上傳打卡！</p>
+  view(`${back('#/', '首頁')}<h1>城市旗幟與符碼</h1>
+    <p class="sub">西班牙與地中海 30 個旗幟和符碼。標「🚩 真實旗幟」的是真的存在、街上看得到的旗子；標「🔣 城市符碼」的不是正式旗幟，而是代表這座城市的圖案、建築或故事。每天解鎖一個，在街頭找到就拍照打卡！</p>
     ${safetyBannerHtml()}
     <div class="card" style="display:flex;justify-content:space-around;text-align:center;padding:14px;margin-bottom:16px">
       <div><div class="sub">連續打卡進度</div><div style="font-size:26px;font-weight:900;color:var(--primary)">🔥 ${streak} / 30 天</div></div>
       <div style="border-left:1px solid var(--line)"></div>
-      <div><div class="sub">街頭實拍捕獲</div><div style="font-size:26px;font-weight:900;color:var(--good)">📸 ${capturedCount} / 30 面</div></div>
+      <div><div class="sub">街頭實拍捕獲</div><div style="font-size:26px;font-weight:900;color:var(--good)">📸 ${capturedCount} / 30 個</div></div>
     </div>
     <div class="stack">${rows.join('')}</div>`);
 
@@ -2248,8 +2249,8 @@ route('/flags', async () => {
       if (!f) return;
       const id = input.dataset.id;
       await DB.flagPut(id, f);
-      award({ key: 'flag|' + id, points: 20, label: '街頭捕獲旗幟：' + FLAGS_LIST[id - 1].title });
-      toast('🎉 成功在街頭打卡旗幟：' + FLAGS_LIST[id - 1].title + '！+20 分');
+      award({ key: 'flag|' + id, points: 20, label: '街頭捕獲：' + FLAGS_LIST[id - 1].title });
+      toast('🎉 成功在街頭打卡：' + FLAGS_LIST[id - 1].title + '！+20 分');
       location.hash = '#/flags';
     };
   });
@@ -2443,7 +2444,7 @@ async function renderAirports(activeId = 'tpe') {
     const u = URL.createObjectURL(departureBlob);
     departurePhotoHtml = `
       <div class="polaroid" style="margin:14px auto 8px">
-        <img src="${u}" alt="桃園機場啟程全家合照">
+        <img src="${u}" alt="桃園機場啟程大合照">
         <div class="polaroid-caption">啟程出發！¡Vamos! ✈️</div>
         <div class="polaroid-date">📍 桃園國際機場 • ${fmtDate(TRIP_START)}</div>
       </div>
@@ -2487,10 +2488,10 @@ async function renderAirports(activeId = 'tpe') {
       </div>
 
       <div class="card" style="margin-bottom:16px;border-left:4px solid var(--primary)">
-        <h3 style="margin:0 0 6px">👨‍👩‍👧‍👦 啟程出發儀式：全家第一張大合照</h3>
-        <p class="sub" style="margin:0 0 12px">在候機室的特色文化牆前，全家 7 個人圍在一起拍下出發前的全家大合照！上傳立得 50 分！</p>
+        <h3 style="margin:0 0 6px">👨‍👩‍👧‍👦 啟程出發儀式：大家的第一張大合照</h3>
+        <p class="sub" style="margin:0 0 12px">在候機室的特色文化牆前，7 個人圍在一起拍下出發前的大合照！上傳立得 50 分！</p>
         <label class="btn block ${departureBlob ? 'ghost' : ''}" style="cursor:pointer">
-          ${departureBlob ? '🔄 更換全家合照' : '📷 拍照 / 上傳全家啟程合照 (+50分)'}
+          ${departureBlob ? '🔄 更換大合照' : '📷 拍照 / 上傳啟程大合照 (+50分)'}
           <input type="file" accept="image/*" id="tpe-departure-input" hidden>
         </label>
         <div id="tpe-photo-box">${departurePhotoHtml}</div>
@@ -2582,8 +2583,8 @@ async function renderAirports(activeId = 'tpe') {
         const file = tpeInput.files && tpeInput.files[0];
         if (!file) return;
         await DB.put('photo:tpe_departure', file);
-        award({ key: 'tpe_departure_photo', points: 50, label: '桃園機場全家啟程大合照' });
-        toast('🎉 全家出發合照上傳成功！+50 分');
+        award({ key: 'tpe_departure_photo', points: 50, label: '桃園機場啟程大合照' });
+        toast('🎉 出發大合照上傳成功！+50 分');
         renderAirports('tpe');
       };
     }
@@ -2613,7 +2614,7 @@ const SECRET_TASKS = [
   '讓一位家人不知不覺說出「好好吃」三次。',
   '偷拍到一位家人打哈欠的瞬間。',
   '讓一位家人跟一座雕像擺一樣的姿勢合照，不能說是任務。',
-  '讓全家在同一張照片裡同時比 YA。',
+  '讓大家在同一張照片裡同時比 YA。',
   '用當地話跟 3 個不同的人說謝謝，並寫下他們是誰（例如：餐廳服務生）。',
   '讓一位家人幫你拍一張「你和一扇藍色的門」。',
   '偷拍到一位家人吃東西吃到一半的瞬間。',
@@ -2627,7 +2628,7 @@ const SECRET_TASKS = [
   '偷偷記下一位家人今天說了幾次「好漂亮」，晚上公布。',
   '讓一位家人陪你買一樣東西，不能說是任務。',
   '拍到一位家人和街頭藝人的合照。',
-  '讓一張全家福裡每個人身上都有紅色。',
+  '讓一張大合照裡每個人身上都有紅色。',
   '讓一位家人請你喝一杯飲料。',
   '拍到一位家人認真看地圖的照片。',
   '今天幫每位家人各拍一張「最佳照片」。',
@@ -2645,11 +2646,14 @@ route('/tools', () => {
   view(`<h1>遊戲間</h1><p class="sub">景點小遊戲和各種小任務都在這裡。分數會記在玩的人名下。</p>
     ${safetyBannerHtml()}
     <div class="list">
-      <a class="item" href="#/tapa"><div class="t"><b>🍢 今日美味 Tapa 刮刮樂</b><span>每天刮開一道美味好運小事（最適合全家）</span></div>${CHEV}</a>
+      <a class="item" href="#/tapa"><div class="t"><b>🍢 今日美味 Tapa 刮刮樂</b><span>每天刮開一道美味好運小事（最適合大家一起玩）</span></div>${CHEV}</a>
       <a class="item" href="#/pokedex"><div class="t"><b>📖 西班牙旅行大圖鑑</b><span>30 款西班牙經典圖鑑收集＋復古拍立得</span></div>${CHEV}</a>
+      <a class="item" href="#/money"><div class="t"><b>💰 記帳與分帳</b><span>誰先付、平分給誰，最後算兩家</span></div>${CHEV}</a>
+      <a class="item" href="#/portroute/palermo"><div class="t"><b>🗺️ 巴勒摩下船路線</b><span>老城經典步行或蒙雷阿萊，兩種走法</span></div>${CHEV}</a>
+      <a class="item" href="#/portroute/pompeii"><div class="t"><b>🏛️ 龐貝 2 小時路線</b><span>最經典的 11 站，含交通與座標</span></div>${CHEV}</a>
       <a class="item" href="#/cruisedex"><div class="t"><b>🚢 郵輪大圖鑑</b><span>船上免費體驗、船上付費體驗、下船街頭打卡</span></div>${CHEV}</a>
-      <a class="item" href="#/flags"><div class="t"><b>🚩 城市旗與小眾故事</b><span>30 天打卡收集城市旗與傳奇故事</span></div>${CHEV}</a>
-      <a class="item" href="#/airports"><div class="t"><b>✈️ 四大國際機場手帳</b><span>桃園全家啟程合照、杜拜轉機、巴塞隆納與馬德里建築手帳</span></div>${CHEV}</a>
+      <a class="item" href="#/flags"><div class="t"><b>🚩 城市旗幟與符碼</b><span>30 天打卡收集真實旗幟、城市符碼與傳奇故事</span></div>${CHEV}</a>
+      <a class="item" href="#/airports"><div class="t"><b>✈️ 四大國際機場手帳</b><span>桃園啟程大合照、杜拜轉機、巴塞隆納與馬德里建築手帳</span></div>${CHEV}</a>
       <a class="item" href="#/tool/wheel"><div class="t"><b>命運之輪</b><span>轉一次，轉到什麼就做什麼</span></div>${CHEV}</a>
       <a class="item" href="#/tool/price"><div class="t"><b>物價猜猜猜</b><span>手機輪流傳，每人偷偷輸入猜價</span></div>${CHEV}</a>
       <a class="item" href="#/tool/steps"><div class="t"><b>步數猜猜猜</b><span>進景點前猜，出來對答案</span></div>${CHEV}</a>
@@ -2661,7 +2665,7 @@ route('/tools', () => {
 const WHEEL_DEFAULT = [
   '負責今天所有的點餐',
   '找兩個家人一起跟一扇漂亮的門合照',
-  '全家拍一張每個人姿勢都不同的照片',
+  '大家拍一張每個人姿勢都不同的照片',
   '與一個已經1000歲的東西合照',
   '找一個家人跟你一起模仿最近雕像的動作，並拍下來',
   '跟當地人學一句當地話',
@@ -2872,7 +2876,7 @@ route('/wall', () => {
   };
   const load = async () => {
     if (!S.server.url) {
-      $('#ws').textContent = '還沒連上家庭雲端，只顯示這支手機上的分數。到「我的」設定後就能看到全家。';
+      $('#ws').textContent = '還沒連上家庭雲端，只顯示這支手機上的分數。到「我的」設定後就能看到大家。';
       paintBoard(localTotals());
       $('#recent').innerHTML = '';
       $('#pics').innerHTML = '';
@@ -2913,14 +2917,14 @@ route('/me', () => {
     </div>
     <div class="card"><p class="section-label">上傳清單</p><p id="qc" class="sub">計算中…</p><button class="btn small" id="fl">現在上傳</button></div>
     ${wowNotesHtml()}
-    <h2>全家名單</h2>
+    <h2>全家人名單</h2>
     <div class="card"><label class="field"><span>一行一個名字（遊戲間和給分會用到）</span><textarea class="text" id="fam">${esc(S.family.join('\n'))}</textarea></label>
       <button class="btn small" id="savef">儲存名單</button></div>
     <h2>家庭雲端（一個人設定就好）</h2>
     <div class="card"><label class="field"><span>Apps Script 網址</span><input class="text" id="su" value="${esc(sv.url)}" placeholder="https://script.google.com/macros/s/…/exec"></label>
       <label class="field"><span>家庭密碼</span><input class="text" id="sc" value="${esc(sv.code)}"></label>
-      <div class="row"><button class="btn small" id="saves">儲存並測試</button><button class="btn small ghost" id="inv">產生全家邀請連結</button></div>
-      <p class="sub" id="invout" style="margin-top:10px">設定好後按「產生全家邀請連結」，貼到 LINE 群組。家人點開就自動連好，不用再輸入。</p></div>
+      <div class="row"><button class="btn small" id="saves">儲存並測試</button><button class="btn small ghost" id="inv">產生邀請連結</button></div>
+      <p class="sub" id="invout" style="margin-top:10px">設定好後按「產生邀請連結」，貼到 LINE 群組。家人點開就自動連好，不用再輸入。</p></div>
     <div style="margin-top:16px"><a class="btn ghost block" href="itinerario.html" target="_blank">🇪🇸 西班牙文 30 天完整行程頁（司機與導遊專用）</a></div>
     <div style="margin-top:10px"><a class="btn ghost block" href="#/admin">主辦人後台</a></div>
     <p class="sub center">版本 ${APP_VERSION}</p>`);
@@ -3151,18 +3155,18 @@ const CDEX_FREE = [
   { id: 'f10', icon: '🍰', name: 'Carousel Lounge 下午點心', desc: '7 樓船尾的 Carousel Lounge 白天提供小點心，例如糕點和小三明治，到傍晚前。' },
   { id: 'f11', icon: '🍕', name: '泳池邊的披薩和漢堡', desc: '15 樓泳池旁的 Atmosphere Bar 有披薩和漢堡。冬天天冷或下雨可能不開。' },
   { id: 'f12', icon: '🌌', name: 'Galleria 的 LED 天幕', desc: '6–7 樓的購物大街，頭頂是一條約 80 公尺長的 LED 天花板，號稱海上最長。整點常有燈光音樂秀，抬頭拍一張。' },
-  { id: 'f13', icon: '💎', name: '施華洛世奇水晶樓梯', desc: 'MSC 的招牌：亮晶晶的水晶樓梯。全家在樓梯上排好拍一張「豪華郵輪合照」。' },
+  { id: 'f13', icon: '💎', name: '施華洛世奇水晶樓梯', desc: 'MSC 的招牌：亮晶晶的水晶樓梯。大家在樓梯上排好拍一張「豪華郵輪合照」。' },
   { id: 'f14', icon: '🎭', name: '劇院的晚間大秀', desc: '每晚都有歌舞、馬戲或音樂秀，不用另外付錢（有些場次要先在 App 預約座位）。曲目以船上節目表為準。' },
   { id: 'f15', icon: '🎷', name: '酒吧現場音樂', desc: '晚上很多酒吧和大廳都有樂團或歌手表演，坐著聽不用錢（點飲料才要付費）。' },
-  { id: 'f16', icon: '🤵', name: '正式之夜（Gala Night）', desc: '穿上正裝，在船上找一個漂亮的地方拍全家福。是哪一晚要看節目表。' },
+  { id: 'f16', icon: '🤵', name: '正式之夜（Gala Night）', desc: '穿上正裝，在船上找一個漂亮的地方拍大合照。是哪一晚要看節目表。' },
   { id: 'f17', icon: '🤍', name: '白色派對', desc: 'MSC 的傳統，大家穿白色衣服在 Galleria 跳舞。看節目表找時間。' },
-  { id: 'f18', icon: '🎤', name: '卡拉 OK 或遊戲節目', desc: '船上常辦卡拉 OK、問答遊戲和全家一起玩的遊戲節目。上台一次就算數！' },
+  { id: 'f18', icon: '🎤', name: '卡拉 OK 或遊戲節目', desc: '船上常辦卡拉 OK、問答遊戲和大家一起玩的遊戲節目。上台一次就算數！' },
   { id: 'f19', icon: '🏊', name: '泳池與按摩池', desc: '泳池甲板有泳池和好幾個戶外按摩池。冬天在熱水按摩池裡看海很享受，天氣不好時可能關閉。' },
   { id: 'f20', icon: '🛝', name: '滑水道或空中繩索', desc: '船尾有滑水道和空中繩索冒險區。冬天和風大時可能不開，開放的話挑戰一次。' },
   { id: 'f21', icon: '🏀', name: '運動場', desc: '16 樓運動場可以打籃球、踢足球、打排球。找家人來一場投籃比賽。' },
   { id: 'f22', icon: '🏋️', name: '看海的健身房', desc: '健身房有大片窗戶可以看海。器材免費，課程和私人教練要另外付費。' },
   { id: 'f23', icon: '🐋', name: '船身的海洋彩繪', desc: 'Euribia 的船身畫著一幅海洋主題的大彩繪（#SaveTheSea）。在港口下船後，回頭找一個能拍到船身的角度。' },
-  { id: 'f24', icon: '🧭', name: '全家在船頭或甲板合照', desc: '找一個有海、有風的地方，全家一起拍一張。' },
+  { id: 'f24', icon: '🧭', name: '大家在船頭或甲板合照', desc: '找一個有海、有風的地方，大家一起拍一張。' },
 ];
 
 const CDEX_PAID = [
@@ -3617,12 +3621,938 @@ async function renderCruiseDex(tab) {
 route('/cruisedex', () => renderCruiseDex('free'));
 route('/cruisedex/:tab', (tab) => renderCruiseDex(tab));
 
+const PORT_ROUTES = {
+ "pompeii": {
+  "date": "2026-12-15",
+  "port": "拿坡里",
+  "title": "龐貝 2 小時：最經典的走法",
+  "summary": "12月15日（週二）龐貝考古公園照常開放（冬季 9:00–17:00，最後入場 15:30）。建議時程：13:00 靠岸、約13:20 下船 → 步行約10分鐘到地鐵 Municipio → 地鐵1號線3站到 Garibaldi → 搭 Circumvesuviana 拿坡里–蘇連多線（往 Sorrento 方向）約35分鐘到「Pompei Scavi – Villa dei Misteri」→ 約14:45 從 Porta Marina 入口入園。重點：園內多數屋舍（浴場、悲劇詩人之家、妓院、維蒂之家等）冬季只開到 16:20、最後入場 16:00，而廣場、神廟、大劇場開到 17:00；因此路線先看「有關門時間的室內屋舍」，16:00 後再看露天的大劇場、會堂、阿波羅神廟，最後從 Porta Marina 出園（日落約 16:36，最後 20 分鐘天色漸暗）。主路線 11 站、步行約 2.2 公里、總計約 2 小時；17:00 前出園，搭 17:00–17:30 之間的火車回拿坡里，約 18:15–18:45 可回到碼頭，離 19:30 登船仍有充裕緩衝。注意：原本最有名的『廣場穀倉（Granai del Foro）石膏遺體』目前官網標示暫不開放；2026年3月起罹難者石膏像（22具）改在東側『大體育場 Palestra Grande』常設展出，距主路線較遠，列在延伸行程。",
+  "verify": "【已查證（官網 pompeiisites.org，2026年11月查詢）】冬季（10/15–3/15）龐貝古城 9:00 開門、最後入場 15:30、17:00 閉園；全年只在 12/25 與 1/1 休園（除另行公告），週二照常開放（「週二休」只適用於 Stabiae、Oplontis 等周邊遺址，不是龐貝古城）。入口三處：Porta Marina、Piazza Esedra、Piazza Anfiteatro（官網售票處也只設在這三個入口內）；官網未說明冬季關閉任一入口。票價：Pompei Express（只含古城）€20；Pompei Plus €25；18–25歲歐盟公民 €2；未滿18歲免費（以官網為準）。門票實名制：自2024/11/15起所有門票記名，每日上限 20,000 人，現場購票須出示身分證件/護照；2026/3/2 起官方售票改為 Vivaticket（官網標示 pompeii.vivaticket.it／ticket.pompeiisites.org），舊 TicketOne 票不再有效。夏季（3/16–10/14）才有上午/下午入場名額分段，冬季官網未提分段。屋舍冬季時間：維蒂之家、悲劇詩人之家、妓院、斯塔比亞浴場、廣場浴場 9:15–16:20（最後入場16:00）；農牧神之家、廣場、阿波羅神廟、會堂、大劇場、競技場、逃亡者花園 9:00–17:00；小劇場 Odeion 只能從外面看；廣場穀倉暫不開放。【出發前請確認】票價（不同來源寫 €18/€20/€22，以購票頁為準）、是否需選入場時段、當天各屋舍開放公告（官網「Service announcements」）、EAV 火車是否罷工（eavsrl.it）。建議出發前一週在官網購買記名電子票，每位家人各自填姓名並帶護照。",
+  "plans": [
+   {
+    "id": "go",
+    "title": "怎麼去：拿坡里碼頭 → 龐貝 → 回船",
+    "fit": "",
+    "summary": "",
+    "steps": [
+     {
+      "type": "交通",
+      "zh": "郵輪碼頭下船",
+      "it": "",
+      "lat": 40.83775,
+      "lng": 14.26063,
+      "desc": "MSC 郵輪停靠 Molo Angioino（Stazione Marittima 郵輪航站）。下船後往 Piazza Municipio 方向走。實際靠泊位置可能不同，以船方告示為準。"
+     },
+     {
+      "type": "交通",
+      "zh": "步行到地鐵 Municipio 站",
+      "it": "",
+      "lat": 40.84023,
+      "lng": 14.25223,
+      "desc": "從郵輪航站步行約 10 分鐘（少於10分鐘）。買 ANM 地鐵單程票 €1.50（也可感應式）。"
+     },
+     {
+      "type": "交通",
+      "zh": "地鐵1號線 Municipio → Garibaldi",
+      "it": "",
+      "lat": 40.8509,
+      "lng": 14.2734,
+      "desc": "往 Centro Direzionale 方向，Municipio → Università → Duomo → Garibaldi，3 站約 10 分鐘。Garibaldi 站有地下通道連接 Circumvesuviana 的「Napoli Garibaldi」站（在中央車站 Napoli Centrale 地下層）。"
+     },
+     {
+      "type": "交通",
+      "zh": "（替代）步行到 Porta Nolana 總站",
+      "it": "",
+      "lat": 40.84908,
+      "lng": 14.26941,
+      "desc": "不想轉地鐵可從碼頭沿海邊步行約 1.8 公里、20–25 分鐘到 Circumvesuviana 起點站 Napoli Porta Nolana，起站較有座位。火車隨後會停 Garibaldi。"
+     },
+     {
+      "type": "交通",
+      "zh": "搭 Circumvesuviana 到 Pompei Scavi – Villa dei Misteri",
+      "it": "",
+      "lat": 40.74858,
+      "lng": 14.48118,
+      "desc": "搭「Napoli–Sorrento」線（往 Sorrento 方向；不要搭往 Poggiomarino 的車，那條不停 Pompei Scavi）。2026/10/17 起冬季時刻表：Porta Nolana 每 30 分鐘一班（整點與半點），Garibaldi 到 Pompei Scavi 約 33–37 分鐘。EAV 單程票 NA3 區 €3.50（整合 TIC 票 €4.30），紙本票上車前須在黃色打票機打票，否則罰款。觀光直達車 Campania Express 自 2026/10/1 起停駛。"
+     },
+     {
+      "type": "交通",
+      "zh": "步行到 Porta Marina 入口",
+      "it": "",
+      "lat": 40.74848,
+      "lng": 14.48306,
+      "desc": "出站過馬路即是入口廣場，入口距月台約 50 公尺，加上驗票、安檢與上坡約 5–10 分鐘。超過 30×30×15 公分的包包須寄物（Porta Marina 有付費寄物處）。"
+     },
+     {
+      "type": "交通",
+      "zh": "回程",
+      "it": "",
+      "lat": 40.74858,
+      "lng": 14.48118,
+      "desc": "16:50–17:00 從 Porta Marina 出園，走回 Pompei Scavi 站，搭往 Napoli 的車（約每 30 分鐘一班，約 35–40 分鐘到 Garibaldi／Porta Nolana），再搭地鐵回 Municipio 步行回船。17:00–17:30 的車約 18:15–18:45 回到碼頭；最晚不要晚於約 18:00 從 Pompei Scavi 發車，以保 19:30 前上船。若從東側 Piazza Anfiteatro 出口離開：可步行約 10–15 分鐘到 Pompei Santuario 站（Napoli–Poggiomarino 線，也回拿坡里，但班次以 EAV 時刻表為準），或步行約 20–25 分鐘回 Pompei Scavi 站。"
+     }
+    ],
+    "noRoute": true
+   },
+   {
+    "id": "main",
+    "title": "園內主路線（11 站，約 2 小時，從海門進出）",
+    "fit": "第一次來、只有 2 小時",
+    "summary": "先看 16:00 就停止入場的室內屋舍，再看開到 17:00 的露天神廟和劇場，最後從同一個門出來，離火車站最近。",
+    "steps": [
+     {
+      "type": "景點",
+      "zh": "海門（城門入口）",
+      "it": "Porta Marina",
+      "lat": 40.74848,
+      "lng": 14.48306,
+      "min": 5,
+      "walk": "從 Pompei Scavi 火車站走 5–10 分鐘（含驗票）",
+      "desc": "這是古城朝向大海的西門，因為當年海岸線比現在近得多而得名。城門有兩條拱道：較寬的一條給馱獸與貨車，較窄的給行人，至今仍是主要入口。進門後是一段頗陡的古羅馬石板上坡路，石頭被千年車輪與腳步磨得光滑，下雨時特別滑，請長輩慢慢走、扶著旁邊。走上坡時回頭看，就能感受到龐貝建在古老熔岩台地上的地勢。",
+      "n": 1
+     },
+     {
+      "type": "景點",
+      "zh": "廣場與朱比特神廟（遠眺維蘇威火山）",
+      "it": "Foro e Tempio di Giove",
+      "lat": 40.74912,
+      "lng": 14.48533,
+      "min": 10,
+      "walk": "從上一站走 4 分鐘",
+      "desc": "廣場是龐貝的市中心，政治、宗教與市集都在這片長方形大廣場四周。北端高台上的朱比特神廟只剩柱基與階梯，但正後方就是維蘇威火山，正是西元79年毀掉這座城的元凶，是全園最經典的拍照角度。四周可找到市場（Macellum）、榮譽拱門等遺跡。冬天下午光線斜照，建議趁天色還亮先在這裡拍全家福。",
+      "n": 2
+     },
+     {
+      "type": "景點",
+      "zh": "廣場浴場",
+      "it": "Terme del Foro",
+      "lat": 40.75034,
+      "lng": 14.48412,
+      "min": 8,
+      "walk": "從上一站走 3 分鐘（廣場北側）",
+      "desc": "興建於約西元前80年羅馬殖民地成立後不久的公共澡堂，分男女兩區。男區的更衣／溫水室最值得看：牆上放衣物的壁龕由一排赤陶「男子人像柱」撐著，拱頂還有精緻灰泥浮雕，房間裡留有一個大型青銅火盆用來取暖。可以跟孫子說：兩千年前的人已經有冷水、溫水、熱水分開的「三溫暖」了。冬季16:00最後入場。",
+      "n": 3
+     },
+     {
+      "type": "景點",
+      "zh": "悲劇詩人之家（「小心惡犬」馬賽克）",
+      "it": "Casa del Poeta Tragico",
+      "lat": 40.75067,
+      "lng": 14.48381,
+      "min": 5,
+      "walk": "從上一站走 1 分鐘（就在浴場對面）",
+      "desc": "一棟中型住宅，1824年出土，因屋內一幅被認為是詩人朗誦的壁畫而得名。最出名的是門口地板上的黑白馬賽克：一隻被鍊住、張牙舞爪的狗，下面寫著拉丁文「CAVE CANEM」，意思就是「小心惡犬」，是兩千年前的看門告示。入口通常用柵欄隔開，從門外就能清楚看到馬賽克。開放情況以當天公告為準。",
+      "n": 4
+     },
+     {
+      "type": "景點",
+      "zh": "農牧神之家",
+      "it": "Casa del Fauno",
+      "lat": 40.75126,
+      "lng": 14.4847,
+      "min": 12,
+      "walk": "從上一站走 3 分鐘",
+      "desc": "龐貝最大、最豪華的私人宅邸，佔滿整個街區，室內面積約3,000平方公尺，始建於約西元前180年。中庭水池上立著一尊跳舞的「農牧神」青銅像（現場為複製品，原件在拿坡里國家考古博物館），因而得名。後方的大廳地板原本是著名的「亞歷山大大帝馬賽克」，描繪他與波斯王大流士作戰，現場為複製品。開放至17:00。",
+      "n": 5
+     },
+     {
+      "type": "景點",
+      "zh": "妓院",
+      "it": "Lupanare",
+      "lat": 40.75018,
+      "lng": 14.48693,
+      "min": 8,
+      "walk": "從上一站走 5 分鐘（往東南穿過小巷）",
+      "desc": "龐貝保存最完整的古代妓院，名稱來自拉丁文 lupa（母狼，當時對妓女的俗稱），1862年出土。兩層樓建築，一樓走廊兩側有5個小房間，每間都有砌在牆邊的石床，走廊牆上有小幅情色壁畫，像「菜單」一樣告訴客人提供哪些服務。空間狹窄常需排隊，壁畫較露骨。冬季16:00最後入場。",
+      "n": 6
+     },
+     {
+      "type": "景點",
+      "zh": "斯塔比亞浴場（豐饒大道口）",
+      "it": "Terme Stabiane / Via dell'Abbondanza",
+      "lat": 40.74997,
+      "lng": 14.48769,
+      "min": 10,
+      "walk": "從上一站走 2 分鐘",
+      "desc": "龐貝最古老的公共澡堂，第一期約建於西元前125年，位在主街「豐饒大道」與斯塔比亞路交叉口。男區有更衣室、冷水圓頂室、溫水室和熱水室，熱房地板下的「地暖」系統被認為是羅馬世界現存最早的例子；更衣室天花板有小愛神等灰泥浮雕。出來沿豐饒大道走一小段，看路面深深的車轍和過街墊腳石。冬季16:00最後入場。",
+      "n": 7
+     },
+     {
+      "type": "景點",
+      "zh": "大劇場（與小劇場外觀）",
+      "it": "Teatro Grande e Odeion",
+      "lat": 40.74775,
+      "lng": 14.48852,
+      "min": 12,
+      "walk": "從上一站沿 Via Stabiana 往南走 6 分鐘",
+      "desc": "建於西元前2世紀、依著山坡而建的露天半圓形劇場，可容納約5,000名觀眾，近年修復時還在大理石座位上發現古羅馬的座位編號。可坐在階梯上休息。旁邊的小劇場（Odeion）建於約西元前80年，原本有屋頂、約1,500座，用於音樂與議會，目前只能從外面看。開放至17:00。",
+      "n": 8
+     },
+     {
+      "type": "景點",
+      "zh": "會堂（古代法院）",
+      "it": "Basilica",
+      "lat": 40.7487,
+      "lng": 14.48434,
+      "min": 6,
+      "walk": "從上一站經三角廣場往西走 8 分鐘",
+      "desc": "建於西元前2世紀，是龐貝的法院兼商業交易所，也是古城最重要的公共建築之一。現在只剩一排排磚砌粗柱的柱身，可以想像當年屋頂下人來人往、打官司、談生意的場面。這種長方形大廳加半圓形後殿的「巴西利卡」設計，後來被早期基督教教堂沿用，今天很多教堂的格局都源自這裡。開放至17:00。",
+      "n": 9
+     },
+     {
+      "type": "景點",
+      "zh": "阿波羅神廟",
+      "it": "Santuario di Apollo",
+      "lat": 40.74921,
+      "lng": 14.4844,
+      "min": 6,
+      "walk": "從上一站走 1 分鐘（就在會堂北邊）",
+      "desc": "龐貝最古老、最重要的聖地之一，祭祀可追溯到西元前6世紀，現在看到的樣貌主要是西元前2世紀末改建。高台上的神廟四周圍著柱廊，庭院裡立著拉弓射箭姿勢的阿波羅青銅像，以及對面的黛安娜（月亮女神）半身像，現場都是複製品，原件藏在拿坡里國家考古博物館。階梯旁一根柱子上原本放著日晷。開放至17:00。",
+      "n": 10
+     },
+     {
+      "type": "景點",
+      "zh": "維納斯神廟（出口前）",
+      "it": "Santuario di Venere",
+      "lat": 40.74845,
+      "lng": 14.48375,
+      "min": 5,
+      "walk": "從上一站走 2 分鐘；之後 1–2 分鐘即回到 Porta Marina 出口",
+      "desc": "維納斯是龐貝的守護女神。西元前80年羅馬殖民地成立後不久，居民在海門與會堂之間的人工高台上建了這座神殿，當年面向大海、遠遠就能看見。火山爆發前它還在修復62年地震的損壞，爆發後又被盜掘，所以今天只剩基座和柱子殘件。站在平台邊可眺望城外平原，是離開前最後一個回望古城的好位置。",
+      "n": 11
+     }
+    ]
+   },
+   {
+    "id": "ext",
+    "title": "時間多的話：延伸景點",
+    "fit": "14:30 前就入園的人",
+    "summary": "這幾個點在東邊，離主路線較遠，要早一點入園才來得及。",
+    "steps": [
+     {
+      "type": "延伸",
+      "zh": "維蒂之家（可替換第3站）",
+      "it": "Casa dei Vettii",
+      "lat": 40.75202,
+      "lng": 14.48453,
+      "min": 12,
+      "walk": "從農牧神之家走 3 分鐘",
+      "desc": "屋主是一對由奴隸翻身成富商的維蒂兄弟。經過約20年修復，2023年1月重新開放，牆上保存龐貝最華麗的「第四風格」神話壁畫。入口壁畫內容較露骨。2025/11/18起改由 Vicolo di Mercurio 進入。官網未提需另外預約；冬季16:00最後入場，開放情況以當天公告為準。14:30前入園可加入或替換廣場浴場。",
+      "n": "E1"
+     },
+     {
+      "type": "延伸",
+      "zh": "大體育場（罹難者石膏像常設展）",
+      "it": "Palestra Grande – I calchi",
+      "lat": 40.75075,
+      "lng": 14.4939,
+      "min": 15,
+      "walk": "從斯塔比亞浴場沿豐饒大道往東走約 12–15 分鐘",
+      "desc": "2026年3月12日起，22具罹難者石膏像在大體育場的南、北柱廊常設展出，門票已含。這些石膏像是考古學家把石膏灌入火山灰中遺體腐化後留下的空腔而成，能看到人們最後的姿勢。屋舍類冬季時間 9:15–16:20，必須在16:00前抵達，所以只適合14:30前入園、並把這裡排在最前面的家人。",
+      "n": "E2"
+     },
+     {
+      "type": "延伸",
+      "zh": "圓形競技場",
+      "it": "Anfiteatro",
+      "lat": 40.75127,
+      "lng": 14.4952,
+      "min": 10,
+      "walk": "從大體育場走 2 分鐘（就在對面）",
+      "desc": "約建於西元前70年，是現存最古老的羅馬石造圓形競技場之一，可容納約2萬人。西元59年龐貝人和鄰城努切里亞人在這裡看角鬥比賽時大打出手，羅馬因此禁賽10年。1971年英國樂團 Pink Floyd 在此無觀眾拍攝演唱會電影。開放至17:00；可從旁邊 Piazza Anfiteatro 出口直接離園。",
+      "n": "E3"
+     },
+     {
+      "type": "延伸",
+      "zh": "逃亡者花園",
+      "it": "Orto dei Fuggiaschi",
+      "lat": 40.7494,
+      "lng": 14.49285,
+      "min": 8,
+      "walk": "從競技場走約 5 分鐘（往南近諾切拉門）",
+      "desc": "原本是一片菜園和葡萄園，1961年在這裡發現13名大人與小孩的遺體空腔，灌成石膏像後就留在原地展示。他們似乎是想逃往諾切拉城門時，被火山碎屑流吞沒，倒在約3.5公尺厚的浮石層上。現場氣氛沉重，是讓人最直接感受到災難的地方。開放至17:00，但與主路線方向相反，只適合時間充裕者。",
+      "n": "E4"
+     }
+    ],
+    "noRoute": true
+   }
+  ],
+  "tips": [
+   "最重要的時間限制：最後入場 15:30、閉園 17:00；室內屋舍 16:20 關、16:00 最後入場。13:00 靠岸當天大約只能 14:45 左右入園，請一下船就直接出發，不要在拿坡里市區逗留。",
+   "門票請提前在官方 Vivaticket 網站購買記名電子票（每人姓名、出生日期），帶護照備查；不要向車站附近黃牛或非官方網站買高價票。",
+   "鞋子：一定要穿防滑、包腳、鞋底厚的運動鞋或健走鞋。古羅馬石板路凹凸不平、有很深的車轍和高路緣、過街墊腳石，雨天非常滑；長輩可帶登山杖或請家人攙扶。官網有「Pompeii for All」無障礙路線可參考。",
+   "包包：超過 30×30×15 公分的背包、行李不能帶入，需付費寄放在 Porta Marina 或 Piazza Anfiteatro 寄物處；建議只帶小斜背包。",
+   "廁所：Porta Marina、Piazza Esedra、Piazza Anfiteatro 入口附近、Casina dell'Aquila 餐廳、大柱廊、神秘別墅都有；主路線上最方便的是入口處，建議入園前先上。",
+   "飲水：官網表示園內各區有數個飲水噴泉，可帶空水瓶裝水；Casina dell'Aquila 有自助餐廳和咖啡吧（不在主路線上）。建議在船上吃飽午餐再下船，帶些小點心。",
+   "急救站在 Vicolo degli Augustali（原 Chora Café 附近），電話 +39 081 8575404。資訊中心 +39 081 8575 347。",
+   "12月天氣：拿坡里12月平均高溫約14°C、低溫約9°C，平均約7天下雨；遺址幾乎沒有遮蔽，請帶防水外套、折傘、帽子圍巾。12/15 日落約 16:36，16:30 後天色轉暗，石板路更要小心。",
+   "火車：Circumvesuviana 車廂老舊、可能擁擠，注意扒手；紙本票一定要在上車前打票。觀光專車 Campania Express 已於 2026/10/1 停駛。請在出發當天查 eavsrl.it 是否有罷工或改點。",
+   "回船時間：建議 17:00–17:30 之間搭車回拿坡里，最晚約 18:00 從 Pompei Scavi 發車；若遇火車延誤，可在 Pompei Scavi 站前搭計程車回港（費用較高，先議價）。",
+   "妓院、維蒂之家入口壁畫內容較露骨，帶孫子的長輩可事先決定是否進入。",
+   "地圖與語音導覽：三個入口都有語音導覽租借；建議下載官方地圖 PDF 或拍下入口地圖，園區標示多為義大利文。"
+  ]
+ },
+ "palermo": {
+  "date": "2026-12-16",
+  "port": "巴勒摩",
+  "title": "巴勒摩下船後：兩種走法",
+  "summary": "綜合大家分享的路線整理成兩種：A 是老城經典步行（先搭車到最高處，一路下坡走回港口，最適合長輩）；B 是上午去蒙雷阿萊看金色馬賽克，下午再逛老城精華。",
+  "verify": "查證日期 2026-11-21。已用官方或市府資料查證：巴勒莫市府旅遊處開放時間表（2025-09、2025-11 版）、諾曼王宮官網 federicosecondo.org、City Sightseeing 官網 2026 年 12 月營運日、MSC 碼頭資訊、389 號公車復駛新聞（2026-06-18）。重要修正：①耶穌教堂（Casa Professa）不是免費，教堂票價€2，冬季開放至 16:30；②諾曼王宮的王室公寓週二、週三不開放，週三只能參觀帕拉提那禮拜堂和花園（€15.50）；③蒙雷阿萊主教座堂大殿免費，但 12:45–14:00 午休；④City Sightseeing 蒙雷阿萊線 2026-12-16 在官方營運日內，但 12 月時刻表 PDF 無法讀取，票價也沒有查到；⑤冬季平日大教堂屋頂只開到 14:30。坐標：主教座堂、諾曼王宮、新門、普雷托利亞噴泉、耶穌教堂、蒙雷阿萊主教座堂取自維基百科，其餘為地圖估計（誤差約 50–100 公尺）。",
+  "plans": [
+   {
+    "id": "A",
+    "title": "方案 A：巴勒莫老城經典步行（先搭車上坡，一路下坡走回港口）",
+    "fit": "帶長輩的家庭、第一次來巴勒莫、想把市區重點一次看完的人",
+    "summary": "09:15 從港口搭計程車到地勢最高的諾曼王宮，先看帕拉提那禮拜堂，再沿下坡經過大教堂、巴拉洛市場、耶穌教堂和馬托拉納教堂（13:00 前看完），在四角廣場吃午餐。下午到修道院吃甜點，沿 Via Maqueda 走到馬西莫劇院，16:25 搭計程車回船。總步行約 3.5 公里，大部分是下坡或平路。",
+    "steps": [
+     {
+      "time": "09:00",
+      "type": "下船",
+      "zh": "巴勒莫郵輪碼頭（維托里奧·威尼托碼頭）",
+      "it": "Stazione Marittima – Molo Vittorio Veneto",
+      "lat": 38.12385,
+      "lng": 13.3672,
+      "hours": "船靠港 09:00–18:00，17:30 前回船",
+      "ticket": "—",
+      "walk": "步行約 5 分鐘到港口出口計程車站",
+      "desc": "MSC 官方標示郵輪停靠 Molo Vittorio Veneto 碼頭。下船後走到 Via Francesco Crispi 的港口出口，計程車在出口外排班。",
+      "min": ""
+     },
+     {
+      "time": "09:15",
+      "type": "上車",
+      "zh": "港口出口計程車站",
+      "it": "Posteggio Taxi – Varco Porto, Via Francesco Crispi",
+      "lat": 38.1234,
+      "lng": 13.3652,
+      "hours": "郵輪靠港時通常有排班車",
+      "ticket": "跳錶：起跳€3.06、最低€4.59（2025 年資料），到諾曼王宮約€12–18，出發前請確認",
+      "walk": "車程約 10–15 分鐘",
+      "desc": "先搭計程車到地勢最高的諾曼王宮，之後一路往海邊下坡走，最省長輩體力。上車前請司機確認跳錶或先講好價格。",
+      "min": ""
+     },
+     {
+      "time": "09:30",
+      "type": "下車",
+      "zh": "獨立廣場（諾曼王宮入口）",
+      "it": "Piazza Indipendenza / Palazzo dei Normanni",
+      "lat": 38.1105,
+      "lng": 13.3523,
+      "hours": "—",
+      "ticket": "—",
+      "walk": "步行約 2 分鐘到入口",
+      "desc": "在諾曼王宮靠獨立廣場一側下車，售票處和入口就在這一側。這裡也是 389 號公車往蒙雷阿萊的起站。",
+      "min": ""
+     },
+     {
+      "time": "09:35",
+      "type": "景點",
+      "zh": "諾曼王宮・帕拉提那禮拜堂",
+      "it": "Palazzo dei Normanni – Cappella Palatina",
+      "lat": 38.11083,
+      "lng": 13.35306,
+      "hours": "週一至週六 08:30–16:30（週三只開禮拜堂與花園；王室公寓週二、週三不開）",
+      "ticket": "週三套票€15.50，65 歲以上€13.50，14–17 歲€9（官網價格），出發前請確認",
+      "walk": "步行約 3 分鐘",
+      "desc": "12 世紀諾曼國王的禮拜堂，金色拜占庭馬賽克配上伊斯蘭風格木雕天花板，是巴勒莫必看的景點。一早人少，可先買票直接排禮拜堂；遇到彌撒或活動會暫停開放。",
+      "min": ""
+     },
+     {
+      "time": "10:40",
+      "type": "景點",
+      "zh": "新門",
+      "it": "Porta Nuova",
+      "lat": 38.11222,
+      "lng": 13.35278,
+      "hours": "戶外，全天",
+      "ticket": "免費",
+      "walk": "步行約 6 分鐘",
+      "desc": "王宮旁的凱旋城門，16 世紀為紀念查理五世而建，頂端是金字塔形尖頂。拍完照後沿 Corso Vittorio Emanuele 下坡往大教堂走。",
+      "min": ""
+     },
+     {
+      "time": "10:50",
+      "type": "景點",
+      "zh": "巴勒莫主教座堂",
+      "it": "Cattedrale di Palermo",
+      "lat": 38.11444,
+      "lng": 13.35611,
+      "hours": "教堂 週一至週六 07:00–19:00；屋頂／寶庫等紀念區 平日 09:30–14:30（2025 年 11 月市府資料）",
+      "ticket": "教堂免費；屋頂與紀念區依套票€1–€18，出發前請確認",
+      "walk": "步行約 10 分鐘（穿過 Albergheria 老街區）",
+      "desc": "融合諾曼、哥德與巴洛克風格的大教堂，裡面有腓特烈二世等皇室石棺。登屋頂要爬窄小的樓梯，可以俯瞰全城；長輩可以留在教堂內或廣場休息。",
+      "min": ""
+     },
+     {
+      "time": "11:40",
+      "type": "景點",
+      "zh": "巴拉洛市場",
+      "it": "Mercato di Ballarò",
+      "lat": 38.1123,
+      "lng": 13.3593,
+      "hours": "每天開市，上午最熱鬧",
+      "ticket": "免費",
+      "walk": "步行約 5 分鐘",
+      "desc": "巴勒莫最古老的露天市場，攤位有魚、蔬果，也有炸鷹嘴豆餅（panelle）等街頭小吃。人多擁擠，背包請背在胸前、注意扒手，地面濕滑要小心。",
+      "min": ""
+     },
+     {
+      "time": "12:05",
+      "type": "景點",
+      "zh": "耶穌教堂（卡薩普羅費薩）",
+      "it": "Chiesa del Gesù – Casa Professa",
+      "lat": 38.11293,
+      "lng": 13.36166,
+      "hours": "週一至週六 09:30–18:30（冬季至 16:30）；週日只有彌撒；有網文說中午會休息，出發前請確認",
+      "ticket": "教堂€2；含博物館€6（市府資料，並非免費）",
+      "walk": "步行約 5 分鐘",
+      "desc": "西西里巴洛克的代表作，牆面全部用彩色大理石鑲嵌（marmi mischi），細節非常華麗。網路上「免費」的說法有誤，官方資料的教堂票價是€2。",
+      "min": ""
+     },
+     {
+      "time": "12:35",
+      "type": "景點",
+      "zh": "海軍元帥聖母堂（馬托拉納教堂）",
+      "it": "Santa Maria dell'Ammiraglio (La Martorana)",
+      "lat": 38.11497,
+      "lng": 13.36269,
+      "hours": "週一至週六 10:00–13:00（下午是否開放不確定）；週日只有 11:00 彌撒",
+      "ticket": "€2（市府資料）",
+      "walk": "步行約 2 分鐘",
+      "desc": "12 世紀的拜占庭式教堂，滿牆金色馬賽克，其中一幅是基督為羅傑二世加冕的名作。13:00 準時關門，所以安排在午餐前參觀。",
+      "min": ""
+     },
+     {
+      "time": "13:00",
+      "type": "景點",
+      "zh": "普雷托利亞噴泉",
+      "it": "Fontana Pretoria",
+      "lat": 38.11549,
+      "lng": 13.36208,
+      "hours": "戶外，全天",
+      "ticket": "免費",
+      "walk": "步行約 2 分鐘",
+      "desc": "16 世紀從佛羅倫斯運來的文藝復興噴泉，有幾十座裸體雕像，所以俗稱「羞恥噴泉」。位在市政廳前，旁邊就是四角廣場。",
+      "min": ""
+     },
+     {
+      "time": "13:10",
+      "type": "午餐",
+      "zh": "四角廣場一帶午餐",
+      "it": "Quattro Canti / Via Maqueda",
+      "lat": 38.11563,
+      "lng": 13.36153,
+      "hours": "餐廳多為 12:30–15:00",
+      "ticket": "—",
+      "walk": "步行約 3 分鐘",
+      "desc": "在四角廣場和 Via Maqueda 附近找可以坐下來的餐館，點西西里沙丁魚麵（pasta con le sarde）等傳統菜。下雨時可以趁午餐在室內休息。",
+      "min": ""
+     },
+     {
+      "time": "14:20",
+      "type": "景點",
+      "zh": "聖加大肋納修道院・修女甜點坊",
+      "it": "Monastero di Santa Caterina – I Segreti del Chiostro",
+      "lat": 38.11528,
+      "lng": 13.36245,
+      "hours": "每天 10:00–18:00，最後入場 17:15（官網）",
+      "ticket": "修道院參觀票價出發前請確認（2026 年市府資料：教堂€3）",
+      "walk": "步行約 3 分鐘",
+      "desc": "前隱修院開放參觀迴廊和屋頂露台，附設甜點坊照修女古法做卡諾里（cannoli）和杏仁糕，很適合下午休息。入口在 Via Discesa dei Giudici 33。",
+      "min": ""
+     },
+     {
+      "time": "15:10",
+      "type": "景點",
+      "zh": "四角廣場・Morettino 咖啡館",
+      "it": "Quattro Canti – Morettino Caffè (Via Vittorio Emanuele 308)",
+      "lat": 38.11555,
+      "lng": 13.36135,
+      "hours": "營業時間出發前請確認",
+      "ticket": "依點餐",
+      "walk": "步行約 8 分鐘",
+      "desc": "四角廣場是兩條主街交會的巴洛克八角廣場，四個角落各有一面雕像立面。Morettino 是重新開幕的美好年代咖啡館，就在廣場轉角，可以點西西里布里歐修麵包（brioche）配咖啡。",
+      "min": ""
+     },
+     {
+      "time": "15:50",
+      "type": "景點",
+      "zh": "Ke Palle 炸飯糰",
+      "it": "Ke Palle Arancine d'Autore (Via Maqueda 270)",
+      "lat": 38.1177,
+      "lng": 13.35975,
+      "hours": "10:00–01:00（網路資料）",
+      "ticket": "約€3–5／個，出發前請確認",
+      "walk": "步行約 6 分鐘",
+      "desc": "Via Maqueda 上的人氣西西里炸飯糰（arancina）店，口味很多，可以外帶在路上吃。這段 Via Maqueda 是行人徒步區，路面平坦，長輩走起來輕鬆。",
+      "min": ""
+     },
+     {
+      "time": "16:05",
+      "type": "景點",
+      "zh": "馬西莫劇院（教父 3 階梯）",
+      "it": "Teatro Massimo",
+      "lat": 38.12034,
+      "lng": 13.35724,
+      "hours": "導覽 每天 09:30–18:00（最後入場 17:20）",
+      "ticket": "外觀免費；內部導覽€12",
+      "walk": "步行約 1 分鐘到 Piazza Verdi 計程車站",
+      "desc": "歐洲最大的歌劇院之一，電影《教父 3》結局就在正門階梯拍攝。在外面拍照就好，時間夠的話可以參加 30 分鐘的內部導覽。",
+      "min": ""
+     },
+     {
+      "time": "16:25",
+      "type": "上車",
+      "zh": "威爾第廣場計程車站",
+      "it": "Posteggio Taxi – Piazza Verdi",
+      "lat": 38.12,
+      "lng": 13.3578,
+      "hours": "—",
+      "ticket": "約€8–12，出發前請確認",
+      "walk": "車程約 10 分鐘",
+      "desc": "劇院前的威爾第廣場可以招計程車回港口。體力好的話也可以經過政治劇院（Politeama）走回港口，大約 20–25 分鐘。",
+      "min": ""
+     },
+     {
+      "time": "16:40",
+      "type": "下車",
+      "zh": "港口出口（回船）",
+      "it": "Varco Porto / Stazione Marittima",
+      "lat": 38.1234,
+      "lng": 13.3652,
+      "hours": "17:30 前回船",
+      "ticket": "—",
+      "walk": "步行約 5–10 分鐘到船邊",
+      "desc": "在港口出口下車，走回 Molo Vittorio Veneto 的郵輪碼頭排隊安檢，預留 30 分鐘以上的緩衝時間。",
+      "min": ""
+     }
+    ]
+   },
+   {
+    "id": "B",
+    "title": "方案 B：上午蒙雷阿萊金色馬賽克＋下午巴勒莫精華短走",
+    "fit": "最想看馬賽克、可以接受來回各 30 分鐘車程的家庭；長輩建議包車來回",
+    "summary": "09:15 搭計程車到蒙雷阿萊，在 12:45 午休前看完主教座堂和迴廊，回巴勒莫趕在 13:00 前看馬托拉納教堂。午餐後逛普雷托利亞噴泉、聖加大肋納修道院、大教堂和四角廣場，再到馬西莫劇院，16:30 搭計程車回船。也可以改搭 City Sightseeing 蒙雷阿萊線（12/16 有營運），或在獨立廣場搭 389 號公車。",
+    "steps": [
+     {
+      "time": "09:00",
+      "type": "下船",
+      "zh": "巴勒莫郵輪碼頭（維托里奧·威尼托碼頭）",
+      "it": "Stazione Marittima – Molo Vittorio Veneto",
+      "lat": 38.12385,
+      "lng": 13.3672,
+      "hours": "船靠港 09:00–18:00，17:30 前回船",
+      "ticket": "—",
+      "walk": "步行約 5 分鐘",
+      "desc": "盡早下船。蒙雷阿萊主教座堂只開到 12:45 就午休，所以整個早上都留給蒙雷阿萊。",
+      "min": ""
+     },
+     {
+      "time": "09:15",
+      "type": "上車",
+      "zh": "港口出口計程車站",
+      "it": "Posteggio Taxi – Varco Porto, Via Francesco Crispi",
+      "lat": 38.1234,
+      "lng": 13.3652,
+      "hours": "—",
+      "ticket": "到蒙雷阿萊單程約€20–30（網路估計），出發前請確認；等候費€18／小時",
+      "walk": "車程約 25–30 分鐘",
+      "desc": "帶長輩最推薦搭計程車，可以直接停在主教座堂附近，免去爬坡和轉車。建議先跟司機談好來回價格並約定等候，回程會比較安心。",
+      "min": ""
+     },
+     {
+      "time": "09:45",
+      "type": "下車",
+      "zh": "蒙雷阿萊 維托里奧·埃馬努埃萊廣場",
+      "it": "Piazza Vittorio Emanuele, Monreale",
+      "lat": 38.0816,
+      "lng": 13.2911,
+      "hours": "—",
+      "ticket": "—",
+      "walk": "步行約 1 分鐘",
+      "desc": "主教座堂正門所在的廣場，389 號公車的終點也在附近。廣場周邊有咖啡館和洗手間，可以先休息再進場。",
+      "min": ""
+     },
+     {
+      "time": "09:50",
+      "type": "景點",
+      "zh": "蒙雷阿萊主教座堂",
+      "it": "Duomo di Monreale (Cattedrale di Santa Maria Nuova)",
+      "lat": 38.08186,
+      "lng": 13.29207,
+      "hours": "週一至週六 09:00–12:45、14:00–16:45；彌撒時暫停參觀",
+      "ticket": "大殿免費；羅阿諾禮拜堂、屋頂露台、教區博物館另外收費（約€6，套票說法不一），出發前請確認",
+      "walk": "步行約 2 分鐘",
+      "desc": "12 世紀諾曼國王威廉二世興建，牆面有約 6,400 平方公尺的金色馬賽克，後殿是巨大的全能基督像。屋頂露台要爬很多階梯，長輩可以在大殿慢慢看。",
+      "min": ""
+     },
+     {
+      "time": "11:00",
+      "type": "景點",
+      "zh": "蒙雷阿萊本篤會迴廊",
+      "it": "Chiostro di Santa Maria Nuova (Chiostro dei Benedettini)",
+      "lat": 38.0814,
+      "lng": 13.2924,
+      "hours": "週一至週六 09:00–18:30（市府資料；CoopCulture 標示至 19:00），最後入場為關門前 30 分鐘",
+      "ticket": "€8（另外購票，與主教座堂不通用）",
+      "walk": "步行約 3 分鐘回到廣場",
+      "desc": "228 根成對的小石柱，每根都有不同的鑲嵌或雕刻，柱頭雕的是聖經故事。迴廊是平面步行，長輩也能輕鬆逛。",
+      "min": ""
+     },
+     {
+      "time": "11:50",
+      "type": "上車",
+      "zh": "蒙雷阿萊（回程計程車）",
+      "it": "Piazza Vittorio Emanuele, Monreale",
+      "lat": 38.0816,
+      "lng": 13.2911,
+      "hours": "—",
+      "ticket": "約€20–30，出發前請確認",
+      "walk": "車程約 30 分鐘",
+      "desc": "搭事先約好的計程車回巴勒莫，直接開到 Piazza Bellini，趕在馬托拉納教堂 13:00 關門前抵達。",
+      "min": ""
+     },
+     {
+      "time": "12:25",
+      "type": "下車",
+      "zh": "貝里尼廣場",
+      "it": "Piazza Bellini",
+      "lat": 38.1151,
+      "lng": 13.3629,
+      "hours": "—",
+      "ticket": "—",
+      "walk": "步行約 1 分鐘",
+      "desc": "下車地點就在馬托拉納教堂和聖加大肋納修道院之間，離四角廣場只有 2 分鐘。請司機停在 Via Maqueda 路邊，再步行進廣場。",
+      "min": ""
+     },
+     {
+      "time": "12:25",
+      "type": "景點",
+      "zh": "海軍元帥聖母堂（馬托拉納教堂）",
+      "it": "Santa Maria dell'Ammiraglio (La Martorana)",
+      "lat": 38.11497,
+      "lng": 13.36269,
+      "hours": "週一至週六 10:00–13:00（下午是否開放不確定）",
+      "ticket": "€2（市府資料）",
+      "walk": "步行約 3 分鐘",
+      "desc": "12 世紀的拜占庭式教堂，可以和蒙雷阿萊的馬賽克對照著看。13:00 關門，如果來不及就改在外面看看隔壁的紅頂聖卡塔多教堂。",
+      "min": ""
+     },
+     {
+      "time": "13:00",
+      "type": "午餐",
+      "zh": "四角廣場・Via Maqueda 午餐",
+      "it": "Quattro Canti / Via Maqueda",
+      "lat": 38.11563,
+      "lng": 13.36153,
+      "hours": "餐廳多為 12:30–15:00",
+      "ticket": "—",
+      "walk": "步行約 2 分鐘",
+      "desc": "在四角廣場附近坐下來吃午餐。想吃得輕鬆，可以去 Via Maqueda 270 的 Ke Palle 點炸飯糰（arancina）（10:00 開門）。",
+      "min": ""
+     },
+     {
+      "time": "14:00",
+      "type": "景點",
+      "zh": "普雷托利亞噴泉",
+      "it": "Fontana Pretoria",
+      "lat": 38.11549,
+      "lng": 13.36208,
+      "hours": "戶外，全天",
+      "ticket": "免費",
+      "walk": "步行約 2 分鐘",
+      "desc": "16 世紀文藝復興噴泉，周圍環繞大理石神話雕像，夜裡有燈光。位在市政廳前，緊鄰聖加大肋納修道院。",
+      "min": ""
+     },
+     {
+      "time": "14:10",
+      "type": "景點",
+      "zh": "聖加大肋納修道院・修女甜點坊",
+      "it": "Monastero di Santa Caterina – I Segreti del Chiostro",
+      "lat": 38.11528,
+      "lng": 13.36245,
+      "hours": "每天 10:00–18:00，最後入場 17:15（官網）",
+      "ticket": "票價出發前請確認",
+      "walk": "步行約 8 分鐘",
+      "desc": "午後可以參觀巴洛克教堂和修道院迴廊，再到甜點坊買修女古法的卡諾里（cannoli）。屋頂露台看得到普雷托利亞廣場和大教堂圓頂。",
+      "min": ""
+     },
+     {
+      "time": "15:00",
+      "type": "景點",
+      "zh": "巴勒莫主教座堂",
+      "it": "Cattedrale di Palermo",
+      "lat": 38.11444,
+      "lng": 13.35611,
+      "hours": "教堂 週一至週六 07:00–19:00；屋頂紀念區 平日 09:30–14:30（冬季下午不能登頂）",
+      "ticket": "教堂免費",
+      "walk": "步行約 8 分鐘回到四角廣場",
+      "desc": "下午只參觀大殿和外觀，看諾曼與阿拉伯風格的外牆和棕櫚樹花園。冬季平日屋頂只開到 14:30，下午不安排登頂。",
+      "min": ""
+     },
+     {
+      "time": "15:40",
+      "type": "景點",
+      "zh": "四角廣場・Morettino 咖啡館",
+      "it": "Quattro Canti – Morettino Caffè (Via Vittorio Emanuele 308)",
+      "lat": 38.11555,
+      "lng": 13.36135,
+      "hours": "營業時間出發前請確認",
+      "ticket": "依點餐",
+      "walk": "步行約 12 分鐘（沿 Via Maqueda）",
+      "desc": "在四角廣場轉角的美好年代風格咖啡館，點布里歐修麵包（brioche）或冰淇淋配咖啡，讓長輩坐下來休息後再走最後一段。",
+      "min": ""
+     },
+     {
+      "time": "16:15",
+      "type": "景點",
+      "zh": "馬西莫劇院（教父 3 階梯）",
+      "it": "Teatro Massimo",
+      "lat": 38.12034,
+      "lng": 13.35724,
+      "hours": "導覽 每天 09:30–18:00",
+      "ticket": "外觀免費；導覽€12",
+      "walk": "步行約 1 分鐘",
+      "desc": "歌劇院正門階梯就是《教父 3》結局的拍攝地。拍完照就在劇院前的威爾第廣場搭計程車回港口。",
+      "min": ""
+     },
+     {
+      "time": "16:30",
+      "type": "上車",
+      "zh": "威爾第廣場計程車站",
+      "it": "Posteggio Taxi – Piazza Verdi",
+      "lat": 38.12,
+      "lng": 13.3578,
+      "hours": "—",
+      "ticket": "約€8–12，出發前請確認",
+      "walk": "車程約 10 分鐘",
+      "desc": "在劇院前的威爾第廣場搭計程車回港口。如果下雨或長輩累了，也可以提早從四角廣場直接叫車回去。",
+      "min": ""
+     },
+     {
+      "time": "16:45",
+      "type": "下車",
+      "zh": "港口出口（回船）",
+      "it": "Varco Porto / Stazione Marittima",
+      "lat": 38.1234,
+      "lng": 13.3652,
+      "hours": "17:30 前回船",
+      "ticket": "—",
+      "walk": "步行約 5–10 分鐘",
+      "desc": "在港口出口下車後，走回 Molo Vittorio Veneto 的郵輪碼頭排隊安檢上船，保留約 45 分鐘的緩衝時間。",
+      "min": ""
+     }
+    ]
+   }
+  ],
+  "tips": [
+   "天氣：巴勒莫 12 月平均最高約 14°C、最低約 10°C，每月約 12 天有雨。請帶折疊傘、防風外套和防滑好走的鞋，老城石板路下雨會很滑。",
+   "帕拉提那禮拜堂遇到彌撒、宗教儀式或活動可能臨時關閉或縮短開放時間。出發前一天請查 federicosecondo.org 或打 +39 091 705 5601。",
+   "週三王室公寓不開放，只能參觀禮拜堂和花園。網文說「直接上 2 樓」可能是指平時的路線，當天請依現場指示。",
+   "中午會關門的地方：馬托拉納教堂 13:00 關門（下午可能不開）、蒙雷阿萊主教座堂 12:45–14:00 午休。耶穌教堂有網文說中午會休息，但市府資料寫連續開放，出發前請確認。",
+   "389 號公車（獨立廣場→蒙雷阿萊主教座堂附近終點）2026 年 6 月曾停駛再恢復，路線變動頻繁；票價約€1.40／90 分鐘，請在菸草店先買票，班距約 35–40 分鐘。帶長輩仍建議搭計程車。",
+   "City Sightseeing 蒙雷阿萊線只在部分日期營運，官網列出 2026-12-16 有營運。起點 Stop 1 在 Via E. Amari 138（政治劇院旁，離港口步行約 15 分鐘）。往年冬季時刻表為 09:30、14:00 從 Stop 1 出發，全程約 2 小時，票價請在官網訂票頁確認。",
+   "巴拉洛市場、Via Maqueda、四角廣場一帶扒手多，包包請背在胸前，手機不要放在後口袋。",
+   "計程車跳錶起跳€3.06、最低€4.59（2025 年資料）。上車前請確認有跳錶或先講好價格；要包車往返蒙雷阿萊，請先談好等候時間和總價。",
+   "建議最晚 16:45 回到港口，郵輪 17:30 前要回船。下雨或長輩累了，可以從四角廣場直接搭計程車回港。",
+   "雨天替代：把在戶外的時間改到馬西莫劇院內部導覽（€12，每天 09:30–18:00）或聖加大肋納修道院室內參觀。"
+  ]
+ }
+};
+
+/* ---------- v2.6：下船路線（龐貝、巴勒摩），每個點都能直接開地圖 ---------- */
+function gmPin(lat, lng) { return 'https://www.google.com/maps/search/?api=1&query=' + lat + ',' + lng; }
+function gmGo(lat, lng) { return 'https://www.google.com/maps/dir/?api=1&destination=' + lat + ',' + lng + '&travelmode=walking'; }
+function gmRoute(pts) {
+  const s = pts.map((p) => p.lat + ',' + p.lng);
+  const u = 'https://www.google.com/maps/dir/?api=1&travelmode=walking&origin=' + s[0] + '&destination=' + s[s.length - 1];
+  return s.length > 2 ? u + '&waypoints=' + encodeURIComponent(s.slice(1, -1).join('|')) : u;
+}
+/* 把一條路線切成「走路段」：遇到上車（計程車、公車）就斷開，每段最多 10 個點（Google 地圖網址的上限） */
+function walkSegments(steps) {
+  const segs = []; let cur = [];
+  steps.forEach((s) => {
+    if (s.lat == null || s.lng == null) return;
+    cur.push(s);
+    if (s.type === '上車') { if (cur.length > 1) segs.push(cur); cur = []; }
+  });
+  if (cur.length > 1) segs.push(cur);
+  const out = [];
+  segs.forEach((g) => { for (let i = 0; i < g.length - 1; i += 9) out.push(g.slice(i, i + 10)); });
+  return out.filter((g) => g.length > 1 && g.some((x) => ['景點', '午餐', '延伸'].includes(x.type)));
+}
+const STEP_ICON = { '景點': '📍', '午餐': '🍝', '上車': '🚕', '下車': '🚏', '下船': '🚢', '交通': '🚆', '延伸': '➕', '步行': '🚶' };
+function routeStepHtml(s, i) {
+  const num = s.n || i + 1;
+  const info = [s.hours ? '🕘 ' + esc(s.hours) : '', s.ticket ? '🎟️ ' + esc(s.ticket) : '', s.min ? '⏱️ 建議停留 ' + esc(s.min) + ' 分鐘' : ''].filter(Boolean).join('<br>');
+  return `<div class="rstep">
+    <div class="rstep-head"><span class="rstep-n">${s.time ? esc(s.time) : num}</span>
+      <div class="rstep-t"><b>${STEP_ICON[s.type] || '📍'} ${esc(s.zh)}</b>${s.it ? `<span>${esc(s.it)}</span>` : ''}</div></div>
+    ${s.desc ? `<p>${esc(s.desc)}</p>` : ''}
+    ${info ? `<div class="rstep-info">${info}</div>` : ''}
+    ${s.walk ? `<div class="rstep-walk">🚶 ${esc(s.walk)}</div>` : ''}
+    ${s.lat != null ? `<div class="rstep-btns"><a class="btn small ghost" href="${gmPin(s.lat, s.lng)}" target="_blank" rel="noopener">🗺️ 在地圖看位置</a><a class="btn small ghost" href="${gmGo(s.lat, s.lng)}" target="_blank" rel="noopener">🧭 從這裡導航過去</a></div>` : ''}
+  </div>`;
+}
+route('/portroute/:id', (id) => {
+  const r = PORT_ROUTES[id];
+  if (!r) { location.hash = '#/cruise'; return 'home'; }
+  const plans = r.plans.map((p) => {
+    const segs = p.noRoute ? [] : walkSegments(p.steps);
+    const segBtns = segs.map((g, k) => `<a class="btn small" href="${gmRoute(g)}" target="_blank" rel="noopener">🗺️ 走路路線${segs.length > 1 ? ' 第 ' + (k + 1) + ' 段' : ''}：${esc(g[0].zh.split('（')[0])} → ${esc(g[g.length - 1].zh.split('（')[0])}</a>`).join('');
+    return `<details class="rplan" ${r.plans.length === 1 || p.id === 'main' || p.id === 'A' ? 'open' : ''}>
+      <summary><b>${esc(p.title)}</b>${p.fit ? `<span>適合：${esc(p.fit)}</span>` : ''}</summary>
+      ${p.summary ? `<p class="sub">${esc(p.summary)}</p>` : ''}
+      ${segBtns ? `<div class="rroute">${segBtns}<p class="sub" style="margin:4px 0 0;font-size:12.5px">在 Google 地圖打開整段步行路線（坐車的部分已分開）。</p></div>` : ''}
+      ${p.steps.map(routeStepHtml).join('')}
+    </details>`;
+  }).join('');
+  view(`${back('#/cruise', '郵輪靠港')}<div class="kicker">${esc(dayName(r.date))} · ${esc(r.port)}</div><h1>${esc(r.title)}</h1>
+    <p class="sub">${esc(r.summary)}</p>
+    ${plans}
+    <div class="card"><h3>小提醒</h3><ul class="rtips">${r.tips.map((t) => `<li>${esc(t)}</li>`).join('')}</ul></div>
+    <details class="card"><summary><b>查證說明（時間、票價）</b></summary><p class="sub" style="margin-top:8px">${esc(r.verify)}</p></details>`);
+  return 'home';
+});
+
+/* ---------- v2.6：記帳與分帳（誰先付、平分給誰，最後只算兩家） ---------- */
+const MONEY_PEOPLE = ['LEO', 'LINDA', 'SIMON', 'SANDY', 'DISEN', 'EVA', 'ERIC'];
+const MONEY_LEO = ['LEO', 'LINDA', 'SIMON', 'SANDY'];
+const MONEY_HOUSE = { LEO: 'LEO家', LINDA: 'LEO家', SIMON: 'LEO家', SANDY: 'LEO家', DISEN: 'DISEN家', EVA: 'DISEN家', ERIC: 'DISEN家' };
+const MONEY_CRUISE_END = '2026-12-19';   // 郵輪結束、迪森一家回臺灣；之後的帳只有 LEO 家四人
+const MONEY_CUR = { EUR: '€', TWD: 'NT$', TND: 'TND ' };
+function moneyPeopleFor(date) { return date > MONEY_CRUISE_END ? MONEY_LEO : MONEY_PEOPLE; }
+function moneyFmt(cur, n) { const v = Math.round(n * 100) / 100; return (MONEY_CUR[cur] || cur + ' ') + v.toLocaleString('en-US', { minimumFractionDigits: cur === 'TWD' ? 0 : 2, maximumFractionDigits: cur === 'TWD' ? 0 : 2 }); }
+function moneyList() {
+  const m = Object.assign({}, LS.get('money:server', {}));
+  const pend = LS.get('money:pending', []);
+  pend.forEach((op) => { if (op.op === 'add') m[op.e.id] = op.e; else delete m[op.id]; });
+  return Object.values(m).sort((a, b) => (b.date + b.ts).localeCompare(a.date + a.ts));
+}
+function moneyQueue(op) {
+  const pend = LS.get('money:pending', []);
+  pend.push(op); LS.set('money:pending', pend);
+  moneyFlush();
+}
+let moneyBusy = false;
+async function moneyFlush() {
+  if (moneyBusy || !S.server.url || !navigator.onLine) return;
+  moneyBusy = true;
+  try {
+    let pend = LS.get('money:pending', []);
+    while (pend.length) {
+      await api('expense', pend[0]);
+      pend = LS.get('money:pending', []).slice(1); LS.set('money:pending', pend);
+    }
+    const d = await apiGet({ action: 'expenses' });
+    const m = {}; (d.items || []).forEach((e) => { m[e.id] = e; });
+    LS.set('money:server', m);
+    if (location.hash.startsWith('#/money')) paintMoney();
+  } catch (e) { /* 沒網路就先存在手機，下次再傳 */ }
+  finally { moneyBusy = false; }
+}
+function moneySettle(list) {
+  const by = {};   // cur -> { person: net }
+  list.forEach((e) => {
+    const amt = Number(e.amount) || 0; const split = e.split || [];
+    if (!amt || !split.length) return;
+    const t = by[e.cur] || (by[e.cur] = {});
+    t[e.payer] = (t[e.payer] || 0) + amt;
+    split.forEach((p) => { t[p] = (t[p] || 0) - amt / split.length; });
+  });
+  return by;
+}
+function moneySummaryHtml(list) {
+  const by = moneySettle(list);
+  const curs = Object.keys(by);
+  if (!curs.length) return '<p class="sub">還沒有任何一筆帳。</p>';
+  return curs.map((cur) => {
+    const t = by[cur];
+    const house = { 'LEO家': 0, 'DISEN家': 0 };
+    Object.keys(t).forEach((p) => { house[MONEY_HOUSE[p]] += t[p]; });
+    const d = house['DISEN家'];
+    const line = Math.abs(d) < 0.005 ? '兩家剛好打平，不用互相給錢。'
+      : d < 0 ? `<b>DISEN家</b> 要給 <b>LEO家</b> <b class="money-big">${moneyFmt(cur, -d)}</b>`
+        : `<b>LEO家</b> 要給 <b>DISEN家</b> <b class="money-big">${moneyFmt(cur, d)}</b>`;
+    const paid = {}; const spent = {};
+    list.filter((e) => e.cur === cur).forEach((e) => {
+      const h = MONEY_HOUSE[e.payer]; paid[h] = (paid[h] || 0) + Number(e.amount);
+      (e.split || []).forEach((p) => { const hh = MONEY_HOUSE[p]; spent[hh] = (spent[hh] || 0) + Number(e.amount) / e.split.length; });
+    });
+    const row = (h) => `<tr><td>${h}</td><td>${moneyFmt(cur, paid[h] || 0)}</td><td>${moneyFmt(cur, spent[h] || 0)}</td></tr>`;
+    return `<div class="money-sum"><div class="money-line">${line}</div>
+      <table class="money-tbl"><tr><th>${cur}</th><th>先付了</th><th>應該分攤</th></tr>${row('LEO家')}${row('DISEN家')}</table></div>`;
+  }).join('');
+}
+function paintMoney() {
+  const list = moneyList();
+  const date = ($('#m-date') && $('#m-date').value) || today();
+  const ppl = moneyPeopleFor(date);
+  const last = LS.get('money:last', { payer: '', cur: 'EUR' });
+  const payer = ppl.includes(last.payer) ? last.payer : ppl[0];
+  const pend = LS.get('money:pending', []).length;
+  const rows = list.map((e) => `<div class="money-row">
+      <div class="money-main"><b>${esc(e.item || '（沒寫項目）')}</b>
+        <span>${esc(e.date)}・<b>${esc(e.payer)}</b> 先付・分給 ${esc((e.split || []).join('、'))}${e.split && e.split.length ? '（每人 ' + moneyFmt(e.cur, e.amount / e.split.length) + '）' : ''}</span></div>
+      <div class="money-amt">${moneyFmt(e.cur, Number(e.amount))}</div>
+      <button type="button" class="money-del" data-mdel="${esc(e.id)}" aria-label="刪除這筆">✕</button>
+    </div>`).join('');
+  view(`${back('#/', '首頁')}<h1>💰 記帳與分帳</h1>
+    <p class="sub">誰先付錢就記一筆，選要平分給哪幾個人。最後只算兩家：LEO家（LEO、LINDA、SIMON、SANDY）和 DISEN家（DISEN、EVA、ERIC）。12/19 郵輪結束後，日期在 12/20 以後的帳只能選 LEO家四個人。</p>
+    <div class="card money-form">
+      <label class="field"><span>日期</span><input class="text" type="date" id="m-date" value="${esc(date)}" min="2026-11-01" max="2027-01-31"></label>
+      <label class="field"><span>買了什麼</span><input class="text" id="m-item" placeholder="例如：聖家堂門票、晚餐、計程車" maxlength="40"></label>
+      <div class="money-amtrow">
+        <label class="field" style="flex:1"><span>金額</span><input class="text" id="m-amt" type="number" inputmode="decimal" min="0" step="0.01" placeholder="0.00"></label>
+        <label class="field"><span>幣別</span><select class="text" id="m-cur">${Object.keys(MONEY_CUR).map((c) => `<option value="${c}"${c === last.cur ? ' selected' : ''}>${c}</option>`).join('')}</select></label>
+      </div>
+      <div class="field"><span>誰先付的</span><div class="money-chips" id="m-payer">${ppl.map((p) => `<button type="button" class="mchip${p === payer ? ' on' : ''}" data-payer="${p}">${p}</button>`).join('')}</div></div>
+      <div class="field"><span>平分給誰（可以複選）</span><div class="money-chips" id="m-split">${ppl.map((p) => `<button type="button" class="mchip on" data-split="${p}">${p}</button>`).join('')}</div>
+        <div class="money-quick"><button type="button" class="btn small ghost" data-mq="all">全部</button><button type="button" class="btn small ghost" data-mq="LEO家">只有 LEO家</button>${ppl.length > 4 ? '<button type="button" class="btn small ghost" data-mq="DISEN家">只有 DISEN家</button>' : ''}<button type="button" class="btn small ghost" data-mq="none">清除</button></div></div>
+      <button type="button" class="btn block" id="m-add">記下這一筆</button>
+    </div>
+    <h2>結算：兩家誰該給誰</h2>
+    ${moneySummaryHtml(list)}
+    <p class="sub" style="font-size:12.5px">不同幣別分開算，不會自動換匯。${pend ? `還有 ${pend} 筆在手機裡，連上網路會自動上傳。` : ''}${S.server.url ? '' : '還沒連上家庭雲端，帳只存在這支手機。'}</p>
+    <h2>每一筆帳（${list.length}）</h2>
+    <div class="money-list">${rows || '<p class="sub">還沒有帳。</p>'}</div>`);
+  $('#m-date').onchange = () => paintMoney();
+  $$('[data-payer]').forEach((b) => b.onclick = () => { $$('[data-payer]').forEach((x) => x.classList.remove('on')); b.classList.add('on'); });
+  $$('[data-split]').forEach((b) => b.onclick = () => b.classList.toggle('on'));
+  $$('[data-mq]').forEach((b) => b.onclick = () => {
+    const q = b.dataset.mq;
+    $$('[data-split]').forEach((x) => x.classList.toggle('on', q === 'all' || MONEY_HOUSE[x.dataset.split] === q));
+  });
+  $('#m-add').onclick = () => {
+    const amt = Number($('#m-amt').value);
+    const pb = $('[data-payer].on');
+    const split = $$('[data-split].on').map((x) => x.dataset.split);
+    if (!(amt > 0)) { toast('請填金額'); return; }
+    if (!pb) { toast('請選誰先付的'); return; }
+    if (!split.length) { toast('請至少選一個要分攤的人'); return; }
+    const e = { id: 'm' + Date.now().toString(36) + Math.random().toString(36).slice(2, 6), date: $('#m-date').value || today(), item: $('#m-item').value.trim(), amount: Math.round(amt * 100) / 100, cur: $('#m-cur').value, payer: pb.dataset.payer, split, by: S.player, ts: String(Date.now()) };
+    LS.set('money:last', { payer: e.payer, cur: e.cur });
+    moneyQueue({ op: 'add', e });
+    toast('記好了：' + e.payer + ' 付 ' + moneyFmt(e.cur, e.amount));
+    paintMoney();
+  };
+  $$('[data-mdel]').forEach((b) => b.onclick = () => {
+    if (!confirm('確定要刪除這一筆帳嗎？大家的手機都會一起刪掉。')) return;
+    moneyQueue({ op: 'del', id: b.dataset.mdel });
+    paintMoney();
+  });
+}
+route('/money', () => { paintMoney(); moneyFlush(); return 'home'; });
+window.addEventListener('online', () => moneyFlush());
+
 route('/help', () => {
   view(`${back('#/', '首頁')}<h1>玩法說明</h1>
     <div class="card"><h3>每天早上</h3><p>打開「今天」，解鎖今天的城市卡：讀一個冷門小故事（不想讀可以跳過），挑一個九宮格主題，答 3 題加分題。</p></div>
-    <div class="card"><h3>每日美味 Tapa 刮刮樂</h3><p>專為爸媽和弟弟設計！每天刮開一道西班牙美味點心或溫馨好運，只要全家當天有吃到或做到，點一下就能加 20 分！</p></div>
+    <div class="card"><h3>每日美味 Tapa 刮刮樂</h3><p>專為爸媽和弟弟設計！每天刮開一道西班牙美味點心或溫馨好運，只要大家當天有吃到或做到，點一下就能加 20 分！</p></div>
     <div class="card"><h3>西班牙旅行大圖鑑</h3><p>全西 30 款標誌事物（火腿、吉拿棒、羅馬水道橋、白雪公主城堡、大馬士革鋼劍等），看到就拍照打卡點亮圖鑑，旅行結束就是一本專屬家族見聞手冊！</p></div>
     <div class="card"><h3>到了景點</h3><p>在城市裡點想去的景點卡：先答出發前的題目，看景點冷知識（覺得有趣就按「WoW 記!」），到現場做任務，最後答收尾 3 題。</p></div>
+    <div class="card"><h3>記帳與分帳</h3><p>上方的「💰 記帳」：誰先付錢就記一筆，選要平分給哪幾個人。結算只算兩家（LEO家、DISEN家），不同幣別分開算。12/20 以後的帳只能選 LEO家四個人。連上家庭雲端後，每個人看到的是同一本帳。</p></div>
+    <div class="card"><h3>下船路線</h3><p>「郵輪靠港」頁的拿坡里和巴勒摩有路線建議：每個點都有「在地圖看位置」和「導航過去」，也能一次在 Google 地圖打開整段步行路線。</p></div>
     <div class="card"><h3>郵輪大圖鑑</h3><p>上方的「🚢 郵輪圖鑑」分三區：船上免費體驗（+20）、船上付費體驗（另外隔開，+10，不用為了分數花錢）、下船後街上看得到的當地特色（+20）。拍照上傳就點亮。</p></div>
     <div class="card"><h3>行前檢查清單</h3><p>上方的「🧳 行前清單」：每個人勾自己的行李，照重要程度排好；最上面還有郵輪線上報到、ETIAS 和 EES 的提醒。</p></div>
     <div class="card"><h3>四大機場手帳</h3><p>最上方是歐洲數位通關（EES）的說明。桃園機場有兩題多選題（世界前 3 名、前 50 名），全對各加 20 分；點選你找到的文化角落，看看它在旅途上的「遠房親戚」。</p></div>
@@ -3698,11 +4628,11 @@ const PLAN = {
     {
       "who": "trio",
       "text": "三人抵達巴塞隆納",
-      "note": "晚上全家七人一起住 Happy People Sagrada Familia Apartments（Carrer Sardenya 306）。"
+      "note": "晚上七個人一起住 Happy People Sagrada Familia Apartments（Carrer Sardenya 306）。"
     },
     {
       "when": "白天",
-      "text": "聖家堂（全家）",
+      "text": "聖家堂（7 個人一起）",
       "spot": "聖家堂",
       "q": "Sagrada Família Barcelona",
       "aside": "高第 1882 年開始建造，至今仍在施工，是世界文化遺產。建築的柱子像樹一樣分枝，是高第最有名的設計概念。"
@@ -3913,7 +4843,7 @@ const PLAN = {
       "aside": "十三世紀初穆斯林蓋的瞭望塔，守著河上的港口。後來從美洲運回金銀的船，都要經過它旁邊。"
     },
     {
-      "text": "【平安夜】全家在塞維亞溫馨聚餐，品嚐伊比利火腿與杏仁糖",
+      "text": "【平安夜】大家在塞維亞溫馨聚餐，品嚐伊比利火腿與杏仁糖",
       "q": ""
     }
   ],
@@ -4003,7 +4933,7 @@ const PLAN = {
   ],
   '2027-01-01': [
     {
-      "text": "【元旦公休日】全西室內博物館休館，適合全家漫步戶外大自然",
+      "text": "【元旦公休日】全西室內博物館休館，適合大家漫步戶外大自然",
       "q": "Parque de El Retiro Madrid",
       "aside": "原本是國王的私人花園，1868 年革命後才開放給市民。2021 年和普拉多大道一起列入世界遺產。"
     },
@@ -4091,7 +5021,7 @@ const PLAN = {
     },
     {
       "when": "18:30–21:00",
-      "text": "【三王節前夕年度盛典】馬德里三王節大遊行（Cabalgata de Reyes Magos，全家帶倒撐雨傘沿大道搶糖果！）",
+      "text": "【三王節前夕年度盛典】馬德里三王節大遊行（Cabalgata de Reyes Magos，大家帶倒撐雨傘沿大道搶糖果！）",
       "note": "路線：Paseo de la Castellana 至 Plaza de Cibeles",
       "q": "Plaza de Cibeles Madrid",
       "aside": "1/5 晚上三位國王坐著花車進城，沿路向孩子丟糖果。在西班牙，傳統上送孩子聖誕禮物的是三王，不是聖誕老人，所以 1/6 早上才拆禮物。"
@@ -4099,7 +5029,7 @@ const PLAN = {
   ],
   '2027-01-06': [
     {
-      "text": "【三王節主日】早晨全家享用傳統「國王蛋糕」（Roscón de Reyes），看誰吃到幸運陶偶",
+      "text": "【三王節主日】早晨大家享用傳統「國王蛋糕」（Roscón de Reyes），看誰吃到幸運陶偶",
       "q": "",
       "aside": "國王蛋糕裡藏著一個小陶偶和一顆豆子：吃到陶偶的人當一天國王，吃到豆子的人要付明年的蛋糕錢。"
     },
@@ -4271,7 +5201,8 @@ route('/cruise', () => {
           <button type="button" class="btn small${mine ? '' : ' ghost'}" data-pick="${id}">${mine ? '已選' : '我想去'}</button></div>`;
       }).join('');
       return `<h2>${esc(dayName(p.date))} ${esc(p.port)}</h2>${PORT_POSTER[p.date] ? posterImg(PORT_POSTER[p.date]) : ''}<p class="sub">靠港時間 ${esc(p.hours)}</p>
-        <div class="card"><b>怎麼選</b><p style="margin:4px 0 0">${esc(p.tip)}</p></div>${opts}`;
+        <div class="card"><b>怎麼選</b><p style="margin:4px 0 0">${esc(p.tip)}</p></div>
+        ${Object.keys(PORT_ROUTES).filter((k) => PORT_ROUTES[k].date === p.date).map((k) => `<a class="card cdex-promo" href="#/portroute/${k}"><b>🗺️ ${esc(PORT_ROUTES[k].title)}</b><span>時間表、門票、每個點都能直接開 Google 地圖</span></a>`).join('')}${opts}`;
     }).join('');
     view(`${back('#/trip', '每日行程')}<h1>郵輪靠港：我想去哪裡</h1>${posterImg('ship')}
       <a class="card cdex-promo" href="#/cruisedex"><b>🚢 郵輪大圖鑑</b><span>海上日出、劇院大秀、馬賽聖誕泥偶市集……看到就拍照點亮</span></a>
@@ -4371,7 +5302,7 @@ route('/shelf', () => {
   return 'home';
 });
 
-/* ---------- WoW 筆記：自己的、全家的 ---------- */
+/* ---------- WoW 筆記：自己的、大家的 ---------- */
 function dayOf(ts) { const d = new Date(ts); return d.getFullYear() + '-' + String(d.getMonth() + 1).padStart(2, '0') + '-' + String(d.getDate()).padStart(2, '0'); }
 function factLookup(fid) {
   const [cid, i] = String(fid).split('#');
@@ -4391,11 +5322,11 @@ function wowNotesHtml() {
     .filter((r) => r.f).sort((a, b) => b.ts - a.ts);
   return `<h2>我的 WoW 筆記</h2>
     ${mine.length ? wowGroupHtml(mine, false) : '<div class="card"><p class="sub" style="margin:0">還沒有筆記。在景點卡的冷知識旁按「WoW 記!」，就會收進這裡。</p></div>'}
-    <h2>全家每天 WoW 了什麼</h2>
+    <h2>大家每天 WoW 了什麼</h2>
     <div id="wow-family">${wowFamilyInner()}</div>`;
 }
 function wowFamilyInner() {
-  if (!S.server.url) return '<div class="card"><p class="sub" style="margin:0">連上家庭雲端後，就能看到全家每天覺得哪些資訊有趣。</p></div>';
+  if (!S.server.url) return '<div class="card"><p class="sub" style="margin:0">連上家庭雲端後，就能看到大家每天覺得哪些資訊有趣。</p></div>';
   const fam = (META.likeLog || []).map((x) => ({ f: factLookup(x.factId), player: x.player, day: x.ts ? dayOf(Number(x.ts)) : '更早', ts: Number(x.ts) || 0 }))
     .filter((r) => r.f).sort((a, b) => b.ts - a.ts);
   return fam.length ? wowGroupHtml(fam, true) : '<div class="card"><p class="sub" style="margin:0">還沒有人 WoW 記。（家人按過卻沒出現的話，請主辦人更新 Apps Script，見設定教學。）</p></div>';

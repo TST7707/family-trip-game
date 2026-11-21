@@ -12,6 +12,10 @@ const RESET_AT = '2026-12-07T00:00:00+08:00';         // 台灣時間 12/7 00:00
 
 const DOCS_FOLDER = '住宿確認';   // 訂房確認單放這個子資料夾（在 FOLDER_ID 裡面），只有輸入家庭密碼的人讀得到
 
+/* 帳本不放在 SHEETS 裡：12/7 自動清空和後台「清空全部」都不會刪掉帳 */
+const LEDGER = '帳本';
+const LEDGER_HEADERS = ['id', 'date', 'item', 'amount', 'cur', 'payer', 'split', 'by', 'ts'];
+
 const SHEETS = {
   '分數': ['id', 'player', 'points', 'label', 'cardId', 'date', 'ts'],
   '照片': ['id', 'player', 'kind', 'slot', 'city', 'cardId', 'cardTitle', 'theme', 'date', 'fileId', 'ts'],
@@ -23,7 +27,8 @@ const SHEETS = {
 function doGet(e) {
   const p = (e && e.parameter) || {};
   if (p.code !== FAMILY_CODE) return json_({ ok: false, error: '家庭密碼不對' });
-  if (p.action === 'ping') return json_({ ok: true, version: 3 });
+  if (p.action === 'ping') return json_({ ok: true, version: 4 });
+  if (p.action === 'expenses') return json_(expenses_());
   if (p.action === 'feed') return json_(feed_(p.date || ''));
   if (p.action === 'image') return json_(image_(p.id));
   if (p.action === 'docs') return json_(docs_());
@@ -43,6 +48,7 @@ function doPost(e) {
       case 'photo': return json_(savePhoto_(body));
       case 'comment': return json_(saveComment_(body));
       case 'like': return json_(saveLike_(body));
+      case 'expense': return json_(saveExpense_(body));
       case 'admin': return json_(admin_(body));
       default: return json_({ ok: false, error: 'unknown action' });
     }
@@ -322,4 +328,34 @@ function dateStr_(v) {
 
 function json_(o) {
   return ContentService.createTextOutput(JSON.stringify(o)).setMimeType(ContentService.MimeType.JSON);
+}
+
+
+/* ---------- 記帳與分帳（v4） ---------- */
+function expenses_() {
+  const sh = sheet_(LEDGER, LEDGER_HEADERS);
+  const items = dataRows_(sh, LEDGER_HEADERS.length).filter((r) => r[0]).map((r) => ({
+    id: String(r[0]),
+    date: r[1] instanceof Date ? Utilities.formatDate(r[1], 'Asia/Taipei', 'yyyy-MM-dd') : String(r[1]),
+    item: String(r[2]), amount: Number(r[3]), cur: String(r[4]), payer: String(r[5]),
+    split: String(r[6]).split(',').filter(String), by: String(r[7]), ts: String(r[8]),
+  }));
+  return { ok: true, items: items };
+}
+function saveExpense_(b) {
+  const sh = sheet_(LEDGER, LEDGER_HEADERS);
+  if (b.op === 'add' && b.e) {
+    const e = b.e;
+    if (!e.id || existingIds_(sh).has(String(e.id))) return { ok: true, duplicate: true };
+    const amount = Number(e.amount);
+    if (!(amount > 0)) return { ok: false, error: '金額不對' };
+    sh.appendRow([String(e.id), "'" + String(e.date || ''), String(e.item || '').slice(0, 60), amount, String(e.cur || 'EUR'),
+      String(e.payer || ''), (e.split || []).join(','), String(e.by || ''), String(e.ts || Date.now())]);
+    return { ok: true };
+  }
+  if (b.op === 'del' && b.id) {
+    removeRows_(sh, LEDGER_HEADERS.length, (r) => String(r[0]) === String(b.id));
+    return { ok: true };
+  }
+  return { ok: false, error: 'bad expense op' };
 }
