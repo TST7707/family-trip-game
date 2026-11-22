@@ -594,3 +594,23 @@ details.stay[open] summary{border-bottom:1px solid var(--line)}
 .dex-main-tabs{display:flex;gap:6px;border-bottom:2px solid var(--line);margin:0 0 16px;padding-bottom:2px;overflow-x:auto}
 .dex-main-tabs a{padding:8px 14px;font-size:14.5px;font-weight:700;color:var(--muted);text-decoration:none;border-radius:8px 8px 0 0;white-space:nowrap}
 .dex-main-tabs a.on{color:var(--primary);border-bottom:3px solid var(--primary);font-weight:800}
+
+/* ---------- v2.9：龐貝今昔對比互動拉軸 ---------- */
+.pcompare-banner{display:flex;align-items:center;gap:14px;background:linear-gradient(135deg,var(--card) 0%,var(--sunken) 100%);border:1.5px solid var(--primary);border-radius:14px;padding:14px 16px;margin:12px 0;text-decoration:none;color:var(--fg)}
+.pcompare-icon{font-size:32px;flex-shrink:0}
+.pcompare-text{flex:1;display:flex;flex-direction:column;gap:3px}
+.pcompare-text b{font-size:16px;color:var(--primary)}
+.pcompare-text span{font-size:12.5px;color:var(--muted);line-height:1.4}
+.pcompare-stage{position:relative;width:100%;aspect-ratio:16/10;max-height:68vh;overflow:hidden;border-radius:14px;background:#141312;border:1.5px solid var(--line);user-select:none;-webkit-user-select:none;touch-action:none;cursor:ew-resize}
+.pcompare-layer{position:absolute;inset:0;width:100%;height:100%;display:flex;align-items:center;justify-content:center;overflow:hidden}
+.pcompare-layer img{width:100%;height:100%;object-fit:contain;pointer-events:none}
+.pcompare-divider{position:absolute;top:0;bottom:0;width:2px;background:#fff;box-shadow:0 0 10px rgba(0,0,0,0.85);pointer-events:none;z-index:10}
+.pcompare-handle{position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);width:42px;height:42px;border-radius:50%;background:#fff;border:2px solid #ddd;color:#24231F;display:flex;align-items:center;justify-content:center;box-shadow:0 4px 16px rgba(0,0,0,0.45);cursor:ew-resize;pointer-events:auto}
+.pcompare-badge{position:absolute;top:10px;padding:5px 10px;border-radius:8px;background:rgba(20,19,18,0.85);backdrop-filter:blur(4px);color:#fff;font-size:11px;font-weight:700;pointer-events:none;z-index:5;transition:opacity .2s;display:flex;align-items:center;gap:5px}
+.pcompare-badge.before{left:10px}
+.pcompare-badge.after{right:10px}
+.pcompare-pct{position:absolute;bottom:8px;left:50%;transform:translateX(-50%);padding:3px 10px;border-radius:99px;background:rgba(20,19,18,0.75);color:#eee;font-size:11px;font-family:var(--mono);pointer-events:none;z-index:5}
+.pcompare-chips{display:flex;gap:6px;overflow-x:auto;padding:4px 0 10px;margin-bottom:8px}
+.pcompare-chip{padding:7px 12px;font-size:13px;font-weight:700;border-radius:20px;border:1px solid var(--line);background:var(--card);color:var(--fg);cursor:pointer;white-space:nowrap;transition:all .15s}
+.pcompare-chip.on{background:var(--primary);color:#fff;border-color:var(--primary)}
+

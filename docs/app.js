@@ -374,7 +374,8 @@ function render() {
   if (inAppBrowser()) return renderGate();
   recordLogin();
   checkDailyStreakPopup();
-  const path = decodeURIComponent((location.hash || '#/').slice(1)) || '/';
+  const rawPath = decodeURIComponent((location.hash || '#/').slice(1)) || '/';
+  const path = rawPath.split('?')[0] || '/';
   if (!S.player && path !== '/onboard') { location.hash = '#/onboard'; return; }
   for (const [re, fn] of routes) {
     const m = path.match(re);
@@ -5685,6 +5686,14 @@ function walkSegments(steps) {
   return out.filter((g) => g.length > 1 && g.some((x) => ['景點', '午餐', '延伸'].includes(x.type)));
 }
 const STEP_ICON = { '景點': '📍', '午餐': '🍝', '上車': '🚕', '下車': '🚏', '下船': '🚢', '交通': '🚆', '延伸': '➕', '步行': '🚶' };
+function pompeiiSpotKey(zh) {
+  if (!zh) return 'marina';
+  if (zh.includes('海門')) return 'marina';
+  if (zh.includes('廣場')) return 'foro';
+  if (zh.includes('熱食店') || zh.includes('豐饒大道')) return 'thermopolium';
+  if (zh.includes('競技場')) return 'anfiteatro';
+  return 'marina';
+}
 function routeStepHtml(s, i) {
   const num = s.n || i + 1;
   const info = [s.hours ? '🕘 ' + esc(s.hours) : '', s.ticket ? '🎟️ ' + esc(s.ticket) : '', s.min ? '⏱️ 建議停留 ' + esc(s.min) + ' 分鐘' : ''].filter(Boolean).join('<br>');
@@ -5701,6 +5710,7 @@ function routeStepHtml(s, i) {
         <b style="color:var(--primary)">🔍 今日現場（兩千年後考古見證）</b>
         <p>${esc(s.presentRuins)}</p>
       </div>
+      <div style="margin-top:6px"><a class="btn small ghost" href="#/pompeii-compare?spot=${pompeiiSpotKey(s.zh)}">🖼️ 互動拉軸看此站今昔對比</a></div>
     </div>` : ''}
     ${s.desc ? `<p>${esc(s.desc)}</p>` : ''}
     ${info ? `<div class="rstep-info">${info}</div>` : ''}
@@ -5725,13 +5735,144 @@ route('/portroute/:id', (id) => {
   if (!r) { location.hash = '#/cruise'; return 'home'; }
   const plans = routePlansHtml(r);
   const pk = (PORTS.find((x) => x.routes.includes(id)) || {}).key;
+  const compareBanner = id === 'pompeii' ? `
+    <div class="card pcompare-banner">
+      <div class="pcompare-icon">🏛️</div>
+      <div class="pcompare-text">
+        <b>龐貝古城：今昔對比互動拉軸</b>
+        <span>左右滑動中央拉軸，重現西元79年繁盛風華與兩千年後現場遺跡（海門、神廟、熱食店、競技場）</span>
+      </div>
+      <a class="btn small" href="#/pompeii-compare">打開拉軸</a>
+    </div>` : '';
   view(`${back(pk ? '#/port/' + pk : '#/cruise', pk ? '回港口頁' : '郵輪靠港')}<div class="kicker">${esc(dayName(r.date))} · ${esc(r.port)}</div><h1>${esc(r.title)}</h1>
     <p class="sub">${esc(r.summary)}</p>
+    ${compareBanner}
     ${plans}
     <div class="card"><h3>小提醒</h3><ul class="rtips">${r.tips.map((t) => `<li>${esc(t)}</li>`).join('')}</ul></div>
     <details class="card"><summary><b>查證說明（時間、票價）</b></summary><p class="sub" style="margin-top:8px">${esc(r.verify)}</p></details>`);
   return 'home';
 });
+
+/* ---------- v2.9：龐貝古城今昔對比互動拉軸 ---------- */
+route('/pompeii-compare', () => { paintPompeiiCompare(); return 'home'; });
+route('/pompeii-compare/:spot', (spot) => { paintPompeiiCompare(spot); return 'home'; });
+
+function paintPompeiiCompare(initialSpot) {
+  const hashPart = location.hash.includes('?') ? location.hash.split('?')[1] : '';
+  const urlParams = new URLSearchParams(hashPart);
+  let spotId = initialSpot || urlParams.get('spot') || 'marina';
+  const spots = (window.POMPEII_ART && window.POMPEII_ART.spots) || [
+    { id: 'marina', name: '🏛️ 海門與石板大道', sub: 'Porta Marina · 入城雙拱人車分流', descPast: '西元79年繁盛港門：大海拍岸，商船泊靠。大小雙拱人車分流，長袍羅馬人與滿載陶罐的騾車顛簸入城。', descPresent: '今日現場：海岸已退縮兩公里。厚重玄武岩石板大道、深車轍、斑馬線過街石與防夜盲白石完好如初。' },
+    { id: 'foro', name: '🏛️ 公共廣場與朱比特神廟', sub: 'Foro · 市政中樞與維蘇威火山', descPast: '西元79年市政心臟：高聳神廟香火繚繞，兩層雪白大理石柱廊。背後是平緩翠綠、被葡萄園覆蓋的平靜維蘇威山。', descPresent: '今日現場：開闊無頂石板廣場，朱比特神廟餘高台斷柱，背後直對著猙獰巨大的維蘇威火山口破頂。' },
+    { id: 'thermopolium', name: '🍲 豐饒大道熱食小吃店', sub: "Thermopolium di Vetutius Placidus", descPast: '西元79年鬧市小吃店：L形彩色大理石櫃檯熱氣蒸騰，陶罐滾著肉汁扁豆，市民站著喝熱香料酒，神話壁畫鮮麗奪目。', descPresent: '今日現場：彩色大理石鑲嵌櫃檯與四個內嵌陶罐完好留存，門檻插板滑槽清晰可見，生活溫度凝固在西元79年。' },
+    { id: 'anfiteatro', name: '⚔️ 圓形競技場', sub: 'Anfiteatro · 全羅馬世界最古老石造競技場', descPast: '西元79年兩萬人沸騰角鬥場：高空拉起巨幅遮陽天幕，旗幟招展，角鬥士沙場金屬交鋒，山呼海嘯。', descPresent: '今日現場：世界最古老石造競技場雙層外拱與石階依然完整，青草在石縫蔓生，耳畔唯有山風與歷史迴音。' }
+  ];
+  let curSpot = spots.find((s) => s.id === spotId) || spots[0];
+  spotId = curSpot.id;
+
+  view(`${back('#/portroute/pompeii', '回龐貝路線')}<div class="kicker">龐貝古城 · 拿坡里 · 西元79年 vs 今日</div>
+    <h1>🏛️ 龐貝今昔對比互動拉軸</h1>
+    <p class="sub">左右拖曳中央白線或圓鈕，重現兩千年前古羅馬繁盛風華與今日現場遺跡。全部繪圖均為 100% 離線本地運算，不需網路。</p>
+    <div style="margin-bottom:12px;display:flex;gap:8px;flex-wrap:wrap">
+      <a class="btn small ghost" href="pompeii-compare.html" target="_blank" rel="noopener">🖥️ 打開獨立全螢幕版（支援現場拍照疊圖與微調）</a>
+    </div>
+    <div class="pcompare-chips" id="pc-chips">
+      ${spots.map((s) => `<button type="button" class="pcompare-chip${s.id === spotId ? ' on' : ''}" data-pspot="${s.id}">${s.name}</button>`).join('')}
+    </div>
+    <div class="pcompare-stage" id="pc-stage">
+      <div class="pcompare-layer"><img id="pc-img-after" alt="今日現場" /></div>
+      <div class="pcompare-layer" id="pc-before-layer" style="clip-path: inset(0 50% 0 0);"><img id="pc-img-before" alt="昔日風華" /></div>
+      <div class="pcompare-badge before">昔日風華 (西元79年)</div>
+      <div class="pcompare-badge after">今日現場 (考古遺址)</div>
+      <div class="pcompare-divider" id="pc-divider" style="left:50%">
+        <div class="pcompare-handle" id="pc-handle">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M8 9l-3 3 3 3m8-6l3 3-3 3"/></svg>
+        </div>
+      </div>
+      <div class="pcompare-pct">昔日 <span id="pc-pct-before">50%</span> ｜ 今日 <span id="pc-pct-after">50%</span></div>
+    </div>
+    <div class="card" style="margin-top:14px" id="pc-info">
+      <h3 id="pc-title">${esc(curSpot.name)}</h3>
+      <p class="sub" id="pc-sub">${esc(curSpot.sub || '')}</p>
+      <div class="ancient-modern-box" style="margin:8px 0 0">
+        <div class="ancient-modern-sec">
+          <b style="color:var(--warn)">🏛️ 昔日風華（西元79年繁盛日常）</b>
+          <p id="pc-desc-past">${esc(curSpot.descPast || '')}</p>
+        </div>
+        <div class="ancient-modern-sec">
+          <b style="color:var(--primary)">🔍 今日現場（兩千年後考古見證）</b>
+          <p id="pc-desc-present">${esc(curSpot.descPresent || '')}</p>
+        </div>
+      </div>
+    </div>`);
+
+  const stage = $('#pc-stage');
+  const beforeLayer = $('#pc-before-layer');
+  const divider = $('#pc-divider');
+  const imgBefore = $('#pc-img-before');
+  const imgAfter = $('#pc-img-after');
+  const pctBefore = $('#pc-pct-before');
+  const pctAfter = $('#pc-pct-after');
+
+  let sliderPercent = 50;
+  let isDragging = false;
+
+  function updateSlider(pct) {
+    sliderPercent = Math.max(0, Math.min(100, pct));
+    divider.style.left = sliderPercent + '%';
+    beforeLayer.style.clipPath = 'inset(0 ' + (100 - sliderPercent) + '% 0 0)';
+    const bVal = Math.round(sliderPercent);
+    pctBefore.textContent = bVal + '%';
+    pctAfter.textContent = (100 - bVal) + '%';
+  }
+
+  function handleMove(clientX) {
+    const rect = stage.getBoundingClientRect();
+    if (rect.width <= 0) return;
+    const pct = ((clientX - rect.left) / rect.width) * 100;
+    updateSlider(pct);
+  }
+
+  function renderCurrentSpot(sId) {
+    const sp = spots.find((x) => x.id === sId) || spots[0];
+    if (!sp) return;
+    $('#pc-title').textContent = sp.name;
+    $('#pc-sub').textContent = sp.sub || '';
+    $('#pc-desc-past').textContent = sp.descPast || '';
+    $('#pc-desc-present').textContent = sp.descPresent || '';
+    $$('[data-pspot]').forEach((b) => b.classList.toggle('on', b.dataset.pspot === sId));
+
+    const cb = document.createElement('canvas'); cb.width = 1280; cb.height = 800;
+    const ca = document.createElement('canvas'); ca.width = 1280; ca.height = 800;
+    if (window.POMPEII_ART && window.POMPEII_ART.renderSpot) {
+      window.POMPEII_ART.renderSpot(sId, cb, ca);
+    }
+    imgBefore.src = cb.toDataURL('image/jpeg', 0.92);
+    imgAfter.src = ca.toDataURL('image/jpeg', 0.92);
+  }
+
+  stage.addEventListener('mousedown', (e) => { isDragging = true; handleMove(e.clientX); });
+  window.addEventListener('mousemove', (e) => { if (isDragging) { e.preventDefault(); handleMove(e.clientX); } });
+  window.addEventListener('mouseup', () => { isDragging = false; });
+
+  stage.addEventListener('touchstart', (e) => {
+    if (e.touches.length > 0) { isDragging = true; handleMove(e.touches[0].clientX); }
+  }, { passive: true });
+  window.addEventListener('touchmove', (e) => {
+    if (isDragging && e.touches.length > 0) handleMove(e.touches[0].clientX);
+  }, { passive: true });
+  window.addEventListener('touchend', () => { isDragging = false; });
+
+  $$('[data-pspot]').forEach((btn) => {
+    btn.onclick = () => {
+      spotId = btn.dataset.pspot;
+      renderCurrentSpot(spotId);
+    };
+  });
+
+  renderCurrentSpot(spotId);
+  updateSlider(50);
+}
 
 /* ---------- v2.6：記帳與分帳（誰先付、平分給誰，最後只算兩家） ---------- */
 const MONEY_PEOPLE = ['LEO', 'LINDA', 'SIMON', 'SANDY', 'DISEN', 'EVA', 'ERIC'];
@@ -5927,6 +6068,14 @@ route('/port/:key', (key) => {
 function pompeiiMissionHtml() {
   const done = LS.get('pmis:' + S.player, {});
   return `<h2>龐貝現場路線任務（約 2 小時）</h2>
+    <div class="card pcompare-banner" style="margin-bottom:12px">
+      <div class="pcompare-icon">🏛️</div>
+      <div class="pcompare-text">
+        <b>龐貝今昔對比互動拉軸</b>
+        <span>現場邊走邊看：西元79年繁盛風華 vs 今日現場遺址</span>
+      </div>
+      <a class="btn small" href="#/pompeii-compare">打開拉軸</a>
+    </div>
     <p class="sub">從海門進、圓形競技場出口出，一路往東不走回頭路。妓院和大體育場（石膏像）冬天 16:00 停止入場，所以照這個順序走。每完成一站的任務 +10 分。</p>
     <div class="stack">${POMPEII_MISSION.map((m) => `<div class="card pmis${done[m.n] ? ' done' : ''}">
       <div class="rstep-head"><span class="rstep-n">${esc(m.time)}</span><div class="rstep-t"><b>${m.n}. ${esc(m.zh)}</b><span>${esc(m.it)}・約 ${m.min} 分鐘</span></div></div>
@@ -5940,6 +6089,7 @@ function pompeiiMissionHtml() {
           <b style="color:var(--primary)">🔍 今日現場（兩千年後考古見證）</b>
           <p>${esc(m.presentRuins)}</p>
         </div>
+        <div style="margin-top:6px"><a class="btn small ghost" href="#/pompeii-compare?spot=${pompeiiSpotKey(m.zh)}">🖼️ 互動拉軸看今昔對比</a></div>
       </div>` : ''}
       ${m.story.split('\n').map((t) => `<p>${esc(t)}</p>`).join('')}
       <div class="pmis-task"><b>🎯 任務：</b>${esc(m.task)}</div>
