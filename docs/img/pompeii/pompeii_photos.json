@@ -1,0 +1,162 @@
+﻿[
+    {
+        "id":  "foro_1",
+        "loc":  "foro",
+        "locTitle":  "🏛️ 公共廣場與朱比特神廟",
+        "angleTitle":  "角度 1：北望神廟與維蘇威火山",
+        "imgPast":  "img/pompeii/foro_1_past.jpg",
+        "imgPresent":  "img/pompeii/foro_1_present.jpg",
+        "descPast":  "西元79年繁盛日常：長袍羅馬市民在長方形市政廣場穿梭，北端朱比特神廟高聳威嚴，兩側為長廊攤位。",
+        "descPresent":  "2026年今日現場：神廟僅存高台與斷柱，兩側長廊柱礎依舊整齊排列，後方維蘇威火山猙獰破頂沉睡在天際。"
+    },
+    {
+        "id":  "foro_2",
+        "loc":  "foro",
+        "locTitle":  "🏛️ 公共廣場與朱比特神廟",
+        "angleTitle":  "角度 2：凱旋柱與騎馬銅像高台",
+        "imgPast":  "img/pompeii/foro_2_past.jpg",
+        "imgPresent":  "img/pompeii/foro_2_present.jpg",
+        "descPast":  "西元79年市政心臟：廣場東北方佇立著榮譽騎馬銅像與高聳的大理石凱旋柱，背景是平緩綠意的大山。",
+        "descPresent":  "2026年今日現場：高大的大理石雕像高台已褪去青銅光芒，石柱與紅磚牆面在陽光下述說兩千年歷史。"
+    },
+    {
+        "id":  "foro_3",
+        "loc":  "foro",
+        "locTitle":  "🏛️ 公共廣場與朱比特神廟",
+        "angleTitle":  "角度 3：柱廊中央中軸線視角",
+        "imgPast":  "img/pompeii/foro_3_past.jpg",
+        "imgPresent":  "img/pompeii/foro_3_present.jpg",
+        "descPast":  "西元79年雙層柱廊：整齊的白色大理石愛奧尼柱廊高聳林立，紅布幔與SPQR鷹旗飄揚，遠方神廟氣勢恢宏。",
+        "descPresent":  "2026年今日現場：同一透視位置的開闊石板大道，兩側古柱半截斷裂，遠方維蘇威破火山口直對中軸線。"
+    },
+    {
+        "id":  "foro_4",
+        "loc":  "foro",
+        "locTitle":  "🏛️ 公共廣場與朱比特神廟",
+        "angleTitle":  "角度 4：祭台與柯林斯石柱基座",
+        "imgPast":  "img/pompeii/foro_4_past.jpg",
+        "imgPresent":  "img/pompeii/foro_4_present.jpg",
+        "descPast":  "西元79年華麗祭壇：神殿前矗立著細緻浮雕的大理石雙層祭祀亭台，柱頭雕花與羅馬官員雕像白淨生輝。",
+        "descPresent":  "2026年今日現場：祭壇大理石外層剝落，露出四根修長的古石柱與基座，靜靜對望著群山與藍天。"
+    },
+    {
+        "id":  "arch_1",
+        "loc":  "arch",
+        "locTitle":  "🏛️ 廣場榮譽拱門",
+        "angleTitle":  "角度 1：卡利古拉榮譽拱門",
+        "imgPast":  "img/pompeii/arch_1_past.jpg",
+        "imgPresent":  "img/pompeii/arch_1_present.jpg",
+        "descPast":  "西元79年榮譽拱門：廣場北端的磚石單孔拱門貼飾著精美大理石板與皇帝雕像，穿過拱門可抵達神廟與市集。",
+        "descPresent":  "2026年今日現場：拱門頂部的裝飾雕塑雖已佚失，但古羅馬堅固的磚石砌拱券結構依然巍然屹立。"
+    },
+    {
+        "id":  "street_1",
+        "loc":  "street",
+        "locTitle":  "🚶 龐貝繁盛街道與市集",
+        "angleTitle":  "角度 1：市集大道直對維蘇威火山",
+        "imgPast":  "img/pompeii/street_1_past.jpg",
+        "imgPresent":  "img/pompeii/street_1_present.jpg",
+        "descPast":  "西元79年繁盛商道：兩側兩層樓木石屋舍鱗次櫛比，遮陽布篷下擺滿蔬果，遠處尚未塌毀的平緩火山高聳入雲。",
+        "descPresent":  "2026年今日現場：整排石柱殘基與堅硬的火山岩玄武岩石板路完整保存，遠方破火山口清晰可見。"
+    },
+    {
+        "id":  "street_2",
+        "loc":  "street",
+        "locTitle":  "🚶 龐貝繁盛街道與市集",
+        "angleTitle":  "角度 2：石板官道與斑馬線過街石",
+        "imgPast":  "img/pompeii/street_2_past.jpg",
+        "imgPresent":  "img/pompeii/street_2_present.jpg",
+        "descPast":  "西元79年石板大道：高凸的石塊供行人過街不沾泥水，車輪剛好從縫隙駛過，兩側牆面繪滿彩色灰泥壁畫。",
+        "descPresent":  "2026年今日現場：數百年車輪碾出的深溝痕跡歷歷在目，高聳的古石牆在藍天白雲下靜穆佇立。"
+    },
+    {
+        "id":  "street_3",
+        "loc":  "street",
+        "locTitle":  "🚶 龐貝繁盛街道與市集",
+        "angleTitle":  "角度 3：轉角浮雕公共噴泉水槽",
+        "imgPast":  "img/pompeii/street_3_past.jpg",
+        "imgPresent":  "img/pompeii/street_3_present.jpg",
+        "descPast":  "西元79年街角水井：雕刻著人臉面具的大石水槽湧出清涼泉水，市民提壺汲水，騾車在石板路顛簸前行。",
+        "descPresent":  "2026年今日現場：人臉浮雕出水口石槽依然完整立於街角，石緣被兩千年前汲水者的手掌磨得圓潤光滑。"
+    },
+    {
+        "id":  "street_4",
+        "loc":  "street",
+        "locTitle":  "🚶 龐貝繁盛街道與市集",
+        "angleTitle":  "角度 4：西元79年火山爆發時刻",
+        "imgPast":  "img/pompeii/street_4_past.jpg",
+        "imgPresent":  "img/pompeii/street_4_present.jpg",
+        "descPast":  "西元79年致命時刻：維蘇威火山猛烈噴發，黑色蕈狀浮石雨與火山灰蔽日遮天，街頭市民在恐慌中倉促撤離。",
+        "descPresent":  "2026年今日現場：火山灰沉睡兩千年後被考古發掘，陽光重新照亮這條石板古道，宛如時空凝結的紀念碑。"
+    },
+    {
+        "id":  "bakery_1",
+        "loc":  "bakery",
+        "locTitle":  "🥖 麵包烘焙坊大街",
+        "angleTitle":  "角度 1：熔岩石磨與現烤麵包店",
+        "imgPast":  "img/pompeii/bakery_1_past.jpg",
+        "imgPresent":  "img/pompeii/bakery_1_present.jpg",
+        "descPast":  "西元79年烘焙坊：門口巨大沙漏型熔岩石磨旋轉碾磨穀物，櫃檯擺滿剛出爐的八分圓形古羅馬麵包，香氣四溢。",
+        "descPresent":  "2026年今日現場：堅硬的玄武岩沙漏石磨原樣佇立在店鋪遺址，烤爐紅磚痕跡清晰可見。"
+    },
+    {
+        "id":  "thermopolium_1",
+        "loc":  "thermopolium",
+        "locTitle":  "🍲 豐饒大道熱食小吃店",
+        "angleTitle":  "角度 1：L形大理石櫃檯與陶罐",
+        "imgPast":  "img/pompeii/thermopolium_1_past.jpg",
+        "imgPresent":  "img/pompeii/thermopolium_1_present.jpg",
+        "descPast":  "西元79年熟食吧台：L形大理石櫃檯內嵌陶罐滾著肉汁扁豆，後牆壁龕守護神壁畫色彩鮮麗，市民快餐談笑。",
+        "descPresent":  "2026年今日現場：彩色大理石切片鑲嵌櫃檯與圓形陶罐口完整封存於火山灰下，生活氣息彷彿留在昨天。"
+    },
+    {
+        "id":  "villa_1",
+        "loc":  "villa",
+        "locTitle":  "🏡 貴族豪宅噴泉水景中庭",
+        "angleTitle":  "角度 1：水仙女壁龕與馬賽克彩繪",
+        "imgPast":  "img/pompeii/villa_1_past.jpg",
+        "imgPresent":  "img/pompeii/villa_1_present.jpg",
+        "descPast":  "西元79年貴族中庭：中央水池噴泉潺潺，後牆壁龕覆蓋極盡華麗的玻璃釉馬賽克海神壁畫，主人側臥品酒休憩。",
+        "descPresent":  "2026年今日現場：兩千年前精美絕倫的馬賽克壁龕奇蹟般色彩斑斕如新，水池石基完整映照地中海天光。"
+    },
+    {
+        "id":  "aerial_1",
+        "loc":  "aerial",
+        "locTitle":  "🌋 龐貝全城鳥瞰與火山爆發",
+        "angleTitle":  "角度 1：古城東南鳥瞰大體育場",
+        "imgPast":  "img/pompeii/aerial_1_past.jpg",
+        "imgPresent":  "img/pompeii/aerial_1_present.jpg",
+        "descPast":  "西元79年古城鳥瞰：整座龐貝覆蓋著整齊的紅瓦屋頂，大體育場綠蔭圍繞著中央泳池，背後為平緩的維蘇威大山。",
+        "descPresent":  "2026年今日現場：整齊劃一的羅馬格狀街道與住宅基底一覽無遺，體育場與兩萬人競技場在陽光下靜謐舒展。"
+    },
+    {
+        "id":  "aerial_2",
+        "loc":  "aerial",
+        "locTitle":  "🌋 龐貝全城鳥瞰與火山爆發",
+        "angleTitle":  "角度 2：爆發噴發柱與今日全景對照",
+        "imgPast":  "img/pompeii/aerial_2_past.jpg",
+        "imgPresent":  "img/pompeii/aerial_2_present.jpg",
+        "descPast":  "西元79年災難鳥瞰：維蘇威火山主峰劇烈爆炸，數萬米高的巨大浮石灰柱衝入平流層，火光與碎屑流席捲山麓。",
+        "descPresent":  "2026年今日現場：今日安寧廣袤的拿坡里平原與綠樹覆蓋的龐貝遺址，大自然的毀滅與永恆在此交織。"
+    },
+    {
+        "id":  "ephesus_curetes",
+        "loc":  "other_roman",
+        "locTitle":  "🏛️ 古羅馬名城巡禮",
+        "angleTitle":  "以弗所：克里特大道 (Via de los Curetes)",
+        "imgPast":  "img/pompeii/ephesus_curetes_past.jpg",
+        "imgPresent":  "img/pompeii/ephesus_curetes_present.jpg",
+        "descPast":  "古羅馬榮耀年代：整齊華麗的雙層彩色大理石柱廊立面，雕像林立，平整石板大道通往塞爾蘇斯圖書館。",
+        "descPresent":  "今日現場遺跡：兩側白色大理石柱廊整齊佇立，石板大道向山谷延伸，是全地中海保存最宏大的古羅馬城市遺址之一。"
+    },
+    {
+        "id":  "ephesus_hadrian",
+        "loc":  "other_roman",
+        "locTitle":  "🏛️ 古羅馬名城巡禮",
+        "angleTitle":  "以弗所：哈德良神廟 (Templo de Adriano)",
+        "imgPast":  "img/pompeii/ephesus_hadrian_past.jpg",
+        "imgPresent":  "img/pompeii/ephesus_hadrian_present.jpg",
+        "descPast":  "古羅馬榮耀年代：優雅的敘利亞拱門，飾有勝利女神與美杜莎浮雕，紅白綠彩繪鮮麗奪目，供奉皇帝哈德良。",
+        "descPresent":  "今日現場遺跡：經典的正面弧形拱門與四根柯林斯柱基完整重建，浮雕細節生動，見證古羅馬建築極致工藝。"
+    }
+]

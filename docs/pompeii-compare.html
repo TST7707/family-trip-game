@@ -34,14 +34,12 @@
   </script>
 
   <style>
-    /* 禁止選取文字，提升拖曳拉軸時的流暢體驗 */
     .no-select {
       user-select: none;
       -webkit-user-select: none;
       -moz-user-select: none;
     }
 
-    /* 自訂滑桿樣式 */
     input[type="range"].custom-range {
       -webkit-appearance: none;
       appearance: none;
@@ -72,7 +70,6 @@
       background-color: #ffffff;
     }
 
-    /* 拉軸中央圓鈕光暈動畫 */
     @keyframes subtlePulse {
       0%, 100% { box-shadow: 0 0 0 0 rgba(255, 255, 255, 0.45), 0 8px 20px rgba(0, 0, 0, 0.45); }
       50% { box-shadow: 0 0 0 8px rgba(255, 255, 255, 0), 0 8px 20px rgba(0, 0, 0, 0.45); }
@@ -82,18 +79,24 @@
       animation: subtlePulse 2.8s infinite;
     }
 
-    /* 景點切換按鈕選中樣式 */
-    .spot-btn.active {
+    .loc-btn.active {
       background-color: #c85a32;
       color: #ffffff;
       border-color: #e2754d;
       box-shadow: 0 4px 12px rgba(200, 90, 50, 0.35);
     }
+
+    .angle-btn.active {
+      background-color: #e5a445;
+      color: #1f1e1c;
+      border-color: #f0b562;
+      font-weight: 700;
+    }
   </style>
 </head>
 <body class="bg-stone-925 text-stone-100 min-h-screen flex flex-col antialiased selection:bg-terracotta-500 selection:text-white">
 
-  <!-- 頂部導覽列 / 博物館風格標題 -->
+  <!-- 頂部導覽列 -->
   <header class="border-b border-stone-800 bg-stone-900/80 backdrop-blur-md sticky top-0 z-30">
     <div class="max-w-6xl mx-auto px-4 sm:px-6 py-3 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
       <div class="flex items-center gap-3">
@@ -104,7 +107,6 @@
           <span class="hidden sm:inline">回龐貝路線</span>
         </a>
         <div class="w-10 h-10 rounded-xl bg-gradient-to-br from-terracotta-500 to-amber-700 flex items-center justify-center shadow-lg shrink-0">
-          <!-- 拱門圖示 SVG -->
           <svg class="w-6 h-6 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.8">
             <path stroke-linecap="round" stroke-linejoin="round" d="M3 21h18M5 21V11a7 7 0 0114 0v10M9 21v-6a3 3 0 016 0v6" />
           </svg>
@@ -114,12 +116,11 @@
             龐貝古城：今昔對比互動拉軸
           </h1>
           <p class="text-xs text-stone-400">
-            左右滑動中央拉軸，重現西元79年繁盛風華與兩千年後考古遺跡
+            左右滑動中央拉軸，同地點支援多角度切換，重現西元79年繁華日常與今日考古現場
           </p>
         </div>
       </div>
 
-      <!-- 快速操作按鈕 -->
       <div class="flex items-center gap-2 self-start sm:self-auto">
         <button id="btn-demo-reset" type="button"
           class="px-3 py-1.5 rounded-xl bg-stone-800 hover:bg-stone-700 active:scale-95 text-xs font-medium text-stone-200 border border-stone-700 transition flex items-center gap-1.5">
@@ -133,24 +134,30 @@
   </header>
 
   <!-- 主要內容區 -->
-  <main class="flex-1 max-w-6xl w-full mx-auto px-4 sm:px-6 py-5 flex flex-col gap-5">
+  <main class="flex-1 max-w-6xl w-full mx-auto px-4 sm:px-6 py-5 flex flex-col gap-4">
 
-    <!-- 經典景點快速切換頁籤 -->
-    <section class="bg-stone-900 border border-stone-800 p-3 sm:p-4 rounded-2xl shadow-sm">
-      <div class="flex items-center justify-between mb-2.5">
-        <span class="text-xs font-semibold text-stone-300 flex items-center gap-1.5">
-          <span>🏛️</span> 選擇龐貝經典對比景點：
+    <!-- 1. 地點選擇與多角度切換 -->
+    <section class="bg-stone-900 border border-stone-800 p-3 sm:p-4 rounded-2xl shadow-sm flex flex-col gap-3">
+      <div>
+        <span class="text-xs font-semibold text-stone-300 flex items-center gap-1.5 mb-2">
+          <span>🏛️</span> 選擇龐貝地點（同地點提供多角度探索）：
         </span>
-        <span id="spot-sub" class="text-xs text-stone-400 truncate"></span>
+        <div id="loc-tabs" class="flex flex-wrap gap-2">
+          <!-- 由 JavaScript 動態生成地點按鈕 -->
+        </div>
       </div>
-      <div id="spot-tabs" class="grid grid-cols-2 sm:grid-cols-4 gap-2">
-        <!-- 由 JavaScript 動態生成按鈕 -->
+
+      <!-- 多角度切換按鈕區 -->
+      <div id="angle-container" class="pt-2 border-t border-stone-800/80 flex flex-col sm:flex-row sm:items-center gap-2">
+        <span class="text-xs text-amber-400 font-semibold shrink-0">📐 切換視角：</span>
+        <div id="angle-tabs" class="flex flex-wrap gap-1.5">
+          <!-- 由 JavaScript 動態生成視角按鈕 -->
+        </div>
       </div>
     </section>
 
-    <!-- 核心互動對比舞台 (Before / After Comparison Stage) -->
+    <!-- 2. 核心互動對比舞台 -->
     <section class="relative w-full rounded-2xl overflow-hidden bg-stone-900 border border-stone-800 shadow-2xl">
-      <!-- 對比容器：固定寬高比 16:10 (手機版自動適應) -->
       <div id="comparison-container"
         class="relative w-full aspect-[4/3] sm:aspect-[16/10] max-h-[72vh] overflow-hidden cursor-ew-resize no-select touch-none bg-stone-950">
 
@@ -168,7 +175,7 @@
             class="w-full h-full object-contain pointer-events-none origin-center" />
         </div>
 
-        <!-- 輔助對齊十字準星 (調整對齊時顯示) -->
+        <!-- 輔助對齊十字準星 -->
         <div id="alignment-grid" class="pointer-events-none absolute inset-0 opacity-0 transition-opacity duration-200">
           <div class="w-full h-full grid grid-cols-3 grid-rows-3">
             <div class="border-r border-b border-amber-400/35"></div>
@@ -183,7 +190,7 @@
           </div>
         </div>
 
-        <!-- 左上角標籤：以前 (Past) -->
+        <!-- 左上角標籤 -->
         <div id="badge-before"
           class="pointer-events-none absolute top-3 left-3 sm:top-5 sm:left-5 px-3 py-1.5 sm:px-4 sm:py-2 rounded-xl bg-stone-950/80 backdrop-blur-md border border-white/15 shadow-lg transition-opacity duration-200">
           <div class="flex items-center gap-2">
@@ -193,7 +200,7 @@
           <p id="badge-before-sub" class="text-[11px] sm:text-xs text-stone-300 mt-0.5">古代龐貝復原</p>
         </div>
 
-        <!-- 右上角標籤：現在 (Present) -->
+        <!-- 右上角標籤 -->
         <div id="badge-after"
           class="pointer-events-none absolute top-3 right-3 sm:top-5 sm:right-5 px-3 py-1.5 sm:px-4 sm:py-2 rounded-xl bg-stone-950/80 backdrop-blur-md border border-white/15 shadow-lg transition-opacity duration-200">
           <div class="flex items-center justify-end gap-2">
@@ -207,16 +214,13 @@
         <div id="slider-divider"
           class="absolute top-0 bottom-0 w-0.5 bg-white shadow-[0_0_12px_rgba(0,0,0,0.85)] pointer-events-none"
           style="left: 50%;">
-          <!-- 中央圓形握把 -->
           <div id="slider-handle"
             class="handle-pulse pointer-events-auto absolute top-1/2 -translate-x-1/2 -translate-y-1/2 w-11 h-11 sm:w-12 sm:h-12 rounded-full bg-white text-stone-900 border-2 border-stone-200 flex items-center justify-center shadow-2xl cursor-ew-resize active:scale-95 transition-transform">
-            <!-- 左右雙箭頭圖示 -->
             <svg class="w-6 h-6 text-stone-800" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.4">
               <path stroke-linecap="round" stroke-linejoin="round" d="M8 9l-3 3 3 3m8-6l3 3-3 3" />
             </svg>
           </div>
 
-          <!-- 首次操作提示氣泡 (開始拖曳後自動淡出) -->
           <div id="drag-hint"
             class="absolute top-1/2 left-1/2 -translate-x-1/2 translate-y-8 whitespace-nowrap px-3 py-1 rounded-full bg-stone-950/85 text-white text-xs font-medium border border-white/20 shadow-lg pointer-events-none transition-opacity duration-300">
             ← 左右拖曳對比 →
@@ -230,75 +234,63 @@
       </div>
     </section>
 
-    <!-- 景點昔日與今日歷史解說卡片 -->
-    <section class="grid grid-cols-1 sm:grid-cols-2 gap-4">
-      <div class="p-4 rounded-2xl bg-stone-900/90 border border-amber-900/30 shadow-sm">
-        <div class="flex items-center gap-2 mb-2">
-          <span class="w-3 h-3 rounded-full bg-amber-400"></span>
-          <b class="text-sm font-semibold text-amber-200">🏛️ 昔日風華（西元79年繁盛日常）</b>
+    <!-- 3. 當前視角歷史解說卡片 -->
+    <section class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+      <div class="p-3.5 sm:p-4 rounded-2xl bg-stone-900/90 border border-amber-900/30 shadow-sm">
+        <div class="flex items-center gap-2 mb-1.5">
+          <span class="w-2.5 h-2.5 rounded-full bg-amber-400"></span>
+          <b class="text-xs sm:text-sm font-semibold text-amber-200">🏛️ 昔日風華（西元79年繁盛日常）</b>
         </div>
         <p id="desc-past" class="text-xs sm:text-sm text-stone-300 leading-relaxed"></p>
       </div>
-      <div class="p-4 rounded-2xl bg-stone-900/90 border border-sky-900/30 shadow-sm">
-        <div class="flex items-center gap-2 mb-2">
-          <span class="w-3 h-3 rounded-full bg-sky-400"></span>
-          <b class="text-sm font-semibold text-sky-200">🔍 今日現場（兩千年後考古見證）</b>
+      <div class="p-3.5 sm:p-4 rounded-2xl bg-stone-900/90 border border-sky-900/30 shadow-sm">
+        <div class="flex items-center gap-2 mb-1.5">
+          <span class="w-2.5 h-2.5 rounded-full bg-sky-400"></span>
+          <b class="text-xs sm:text-sm font-semibold text-sky-200">🔍 今日現場（兩千年後考古見證）</b>
         </div>
         <p id="desc-present" class="text-xs sm:text-sm text-stone-300 leading-relaxed"></p>
       </div>
     </section>
 
-    <!-- 圖片上傳區塊（現場拍照比對） -->
+    <!-- 4. 現場拍照疊圖與精準微調 -->
     <details class="group rounded-2xl bg-stone-900 border border-stone-800 shadow-sm overflow-hidden">
-      <summary class="p-4 cursor-pointer font-semibold text-sm text-stone-200 flex items-center justify-between hover:bg-stone-850 transition">
-        <span class="flex items-center gap-2">
-          <svg class="w-4 h-4 text-terracotta-500" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
-            <path stroke-linecap="round" stroke-linejoin="round" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />
-          </svg>
-          現場拍照疊圖：上傳您自己的今昔照片對比
-        </span>
-        <span class="text-xs text-stone-400 group-open:rotate-180 transition-transform">▼</span>
-      </summary>
-      <div class="p-4 pt-0 border-t border-stone-800/60 grid grid-cols-1 sm:grid-cols-2 gap-4 mt-3">
-        <!-- 上傳「過去」圖片 -->
-        <label for="upload-before"
-          class="flex items-center justify-between p-3.5 rounded-xl bg-stone-950/60 border border-stone-800 hover:border-stone-600 cursor-pointer transition">
-          <div class="truncate mr-2">
-            <span class="block text-xs font-semibold text-amber-300">上傳過去照片 (左側)</span>
-            <span id="before-filename" class="block text-[11px] text-stone-400 truncate mt-0.5">使用目前預設示意圖</span>
-          </div>
-          <span class="px-2.5 py-1 rounded bg-stone-800 text-xs text-stone-200 shrink-0">選擇檔案</span>
-          <input id="upload-before" type="file" accept="image/*" class="hidden" />
-        </label>
-
-        <!-- 上傳「現在」圖片 -->
-        <label for="upload-after"
-          class="flex items-center justify-between p-3.5 rounded-xl bg-stone-950/60 border border-stone-800 hover:border-stone-600 cursor-pointer transition">
-          <div class="truncate mr-2">
-            <span class="block text-xs font-semibold text-sky-300">上傳現場照片 (右側)</span>
-            <span id="after-filename" class="block text-[11px] text-stone-400 truncate mt-0.5">使用目前預設示意圖</span>
-          </div>
-          <span class="px-2.5 py-1 rounded bg-stone-800 text-xs text-stone-200 shrink-0">選擇檔案</span>
-          <input id="upload-after" type="file" accept="image/*" class="hidden" />
-        </label>
-      </div>
-    </details>
-
-    <!-- 精準對齊微調控制面板 -->
-    <details class="group rounded-2xl bg-stone-900 border border-stone-800 shadow-sm overflow-hidden">
-      <summary class="p-4 cursor-pointer font-semibold text-sm text-stone-200 flex items-center justify-between hover:bg-stone-850 transition">
+      <summary class="p-3.5 sm:p-4 cursor-pointer font-semibold text-xs sm:text-sm text-stone-200 flex items-center justify-between hover:bg-stone-850 transition">
         <span class="flex items-center gap-2">
           <svg class="w-4 h-4 text-terracotta-500" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
             <path stroke-linecap="round" stroke-linejoin="round" d="M12 6V4m0 2a2 2 0 100 4m0-4a2 2 0 110 4m-6 8a2 2 0 100-4m0 4a2 2 0 110-4m0 4v2m0-6V4m6 6v10m6-2a2 2 0 100-4m0 4a2 2 0 110-4m0 4v2m0-6V4" />
           </svg>
-          精準微調位置與比例（X/Y 偏移與縮放）
+          現場拍照疊圖與微調控制項（上傳自己照片與調整 X/Y/縮放）
         </span>
         <span class="text-xs text-stone-400 group-open:rotate-180 transition-transform">▼</span>
       </summary>
-      <div class="p-4 pt-0 border-t border-stone-800/60 mt-3">
-        <div class="flex items-center justify-between mb-3">
+      <div class="p-4 pt-0 border-t border-stone-800/60 mt-3 flex flex-col gap-4">
+        <!-- 上傳控制 -->
+        <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+          <label for="upload-before"
+            class="flex items-center justify-between p-3 rounded-xl bg-stone-950/60 border border-stone-800 hover:border-stone-600 cursor-pointer transition">
+            <div class="truncate mr-2">
+              <span class="block text-xs font-semibold text-amber-300">上傳過去照片 (左側)</span>
+              <span id="before-filename" class="block text-[11px] text-stone-400 truncate mt-0.5">使用目前預設圖</span>
+            </div>
+            <span class="px-2.5 py-1 rounded bg-stone-800 text-xs text-stone-200 shrink-0">選擇檔案</span>
+            <input id="upload-before" type="file" accept="image/*" class="hidden" />
+          </label>
+
+          <label for="upload-after"
+            class="flex items-center justify-between p-3 rounded-xl bg-stone-950/60 border border-stone-800 hover:border-stone-600 cursor-pointer transition">
+            <div class="truncate mr-2">
+              <span class="block text-xs font-semibold text-sky-300">上傳現場照片 (右側)</span>
+              <span id="after-filename" class="block text-[11px] text-stone-400 truncate mt-0.5">使用目前預設圖</span>
+            </div>
+            <span class="px-2.5 py-1 rounded bg-stone-800 text-xs text-stone-200 shrink-0">選擇檔案</span>
+            <input id="upload-after" type="file" accept="image/*" class="hidden" />
+          </label>
+        </div>
+
+        <!-- 微調控制 -->
+        <div class="flex items-center justify-between">
           <p class="text-xs text-stone-400">
-            可拖動滑桿調整「過去」圖層位置與大小，使兩張照片邊緣完美對齊。
+            拖動滑桿調整「過去」圖層位置與大小，手動肉眼精準重疊。
           </p>
           <div class="flex items-center gap-2">
             <button id="btn-onion-skin" type="button"
@@ -312,6 +304,7 @@
             </button>
           </div>
         </div>
+
         <div class="grid grid-cols-1 sm:grid-cols-3 gap-3">
           <div class="bg-stone-950/60 p-3 rounded-xl border border-stone-800/80">
             <div class="flex justify-between items-center mb-1.5">
@@ -342,7 +335,7 @@
   <!-- 底部導覽 -->
   <footer class="max-w-6xl w-full mx-auto px-4 sm:px-6 py-4 text-center text-xs text-stone-500 border-t border-stone-900 flex flex-col sm:flex-row items-center justify-between gap-2">
     <div>
-      支援滑鼠拖曳、鍵盤左右鍵、手機平板觸控滑動。100% 離線本地運算，不耗流量。
+      支援滑鼠拖曳、鍵盤左右鍵、手機平板觸控滑動。100% 本地運算與離線快取。
     </div>
     <a href="index.html#/portroute/pompeii" class="text-terracotta-500 hover:underline">
       ← 返回 🏛️ 龐貝 2 小時經典路線
@@ -356,12 +349,11 @@
     <span id="toast-msg">已更新</span>
   </div>
 
-  <!-- 載入向量繪圖引擎 -->
+  <!-- 載入向量與圖庫引擎 -->
   <script src="pompeii-art.js"></script>
 
   <script>
     (function () {
-      // DOM 元素
       const container = document.getElementById('comparison-container');
       const beforeLayer = document.getElementById('before-layer');
       const sliderDivider = document.getElementById('slider-divider');
@@ -372,10 +364,12 @@
       const pctAfter = document.getElementById('pct-after');
       const badgeBefore = document.getElementById('badge-before');
       const badgeAfter = document.getElementById('badge-after');
+      const badgeBeforeSub = document.getElementById('badge-before-sub');
       const alignmentGrid = document.getElementById('alignment-grid');
 
-      const spotTabs = document.getElementById('spot-tabs');
-      const spotSub = document.getElementById('spot-sub');
+      const locTabs = document.getElementById('loc-tabs');
+      const angleContainer = document.getElementById('angle-container');
+      const angleTabs = document.getElementById('angle-tabs');
       const descPast = document.getElementById('desc-past');
       const descPresent = document.getElementById('desc-present');
 
@@ -401,7 +395,8 @@
       const toastMsg = document.getElementById('toast-msg');
       let toastTimer = null;
 
-      let currentSpotId = 'marina';
+      let currentLocId = 'foro';
+      let currentAngleId = 'foro_1';
       let sliderPercent = 50;
       let isDragging = false;
       let hasInteracted = false;
@@ -416,62 +411,92 @@
         clearTimeout(toastTimer);
         toastTimer = setTimeout(() => {
           toastBox.classList.add('opacity-0', 'translate-y-2');
-        }, 2600);
+        }, 2400);
       }
 
-      // 生成景點切換按鈕
-      function initSpotTabs() {
-        const spots = (window.POMPEII_ART && window.POMPEII_ART.spots) || [];
-        spotTabs.innerHTML = spots.map((s) => `
-          <button type="button" data-spot="${s.id}"
-            class="spot-btn px-3 py-2.5 rounded-xl bg-stone-950/60 hover:bg-stone-800 text-xs font-medium text-stone-200 border border-stone-800 transition text-left flex flex-col gap-0.5 ${s.id === currentSpotId ? 'active' : ''}">
-            <span class="font-bold truncate">${s.name}</span>
-            <span class="text-[10px] text-stone-400 truncate">${s.sub}</span>
-          </button>
-        `).join('');
+      // 初始化地點選單
+      function initLocations() {
+        const locs = (window.POMPEII_ART && window.POMPEII_ART.locations) || [];
+        locTabs.innerHTML = locs.map((loc) => {
+          const aCount = (loc.angles && loc.angles.length) || 1;
+          const countBadge = aCount > 1 ? `<span class="text-[10px] opacity-80">(${aCount}視角)</span>` : '';
+          return `
+            <button type="button" data-loc="${loc.id}"
+              class="loc-btn px-3 py-1.5 rounded-xl bg-stone-950/60 hover:bg-stone-800 text-xs font-medium text-stone-200 border border-stone-800 transition flex items-center gap-1.5 ${loc.id === currentLocId ? 'active' : ''}">
+              <span>${loc.name}</span>
+              ${countBadge}
+            </button>
+          `;
+        }).join('');
 
-        spotTabs.querySelectorAll('[data-spot]').forEach((btn) => {
+        locTabs.querySelectorAll('[data-loc]').forEach((btn) => {
           btn.addEventListener('click', () => {
-            selectSpot(btn.dataset.spot);
+            selectLocation(btn.dataset.loc);
           });
         });
       }
 
-      // 切換景點
-      function selectSpot(spotId) {
-        currentSpotId = spotId;
-        const spots = (window.POMPEII_ART && window.POMPEII_ART.spots) || [];
-        const spot = spots.find((s) => s.id === spotId) || spots[0];
+      // 切換地點
+      function selectLocation(locId, targetAngleId) {
+        currentLocId = locId;
+        const locs = (window.POMPEII_ART && window.POMPEII_ART.locations) || [];
+        const loc = locs.find((l) => l.id === locId) || locs[0];
 
-        // 更新按鈕樣式
-        spotTabs.querySelectorAll('[data-spot]').forEach((b) => {
-          b.classList.toggle('active', b.dataset.spot === spotId);
+        locTabs.querySelectorAll('[data-loc]').forEach((b) => {
+          b.classList.toggle('active', b.dataset.loc === locId);
         });
 
-        if (spot) {
-          spotSub.textContent = spot.sub;
-          descPast.textContent = spot.descPast;
-          descPresent.textContent = spot.descPresent;
+        // 渲染此地點的視角切換按鈕
+        const angles = (loc && loc.angles) || [];
+        if (angles.length > 1) {
+          angleContainer.classList.remove('hidden');
+          angleTabs.innerHTML = angles.map((a, idx) => `
+            <button type="button" data-angle="${a.id}"
+              class="angle-btn px-2.5 py-1 rounded-lg bg-stone-800 hover:bg-stone-700 text-xs text-stone-200 border border-stone-700 transition">
+              ${a.title}
+            </button>
+          `).join('');
+
+          angleTabs.querySelectorAll('[data-angle]').forEach((b) => {
+            b.addEventListener('click', () => {
+              selectAngle(b.dataset.angle);
+            });
+          });
+        } else {
+          angleContainer.classList.add('hidden');
         }
 
-        // 使用 Canvas 繪製對應的高解析對比圖
-        const canvasB = document.createElement('canvas');
-        canvasB.width = 1280; canvasB.height = 800;
-        const canvasA = document.createElement('canvas');
-        canvasA.width = 1280; canvasA.height = 800;
+        const pickedAngleId = targetAngleId || (angles[0] && angles[0].id);
+        selectAngle(pickedAngleId);
+      }
 
-        if (window.POMPEII_ART && window.POMPEII_ART.renderSpot) {
-          window.POMPEII_ART.renderSpot(spotId, canvasB, canvasA);
+      // 切換具體視角
+      function selectAngle(angleId) {
+        currentAngleId = angleId;
+        const locs = (window.POMPEII_ART && window.POMPEII_ART.locations) || [];
+        const loc = locs.find((l) => l.id === currentLocId) || locs[0];
+        const angles = (loc && loc.angles) || [];
+        const angle = angles.find((a) => a.id === angleId) || angles[0];
+        if (!angle) return;
+
+        angleTabs.querySelectorAll('[data-angle]').forEach((b) => {
+          b.classList.toggle('active', b.dataset.angle === angleId);
+        });
+
+        descPast.textContent = angle.descPast || '';
+        descPresent.textContent = angle.descPresent || '';
+        badgeBeforeSub.textContent = angle.title;
+
+        // 載入圖片 (實景照片或向量畫布)
+        if (window.POMPEII_ART && window.POMPEII_ART.loadAngle) {
+          window.POMPEII_ART.loadAngle(angle, imgBefore, imgAfter, () => {
+            beforeFilename.textContent = `已載入：${angle.title} (過去)`;
+            afterFilename.textContent = `已載入：${angle.title} (現在)`;
+          });
         }
-
-        imgBefore.src = canvasB.toDataURL('image/jpeg', 0.92);
-        imgAfter.src = canvasA.toDataURL('image/jpeg', 0.92);
-
-        beforeFilename.textContent = `目前使用：預設 ${spot.name} 復原圖`;
-        afterFilename.textContent = `目前使用：預設 ${spot.name} 遺跡圖`;
 
         resetAlignment();
-        showToast(`已載入：${spot.name}`);
+        showToast(`已切換：${angle.title}`);
       }
 
       function updateSliderPosition(percent) {
@@ -597,7 +622,7 @@
           btnOnionSkin.classList.add('bg-amber-600/30', 'border-amber-500/60', 'text-amber-200');
           onionDot.classList.replace('bg-stone-500', 'bg-amber-400');
           alignmentGrid.classList.remove('opacity-0');
-          showToast('已開啟半透明疊圖模式：拉軸可調整透明度');
+          showToast('已開啟半透明疊圖模式');
         } else {
           btnOnionSkin.classList.remove('bg-amber-600/30', 'border-amber-500/60', 'text-amber-200');
           onionDot.classList.replace('bg-amber-400', 'bg-stone-500');
@@ -630,25 +655,22 @@
       btnDemoReset.addEventListener('click', () => {
         uploadBefore.value = '';
         uploadAfter.value = '';
-        selectSpot(currentSpotId);
+        selectLocation(currentLocId, currentAngleId);
         updateSliderPosition(50);
         showToast('已重置拉軸與對齊');
       });
 
-      // 檢查 URL 參數是否指定景點 (例如 ?spot=foro)
-      function checkUrlSpot() {
+      function checkUrlParams() {
         const urlParams = new URLSearchParams(window.location.search);
-        const s = urlParams.get('spot');
-        if (s && ['marina', 'foro', 'thermopolium', 'anfiteatro'].includes(s)) {
-          return s;
-        }
-        return 'marina';
+        const l = urlParams.get('loc') || urlParams.get('spot');
+        const a = urlParams.get('angle');
+        return { loc: l || 'foro', angle: a };
       }
 
       window.addEventListener('DOMContentLoaded', () => {
-        initSpotTabs();
-        const initialSpot = checkUrlSpot();
-        selectSpot(initialSpot);
+        initLocations();
+        const { loc, angle } = checkUrlParams();
+        selectLocation(loc, angle);
         updateSliderPosition(50);
       });
     })();

@@ -5687,12 +5687,14 @@ function walkSegments(steps) {
 }
 const STEP_ICON = { '景點': '📍', '午餐': '🍝', '上車': '🚕', '下車': '🚏', '下船': '🚢', '交通': '🚆', '延伸': '➕', '步行': '🚶' };
 function pompeiiSpotKey(zh) {
-  if (!zh) return 'marina';
+  if (!zh) return 'foro';
   if (zh.includes('海門')) return 'marina';
   if (zh.includes('廣場')) return 'foro';
   if (zh.includes('熱食店') || zh.includes('豐饒大道')) return 'thermopolium';
   if (zh.includes('競技場')) return 'anfiteatro';
-  return 'marina';
+  if (zh.includes('體育場') || zh.includes('石膏')) return 'aerial';
+  if (zh.includes('小巷') || zh.includes('妓院')) return 'street';
+  return 'foro';
 }
 function routeStepHtml(s, i) {
   const num = s.n || i + 1;
@@ -5757,27 +5759,38 @@ route('/portroute/:id', (id) => {
 route('/pompeii-compare', () => { paintPompeiiCompare(); return 'home'; });
 route('/pompeii-compare/:spot', (spot) => { paintPompeiiCompare(spot); return 'home'; });
 
-function paintPompeiiCompare(initialSpot) {
+function paintPompeiiCompare(initialLoc, initialAngle) {
   const hashPart = location.hash.includes('?') ? location.hash.split('?')[1] : '';
   const urlParams = new URLSearchParams(hashPart);
-  let spotId = initialSpot || urlParams.get('spot') || 'marina';
-  const spots = (window.POMPEII_ART && window.POMPEII_ART.spots) || [
-    { id: 'marina', name: '🏛️ 海門與石板大道', sub: 'Porta Marina · 入城雙拱人車分流', descPast: '西元79年繁盛港門：大海拍岸，商船泊靠。大小雙拱人車分流，長袍羅馬人與滿載陶罐的騾車顛簸入城。', descPresent: '今日現場：海岸已退縮兩公里。厚重玄武岩石板大道、深車轍、斑馬線過街石與防夜盲白石完好如初。' },
-    { id: 'foro', name: '🏛️ 公共廣場與朱比特神廟', sub: 'Foro · 市政中樞與維蘇威火山', descPast: '西元79年市政心臟：高聳神廟香火繚繞，兩層雪白大理石柱廊。背後是平緩翠綠、被葡萄園覆蓋的平靜維蘇威山。', descPresent: '今日現場：開闊無頂石板廣場，朱比特神廟餘高台斷柱，背後直對著猙獰巨大的維蘇威火山口破頂。' },
-    { id: 'thermopolium', name: '🍲 豐饒大道熱食小吃店', sub: "Thermopolium di Vetutius Placidus", descPast: '西元79年鬧市小吃店：L形彩色大理石櫃檯熱氣蒸騰，陶罐滾著肉汁扁豆，市民站著喝熱香料酒，神話壁畫鮮麗奪目。', descPresent: '今日現場：彩色大理石鑲嵌櫃檯與四個內嵌陶罐完好留存，門檻插板滑槽清晰可見，生活溫度凝固在西元79年。' },
-    { id: 'anfiteatro', name: '⚔️ 圓形競技場', sub: 'Anfiteatro · 全羅馬世界最古老石造競技場', descPast: '西元79年兩萬人沸騰角鬥場：高空拉起巨幅遮陽天幕，旗幟招展，角鬥士沙場金屬交鋒，山呼海嘯。', descPresent: '今日現場：世界最古老石造競技場雙層外拱與石階依然完整，青草在石縫蔓生，耳畔唯有山風與歷史迴音。' }
-  ];
-  let curSpot = spots.find((s) => s.id === spotId) || spots[0];
-  spotId = curSpot.id;
+  let locId = initialLoc || urlParams.get('loc') || urlParams.get('spot') || 'foro';
+  let angleId = initialAngle || urlParams.get('angle') || null;
+
+  const locs = (window.POMPEII_ART && window.POMPEII_ART.locations) || [];
+  let curLoc = locs.find((l) => l.id === locId) || locs[0];
+  if (!curLoc) {
+    curLoc = { id: 'foro', name: '🏛️ 公共廣場與神廟', angles: [] };
+  }
+  locId = curLoc.id;
+  const angles = curLoc.angles || [];
+  let curAngle = (angleId && angles.find((a) => a.id === angleId)) || angles[0];
+  if (!curAngle) curAngle = { title: '經典視角', descPast: '', descPresent: '' };
+  angleId = curAngle.id;
 
   view(`${back('#/portroute/pompeii', '回龐貝路線')}<div class="kicker">龐貝古城 · 拿坡里 · 西元79年 vs 今日</div>
     <h1>🏛️ 龐貝今昔對比互動拉軸</h1>
-    <p class="sub">左右拖曳中央白線或圓鈕，重現兩千年前古羅馬繁盛風華與今日現場遺跡。全部繪圖均為 100% 離線本地運算，不需網路。</p>
+    <p class="sub">左右拖曳中央白線或圓鈕，重現兩千年前古羅馬繁盛風華與今日現場遺跡。同一地點提供多種視角切換，支援 100% 離線本地運算。</p>
     <div style="margin-bottom:12px;display:flex;gap:8px;flex-wrap:wrap">
       <a class="btn small ghost" href="pompeii-compare.html" target="_blank" rel="noopener">🖥️ 打開獨立全螢幕版（支援現場拍照疊圖與微調）</a>
     </div>
-    <div class="pcompare-chips" id="pc-chips">
-      ${spots.map((s) => `<button type="button" class="pcompare-chip${s.id === spotId ? ' on' : ''}" data-pspot="${s.id}">${s.name}</button>`).join('')}
+    <div class="pcompare-chips" id="pc-loc-chips">
+      ${locs.map((l) => {
+        const cnt = (l.angles && l.angles.length) || 1;
+        const tag = cnt > 1 ? ` (${cnt}視角)` : '';
+        return `<button type="button" class="pcompare-chip${l.id === locId ? ' on' : ''}" data-ploc="${l.id}">${l.name}${tag}</button>`;
+      }).join('')}
+    </div>
+    <div class="pcompare-angles" id="pc-angle-chips" style="${angles.length > 1 ? 'display:flex;gap:6px;overflow-x:auto;padding-bottom:8px;margin-bottom:8px' : 'display:none'}">
+      ${angles.map((a) => `<button type="button" class="btn small${a.id === angleId ? '' : ' ghost'}" data-pangle="${a.id}">${a.title}</button>`).join('')}
     </div>
     <div class="pcompare-stage" id="pc-stage">
       <div class="pcompare-layer"><img id="pc-img-after" alt="今日現場" /></div>
@@ -5792,16 +5805,16 @@ function paintPompeiiCompare(initialSpot) {
       <div class="pcompare-pct">昔日 <span id="pc-pct-before">50%</span> ｜ 今日 <span id="pc-pct-after">50%</span></div>
     </div>
     <div class="card" style="margin-top:14px" id="pc-info">
-      <h3 id="pc-title">${esc(curSpot.name)}</h3>
-      <p class="sub" id="pc-sub">${esc(curSpot.sub || '')}</p>
+      <h3 id="pc-title">${esc(curAngle.title || curLoc.name)}</h3>
+      <p class="sub" id="pc-sub">${esc(curLoc.name)}</p>
       <div class="ancient-modern-box" style="margin:8px 0 0">
         <div class="ancient-modern-sec">
           <b style="color:var(--warn)">🏛️ 昔日風華（西元79年繁盛日常）</b>
-          <p id="pc-desc-past">${esc(curSpot.descPast || '')}</p>
+          <p id="pc-desc-past">${esc(curAngle.descPast || '')}</p>
         </div>
         <div class="ancient-modern-sec">
           <b style="color:var(--primary)">🔍 今日現場（兩千年後考古見證）</b>
-          <p id="pc-desc-present">${esc(curSpot.descPresent || '')}</p>
+          <p id="pc-desc-present">${esc(curAngle.descPresent || '')}</p>
         </div>
       </div>
     </div>`);
@@ -5813,6 +5826,7 @@ function paintPompeiiCompare(initialSpot) {
   const imgAfter = $('#pc-img-after');
   const pctBefore = $('#pc-pct-before');
   const pctAfter = $('#pc-pct-after');
+  const angleContainer = $('#pc-angle-chips');
 
   let sliderPercent = 50;
   let isDragging = false;
@@ -5833,22 +5847,46 @@ function paintPompeiiCompare(initialSpot) {
     updateSlider(pct);
   }
 
-  function renderCurrentSpot(sId) {
-    const sp = spots.find((x) => x.id === sId) || spots[0];
-    if (!sp) return;
-    $('#pc-title').textContent = sp.name;
-    $('#pc-sub').textContent = sp.sub || '';
-    $('#pc-desc-past').textContent = sp.descPast || '';
-    $('#pc-desc-present').textContent = sp.descPresent || '';
-    $$('[data-pspot]').forEach((b) => b.classList.toggle('on', b.dataset.pspot === sId));
+  function renderAngle(ang) {
+    if (!ang) return;
+    curAngle = ang;
+    angleId = ang.id;
+    $('#pc-title').textContent = ang.title;
+    $('#pc-desc-past').textContent = ang.descPast || '';
+    $('#pc-desc-present').textContent = ang.descPresent || '';
+    $$('[data-pangle]').forEach((b) => {
+      b.classList.toggle('ghost', b.dataset.pangle !== ang.id);
+    });
 
-    const cb = document.createElement('canvas'); cb.width = 1280; cb.height = 800;
-    const ca = document.createElement('canvas'); ca.width = 1280; ca.height = 800;
-    if (window.POMPEII_ART && window.POMPEII_ART.renderSpot) {
-      window.POMPEII_ART.renderSpot(sId, cb, ca);
+    if (window.POMPEII_ART && window.POMPEII_ART.loadAngle) {
+      window.POMPEII_ART.loadAngle(ang, imgBefore, imgAfter);
     }
-    imgBefore.src = cb.toDataURL('image/jpeg', 0.92);
-    imgAfter.src = ca.toDataURL('image/jpeg', 0.92);
+  }
+
+  function renderLocation(lId, targetAngleId) {
+    const l = locs.find((x) => x.id === lId) || locs[0];
+    if (!l) return;
+    curLoc = l;
+    locId = l.id;
+    $$('[data-ploc]').forEach((b) => b.classList.toggle('on', b.dataset.ploc === l.id));
+
+    const angs = l.angles || [];
+    if (angs.length > 1) {
+      angleContainer.style.display = 'flex';
+      angleContainer.innerHTML = angs.map((a) => `<button type="button" class="btn small${a.id === (targetAngleId || angs[0].id) ? '' : ' ghost'}" data-pangle="${a.id}">${a.title}</button>`).join('');
+      $$('[data-pangle]').forEach((b) => {
+        b.onclick = () => {
+          const picked = angs.find((x) => x.id === b.dataset.pangle);
+          if (picked) renderAngle(picked);
+        };
+      });
+    } else {
+      angleContainer.style.display = 'none';
+      angleContainer.innerHTML = '';
+    }
+
+    const ang = (targetAngleId && angs.find((x) => x.id === targetAngleId)) || angs[0];
+    renderAngle(ang);
   }
 
   stage.addEventListener('mousedown', (e) => { isDragging = true; handleMove(e.clientX); });
@@ -5863,14 +5901,13 @@ function paintPompeiiCompare(initialSpot) {
   }, { passive: true });
   window.addEventListener('touchend', () => { isDragging = false; });
 
-  $$('[data-pspot]').forEach((btn) => {
+  $$('[data-ploc]').forEach((btn) => {
     btn.onclick = () => {
-      spotId = btn.dataset.pspot;
-      renderCurrentSpot(spotId);
+      renderLocation(btn.dataset.ploc);
     };
   });
 
-  renderCurrentSpot(spotId);
+  renderLocation(locId, angleId);
   updateSlider(50);
 }
 

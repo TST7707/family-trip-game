@@ -613,4 +613,6 @@ details.stay[open] summary{border-bottom:1px solid var(--line)}
 .pcompare-chips{display:flex;gap:6px;overflow-x:auto;padding:4px 0 10px;margin-bottom:8px}
 .pcompare-chip{padding:7px 12px;font-size:13px;font-weight:700;border-radius:20px;border:1px solid var(--line);background:var(--card);color:var(--fg);cursor:pointer;white-space:nowrap;transition:all .15s}
 .pcompare-chip.on{background:var(--primary);color:#fff;border-color:var(--primary)}
+.pcompare-angles{display:flex;gap:6px;overflow-x:auto;padding:2px 0 8px;margin-bottom:8px}
+.pcompare-angles .btn.small{font-size:12.5px;padding:5px 12px;white-space:nowrap}
 
