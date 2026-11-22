@@ -2,8 +2,8 @@
 <html lang="zh-Hant">
 <head>
   <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>龐貝古城今昔對比互動拉軸 | Pompeii Then & Now</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+  <title>龐貝古城今昔對比與 AR 實景遮罩拍照 | Pompeii Then & Now</title>
   <!-- 載入 Tailwind CSS -->
   <script src="https://cdn.tailwindcss.com"></script>
   <!-- 載入 Google Fonts (Noto Sans TC & Inter) -->
@@ -92,6 +92,12 @@
       border-color: #f0b562;
       font-weight: 700;
     }
+
+    .mode-tab.active {
+      background-color: #c85a32;
+      color: #ffffff;
+      border-color: #e2754d;
+    }
   </style>
 </head>
 <body class="bg-stone-925 text-stone-100 min-h-screen flex flex-col antialiased selection:bg-terracotta-500 selection:text-white">
@@ -112,35 +118,46 @@
           </svg>
         </div>
         <div>
-          <h1 class="text-base sm:text-lg font-bold tracking-wide text-stone-50">
-            龐貝古城：今昔對比互動拉軸
+          <h1 class="text-base sm:text-lg font-bold tracking-wide text-stone-50 flex items-center gap-2">
+            龐貝古城：今昔對比 ✕ AR 實景相機
+            <span id="header-ar-tag" class="hidden px-2 py-0.5 rounded-full text-[11px] bg-amber-500/20 text-amber-300 border border-amber-500/40">AR 模式</span>
           </h1>
           <p class="text-xs text-stone-400">
-            左右滑動中央拉軸，同地點支援多角度切換，重現西元79年繁華日常與今日考古現場
+            支援經典左右拉軸對照與現場 AR 半透明遮罩拍照，重現西元79年繁盛風華
           </p>
         </div>
       </div>
 
       <div class="flex items-center gap-2 self-start sm:self-auto">
+        <!-- 模式切換 -->
+        <div class="bg-stone-950 p-1 rounded-xl border border-stone-800 flex items-center gap-1">
+          <button id="tab-mode-compare" type="button" class="mode-tab active px-3 py-1.5 rounded-lg text-xs font-medium transition flex items-center gap-1.5">
+            <span>🖼️ 今昔拉軸</span>
+          </button>
+          <button id="tab-mode-ar" type="button" class="mode-tab px-3 py-1.5 rounded-lg text-xs font-medium text-stone-300 hover:text-white transition flex items-center gap-1.5">
+            <span>📸 現場 AR 遮罩拍照</span>
+          </button>
+        </div>
+
         <button id="btn-demo-reset" type="button"
-          class="px-3 py-1.5 rounded-xl bg-stone-800 hover:bg-stone-700 active:scale-95 text-xs font-medium text-stone-200 border border-stone-700 transition flex items-center gap-1.5">
+          class="px-2.5 py-1.5 rounded-xl bg-stone-800 hover:bg-stone-700 active:scale-95 text-xs font-medium text-stone-200 border border-stone-700 transition flex items-center gap-1" title="重置位置與縮放">
           <svg class="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
             <path stroke-linecap="round" stroke-linejoin="round" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
           </svg>
-          重置拉軸與對位
+          <span class="hidden sm:inline">重置</span>
         </button>
       </div>
     </div>
   </header>
 
   <!-- 主要內容區 -->
-  <main class="flex-1 max-w-6xl w-full mx-auto px-4 sm:px-6 py-5 flex flex-col gap-4">
+  <main class="flex-1 max-w-6xl w-full mx-auto px-4 sm:px-6 py-4 sm:py-5 flex flex-col gap-4">
 
     <!-- 1. 地點選擇與多角度切換 -->
     <section class="bg-stone-900 border border-stone-800 p-3 sm:p-4 rounded-2xl shadow-sm flex flex-col gap-3">
       <div>
         <span class="text-xs font-semibold text-stone-300 flex items-center gap-1.5 mb-2">
-          <span>🏛️</span> 選擇龐貝地點（同地點提供多角度探索）：
+          <span>🏛️</span> 選擇龐貝地點：
         </span>
         <div id="loc-tabs" class="flex flex-wrap gap-2">
           <!-- 由 JavaScript 動態生成地點按鈕 -->
@@ -156,26 +173,57 @@
       </div>
     </section>
 
-    <!-- 2. 核心互動對比舞台 -->
-    <section class="relative w-full rounded-2xl overflow-hidden bg-stone-900 border border-stone-800 shadow-2xl">
+    <!-- 2. 核心對比與 AR 拍照舞台 -->
+    <section class="relative w-full rounded-2xl overflow-hidden bg-stone-900 border border-stone-800 shadow-2xl flex flex-col">
+      
+      <!-- 舞台容器 -->
       <div id="comparison-container"
-        class="relative w-full aspect-[4/3] sm:aspect-[16/10] max-h-[72vh] overflow-hidden cursor-ew-resize no-select touch-none bg-stone-950">
+        class="relative w-full aspect-[4/3] sm:aspect-[16/10] max-h-[72vh] overflow-hidden no-select touch-none bg-stone-950 flex items-center justify-center">
 
-        <!-- 底層：「現在 (Present)」圖片 (顯示在右側) -->
-        <div class="absolute inset-0 w-full h-full overflow-hidden flex items-center justify-center">
+        <!-- 底層 A：拉軸模式下的「現在 (Present)」靜態圖片 -->
+        <div id="present-layer" class="absolute inset-0 w-full h-full overflow-hidden flex items-center justify-center">
           <img id="img-after" alt="現在 (Present) 現代遺跡"
             class="w-full h-full object-contain pointer-events-none transition-transform duration-75" />
         </div>
 
-        <!-- 上層：「過去 (Past)」圖片 (顯示在左側，透過 clip-path 裁切) -->
+        <!-- 底層 B：AR 模式下的相機即時視訊流 / 現場拍攝底圖 -->
+        <div id="ar-camera-layer" class="absolute inset-0 w-full h-full overflow-hidden hidden bg-black flex items-center justify-center">
+          <video id="ar-video" playsinline autoplay muted class="w-full h-full object-cover"></video>
+          <img id="ar-uploaded-img" alt="上傳的現場照片" class="w-full h-full object-contain hidden" />
+          
+          <!-- 相機未啟動時的友善提示蓋板 -->
+          <div id="ar-camera-placeholder" class="absolute inset-0 bg-stone-900/90 flex flex-col items-center justify-center p-6 text-center gap-3">
+            <div class="w-14 h-14 rounded-2xl bg-amber-500/20 text-amber-400 flex items-center justify-center text-2xl border border-amber-500/30">
+              📸
+            </div>
+            <div>
+              <h3 class="text-sm sm:text-base font-bold text-white mb-1">開啟現場相機進行 AR 遮罩對位</h3>
+              <p class="text-xs text-stone-400 max-w-md">
+                允許存取後置鏡頭，昔日古城畫卷將化為半透明遮罩懸浮於鏡頭上，讓您在現場尋找相同的柱石視角，一鍵合拍！
+              </p>
+            </div>
+            <div class="flex flex-wrap items-center justify-center gap-2 mt-1">
+              <button id="btn-start-camera" type="button" class="px-4 py-2 rounded-xl bg-amber-500 hover:bg-amber-600 text-stone-950 font-bold text-xs shadow-lg transition active:scale-95 flex items-center gap-1.5">
+                <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M3 9a2 2 0 012-2h.93a2 2 0 001.664-.89l.812-1.22A2 2 0 0110.07 4h3.86a2 2 0 011.664.89l.812 1.22A2 2 0 0018.07 7H19a2 2 0 012 2v9a2 2 0 01-2 2H5a2 2 0 01-2-2V9z"/><circle cx="12" cy="13" r="4"/></svg>
+                啟動鏡頭
+              </button>
+              <label for="ar-file-input" class="px-3.5 py-2 rounded-xl bg-stone-800 hover:bg-stone-700 text-stone-200 border border-stone-700 text-xs font-medium cursor-pointer transition flex items-center gap-1.5">
+                <span>📁 上傳現場照片</span>
+                <input id="ar-file-input" type="file" accept="image/*" class="hidden" />
+              </label>
+            </div>
+          </div>
+        </div>
+
+        <!-- 上層：「過去 (Past)」圖片（在拉軸模式下 clip-path 裁切；在 AR 模式下依透明度當作遮罩疊加） -->
         <div id="before-layer"
-          class="absolute inset-0 w-full h-full overflow-hidden flex items-center justify-center"
+          class="absolute inset-0 w-full h-full overflow-hidden flex items-center justify-center pointer-events-none"
           style="clip-path: inset(0 50% 0 0);">
           <img id="img-before" alt="以前 (Past) 古代龐貝"
             class="w-full h-full object-contain pointer-events-none origin-center" />
         </div>
 
-        <!-- 輔助對齊十字準星 -->
+        <!-- 輔助對齊十字準星網格 -->
         <div id="alignment-grid" class="pointer-events-none absolute inset-0 opacity-0 transition-opacity duration-200">
           <div class="w-full h-full grid grid-cols-3 grid-rows-3">
             <div class="border-r border-b border-amber-400/35"></div>
@@ -204,13 +252,13 @@
         <div id="badge-after"
           class="pointer-events-none absolute top-3 right-3 sm:top-5 sm:right-5 px-3 py-1.5 sm:px-4 sm:py-2 rounded-xl bg-stone-950/80 backdrop-blur-md border border-white/15 shadow-lg transition-opacity duration-200">
           <div class="flex items-center justify-end gap-2">
-            <span class="text-xs sm:text-sm font-bold tracking-wide text-white">今日現場 (考古遺址)</span>
+            <span id="badge-after-text" class="text-xs sm:text-sm font-bold tracking-wide text-white">今日現場 (考古遺址)</span>
             <span class="w-2.5 h-2.5 rounded-full bg-sky-400"></span>
           </div>
           <p id="badge-after-sub" class="text-[11px] sm:text-xs text-stone-300 mt-0.5 text-right">兩千年後考古見證</p>
         </div>
 
-        <!-- 垂直分割線與中央拖曳拉軸 -->
+        <!-- 垂直分割線與中央拖曳拉軸（僅在拉軸模式顯示） -->
         <div id="slider-divider"
           class="absolute top-0 bottom-0 w-0.5 bg-white shadow-[0_0_12px_rgba(0,0,0,0.85)] pointer-events-none"
           style="left: 50%;">
@@ -227,9 +275,39 @@
           </div>
         </div>
 
-        <!-- 底部百分比狀態列 -->
-        <div class="pointer-events-none absolute bottom-3 left-1/2 -translate-x-1/2 px-3 py-1 rounded-full bg-stone-950/70 backdrop-blur-md border border-white/10 text-[11px] text-stone-200 font-mono">
+        <!-- 底部百分比狀態列（拉軸模式） -->
+        <div id="slider-pct-bar" class="pointer-events-none absolute bottom-3 left-1/2 -translate-x-1/2 px-3 py-1 rounded-full bg-stone-950/70 backdrop-blur-md border border-white/10 text-[11px] text-stone-200 font-mono">
           昔日 <span id="pct-before">50%</span> ｜ 今日 <span id="pct-after">50%</span>
+        </div>
+
+        <!-- AR 快門按鈕（懸浮於舞台中央底部） -->
+        <div id="ar-shutter-container" class="absolute bottom-4 left-1/2 -translate-x-1/2 z-20 hidden flex items-center gap-3">
+          <button id="btn-ar-capture" type="button" class="px-5 py-2.5 rounded-full bg-gradient-to-r from-amber-500 to-terracotta-500 hover:from-amber-400 hover:to-terracotta-400 text-stone-950 font-bold text-xs sm:text-sm shadow-2xl transition active:scale-95 flex items-center gap-2 border-2 border-white/40">
+            <span class="text-base">📸</span>
+            <span>拍照存檔</span>
+          </button>
+          <button id="btn-switch-camera" type="button" class="w-10 h-10 rounded-full bg-stone-900/80 backdrop-blur-md border border-white/20 text-white flex items-center justify-center hover:bg-stone-800 transition" title="切換鏡頭">
+            🔄
+          </button>
+        </div>
+
+      </div>
+
+      <!-- AR 模式專屬控制列：透明度滑桿與快速調整 -->
+      <div id="ar-control-bar" class="bg-stone-950 border-t border-stone-800/80 px-4 py-3 hidden flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+        <div class="flex items-center gap-3 flex-1">
+          <span class="text-xs font-semibold text-amber-300 shrink-0 flex items-center gap-1">
+            <span>🎭</span> 遮罩透明度 (Mask Opacity)：
+          </span>
+          <input id="ctrl-ar-opacity" type="range" min="0" max="100" value="50" step="1" class="custom-range flex-1" />
+          <span id="val-ar-opacity" class="text-xs font-mono text-amber-400 shrink-0 w-10 text-right">50%</span>
+        </div>
+
+        <div class="flex items-center gap-1.5 shrink-0 self-end sm:self-auto">
+          <button type="button" class="btn-op-preset px-2 py-1 rounded-lg bg-stone-800 hover:bg-stone-700 text-[11px] text-stone-300 transition" data-op="25">25%</button>
+          <button type="button" class="btn-op-preset px-2 py-1 rounded-lg bg-stone-800 hover:bg-stone-700 text-[11px] text-stone-300 transition" data-op="50">50%</button>
+          <button type="button" class="btn-op-preset px-2 py-1 rounded-lg bg-stone-800 hover:bg-stone-700 text-[11px] text-stone-300 transition" data-op="75">75%</button>
+          <button type="button" class="btn-op-preset px-2 py-1 rounded-lg bg-stone-800 hover:bg-stone-700 text-[11px] text-stone-300 transition" data-op="100">100%</button>
         </div>
       </div>
     </section>
@@ -246,30 +324,30 @@
       <div class="p-3.5 sm:p-4 rounded-2xl bg-stone-900/90 border border-sky-900/30 shadow-sm">
         <div class="flex items-center gap-2 mb-1.5">
           <span class="w-2.5 h-2.5 rounded-full bg-sky-400"></span>
-          <b class="text-xs sm:text-sm font-semibold text-sky-200">🔍 今日現場（兩千年後考古見證）</b>
+          <b id="desc-present-title" class="text-xs sm:text-sm font-semibold text-sky-200">🔍 今日現場（兩千年後考古見證）</b>
         </div>
         <p id="desc-present" class="text-xs sm:text-sm text-stone-300 leading-relaxed"></p>
       </div>
     </section>
 
-    <!-- 4. 現場拍照疊圖與精準微調 -->
+    <!-- 4. 現場拍照疊圖與精準微調控制 -->
     <details class="group rounded-2xl bg-stone-900 border border-stone-800 shadow-sm overflow-hidden">
       <summary class="p-3.5 sm:p-4 cursor-pointer font-semibold text-xs sm:text-sm text-stone-200 flex items-center justify-between hover:bg-stone-850 transition">
         <span class="flex items-center gap-2">
           <svg class="w-4 h-4 text-terracotta-500" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
             <path stroke-linecap="round" stroke-linejoin="round" d="M12 6V4m0 2a2 2 0 100 4m0-4a2 2 0 110 4m-6 8a2 2 0 100-4m0 4a2 2 0 110-4m0 4v2m0-6V4m6 6v10m6-2a2 2 0 100-4m0 4a2 2 0 110-4m0 4v2m0-6V4" />
           </svg>
-          現場拍照疊圖與微調控制項（上傳自己照片與調整 X/Y/縮放）
+          現場對位微調控制（手動位移 X/Y、縮放比例與半透明切換）
         </span>
         <span class="text-xs text-stone-400 group-open:rotate-180 transition-transform">▼</span>
       </summary>
       <div class="p-4 pt-0 border-t border-stone-800/60 mt-3 flex flex-col gap-4">
-        <!-- 上傳控制 -->
-        <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+        <!-- 上傳照片控制（拉軸模式） -->
+        <div id="upload-panel-classic" class="grid grid-cols-1 sm:grid-cols-2 gap-3">
           <label for="upload-before"
             class="flex items-center justify-between p-3 rounded-xl bg-stone-950/60 border border-stone-800 hover:border-stone-600 cursor-pointer transition">
             <div class="truncate mr-2">
-              <span class="block text-xs font-semibold text-amber-300">上傳過去照片 (左側)</span>
+              <span class="block text-xs font-semibold text-amber-300">更換過去照片 (左側遮罩)</span>
               <span id="before-filename" class="block text-[11px] text-stone-400 truncate mt-0.5">使用目前預設圖</span>
             </div>
             <span class="px-2.5 py-1 rounded bg-stone-800 text-xs text-stone-200 shrink-0">選擇檔案</span>
@@ -279,7 +357,7 @@
           <label for="upload-after"
             class="flex items-center justify-between p-3 rounded-xl bg-stone-950/60 border border-stone-800 hover:border-stone-600 cursor-pointer transition">
             <div class="truncate mr-2">
-              <span class="block text-xs font-semibold text-sky-300">上傳現場照片 (右側)</span>
+              <span class="block text-xs font-semibold text-sky-300">上傳現場照片 (右側底圖)</span>
               <span id="after-filename" class="block text-[11px] text-stone-400 truncate mt-0.5">使用目前預設圖</span>
             </div>
             <span class="px-2.5 py-1 rounded bg-stone-800 text-xs text-stone-200 shrink-0">選擇檔案</span>
@@ -290,7 +368,7 @@
         <!-- 微調控制 -->
         <div class="flex items-center justify-between">
           <p class="text-xs text-stone-400">
-            拖動滑桿調整「過去」圖層位置與大小，手動肉眼精準重疊。
+            拖動滑桿調整「古代畫卷」在螢幕上的位置與大小，肉眼精準重合柱子、階梯或底座。
           </p>
           <div class="flex items-center gap-2">
             <button id="btn-onion-skin" type="button"
@@ -311,21 +389,21 @@
               <label for="ctrl-x" class="text-xs text-stone-300">水平左右偏移 (X)</label>
               <span id="val-x" class="text-xs font-mono text-amber-400">0 px</span>
             </div>
-            <input id="ctrl-x" type="range" min="-250" max="250" value="0" step="1" class="custom-range w-full" />
+            <input id="ctrl-x" type="range" min="-300" max="300" value="0" step="1" class="custom-range w-full" />
           </div>
           <div class="bg-stone-950/60 p-3 rounded-xl border border-stone-800/80">
             <div class="flex justify-between items-center mb-1.5">
               <label for="ctrl-y" class="text-xs text-stone-300">垂直上下偏移 (Y)</label>
               <span id="val-y" class="text-xs font-mono text-amber-400">0 px</span>
             </div>
-            <input id="ctrl-y" type="range" min="-250" max="250" value="0" step="1" class="custom-range w-full" />
+            <input id="ctrl-y" type="range" min="-300" max="300" value="0" step="1" class="custom-range w-full" />
           </div>
           <div class="bg-stone-950/60 p-3 rounded-xl border border-stone-800/80">
             <div class="flex justify-between items-center mb-1.5">
               <label for="ctrl-scale" class="text-xs text-stone-300">縮放大小比例 (Scale)</label>
               <span id="val-scale" class="text-xs font-mono text-amber-400">100%</span>
             </div>
-            <input id="ctrl-scale" type="range" min="50" max="180" value="100" step="1" class="custom-range w-full" />
+            <input id="ctrl-scale" type="range" min="40" max="220" value="100" step="1" class="custom-range w-full" />
           </div>
         </div>
       </div>
@@ -335,12 +413,15 @@
   <!-- 底部導覽 -->
   <footer class="max-w-6xl w-full mx-auto px-4 sm:px-6 py-4 text-center text-xs text-stone-500 border-t border-stone-900 flex flex-col sm:flex-row items-center justify-between gap-2">
     <div>
-      支援滑鼠拖曳、鍵盤左右鍵、手機平板觸控滑動。100% 本地運算與離線快取。
+      支援手機相機 AR 遮罩即時拍照、滑鼠拖曳、鍵盤左右鍵、平板觸控。100% 本地運算與離線快取。
     </div>
     <a href="index.html#/portroute/pompeii" class="text-terracotta-500 hover:underline">
       ← 返回 🏛️ 龐貝 2 小時經典路線
     </a>
   </footer>
+
+  <!-- 隱藏的合照渲染用 Canvas -->
+  <canvas id="export-canvas" class="hidden"></canvas>
 
   <!-- Toast 訊息提示框 -->
   <div id="toast-box"
@@ -354,9 +435,12 @@
 
   <script>
     (function () {
+      // DOM 元素
       const container = document.getElementById('comparison-container');
+      const presentLayer = document.getElementById('present-layer');
       const beforeLayer = document.getElementById('before-layer');
       const sliderDivider = document.getElementById('slider-divider');
+      const sliderPctBar = document.getElementById('slider-pct-bar');
       const dragHint = document.getElementById('drag-hint');
       const imgBefore = document.getElementById('img-before');
       const imgAfter = document.getElementById('img-after');
@@ -365,21 +449,39 @@
       const badgeBefore = document.getElementById('badge-before');
       const badgeAfter = document.getElementById('badge-after');
       const badgeBeforeSub = document.getElementById('badge-before-sub');
+      const badgeAfterText = document.getElementById('badge-after-text');
       const alignmentGrid = document.getElementById('alignment-grid');
+
+      // 模式切換
+      const tabModeCompare = document.getElementById('tab-mode-compare');
+      const tabModeAr = document.getElementById('tab-mode-ar');
+      const headerArTag = document.getElementById('header-ar-tag');
+      const arCameraLayer = document.getElementById('ar-camera-layer');
+      const arCameraPlaceholder = document.getElementById('ar-camera-placeholder');
+      const arVideo = document.getElementById('ar-video');
+      const arUploadedImg = document.getElementById('ar-uploaded-img');
+      const btnStartCamera = document.getElementById('btn-start-camera');
+      const arFileInput = document.getElementById('ar-file-input');
+      const arControlBar = document.getElementById('ar-control-bar');
+      const ctrlArOpacity = document.getElementById('ctrl-ar-opacity');
+      const valArOpacity = document.getElementById('val-ar-opacity');
+      const arShutterContainer = document.getElementById('ar-shutter-container');
+      const btnArCapture = document.getElementById('btn-ar-capture');
+      const btnSwitchCamera = document.getElementById('btn-switch-camera');
+      const exportCanvas = document.getElementById('export-canvas');
 
       const locTabs = document.getElementById('loc-tabs');
       const angleContainer = document.getElementById('angle-container');
       const angleTabs = document.getElementById('angle-tabs');
       const descPast = document.getElementById('desc-past');
       const descPresent = document.getElementById('desc-present');
+      const descPresentTitle = document.getElementById('desc-present-title');
 
-      // 上傳控制
+      // 微調與上傳
       const uploadBefore = document.getElementById('upload-before');
       const uploadAfter = document.getElementById('upload-after');
       const beforeFilename = document.getElementById('before-filename');
       const afterFilename = document.getElementById('after-filename');
-
-      // 微調控制
       const ctrlX = document.getElementById('ctrl-x');
       const ctrlY = document.getElementById('ctrl-y');
       const ctrlScale = document.getElementById('ctrl-scale');
@@ -395,13 +497,19 @@
       const toastMsg = document.getElementById('toast-msg');
       let toastTimer = null;
 
+      // 狀態變數
       let currentLocId = 'foro';
       let currentAngleId = 'foro_1';
+      let currentAngleObj = null;
+      let activeMode = 'compare'; // 'compare' | 'ar'
       let sliderPercent = 50;
+      let arOpacity = 50;
       let isDragging = false;
       let hasInteracted = false;
       let isOnionSkin = false;
       let gridHideTimer = null;
+      let cameraStream = null;
+      let facingMode = 'environment'; // 'environment' | 'user'
 
       const transformState = { x: 0, y: 0, scale: 100 };
 
@@ -411,7 +519,7 @@
         clearTimeout(toastTimer);
         toastTimer = setTimeout(() => {
           toastBox.classList.add('opacity-0', 'translate-y-2');
-        }, 2400);
+        }, 2600);
       }
 
       // 初始化地點選單
@@ -450,12 +558,15 @@
         const angles = (loc && loc.angles) || [];
         if (angles.length > 1) {
           angleContainer.classList.remove('hidden');
-          angleTabs.innerHTML = angles.map((a, idx) => `
-            <button type="button" data-angle="${a.id}"
-              class="angle-btn px-2.5 py-1 rounded-lg bg-stone-800 hover:bg-stone-700 text-xs text-stone-200 border border-stone-700 transition">
-              ${a.title}
-            </button>
-          `).join('');
+          angleTabs.innerHTML = angles.map((a) => {
+            const arTag = a.isAR ? '<span class="text-[10px] text-amber-300 font-bold ml-1">AR</span>' : '';
+            return `
+              <button type="button" data-angle="${a.id}"
+                class="angle-btn px-2.5 py-1 rounded-lg bg-stone-800 hover:bg-stone-700 text-xs text-stone-200 border border-stone-700 transition">
+                ${a.title}${arTag}
+              </button>
+            `;
+          }).join('');
 
           angleTabs.querySelectorAll('[data-angle]').forEach((b) => {
             b.addEventListener('click', () => {
@@ -478,6 +589,7 @@
         const angles = (loc && loc.angles) || [];
         const angle = angles.find((a) => a.id === angleId) || angles[0];
         if (!angle) return;
+        currentAngleObj = angle;
 
         angleTabs.querySelectorAll('[data-angle]').forEach((b) => {
           b.classList.toggle('active', b.dataset.angle === angleId);
@@ -487,11 +599,20 @@
         descPresent.textContent = angle.descPresent || '';
         badgeBeforeSub.textContent = angle.title;
 
-        // 載入圖片 (實景照片或向量畫布)
+        // 若該角度是 isAR，自動切換至 AR 模式；否則預設維持比較模式
+        if (angle.isAR) {
+          setMode('ar');
+          descPresentTitle.textContent = '📸 現場 AR 遮罩說明';
+        } else {
+          setMode('compare');
+          descPresentTitle.textContent = '🔍 今日現場（兩千年後考古見證）';
+        }
+
+        // 載入圖片 (實景照片、向量畫布或 AR 遮罩)
         if (window.POMPEII_ART && window.POMPEII_ART.loadAngle) {
           window.POMPEII_ART.loadAngle(angle, imgBefore, imgAfter, () => {
-            beforeFilename.textContent = `已載入：${angle.title} (過去)`;
-            afterFilename.textContent = `已載入：${angle.title} (現在)`;
+            beforeFilename.textContent = `已載入：${angle.title} (古代)`;
+            afterFilename.textContent = angle.present ? `已載入：${angle.title} (現場)` : '無預設今日照片（AR模式）';
           });
         }
 
@@ -499,6 +620,61 @@
         showToast(`已切換：${angle.title}`);
       }
 
+      // 模式切換：compare vs ar
+      function setMode(mode) {
+        activeMode = mode;
+        if (mode === 'ar') {
+          tabModeAr.classList.add('active');
+          tabModeCompare.classList.remove('active');
+          headerArTag.classList.remove('hidden');
+
+          presentLayer.classList.add('hidden');
+          arCameraLayer.classList.remove('hidden');
+          sliderDivider.classList.add('hidden');
+          sliderPctBar.classList.add('hidden');
+          arControlBar.classList.remove('hidden');
+          arShutterContainer.classList.remove('hidden');
+          badgeAfterText.textContent = '現場鏡頭 (即時 AR 實景)';
+
+          // AR 模式下，beforeLayer 移除 clip-path，改以透明度當作遮罩
+          beforeLayer.style.clipPath = 'none';
+          beforeLayer.style.opacity = (arOpacity / 100).toFixed(2);
+          badgeBefore.style.opacity = '1';
+          badgeAfter.style.opacity = '1';
+
+          container.classList.remove('cursor-ew-resize');
+
+          // 若尚未啟動相機且沒有上傳的照片，顯示啟動提示
+          if (!cameraStream && arUploadedImg.classList.contains('hidden')) {
+            arCameraPlaceholder.classList.remove('hidden');
+          }
+        } else {
+          tabModeCompare.classList.add('active');
+          tabModeAr.classList.remove('active');
+          headerArTag.classList.add('hidden');
+
+          presentLayer.classList.remove('hidden');
+          arCameraLayer.classList.add('hidden');
+          sliderDivider.classList.remove('hidden');
+          sliderPctBar.classList.remove('hidden');
+          arControlBar.classList.add('hidden');
+          arShutterContainer.classList.add('hidden');
+          badgeAfterText.textContent = '今日現場 (考古遺址)';
+
+          container.classList.add('cursor-ew-resize');
+          updateSliderPosition(sliderPercent);
+        }
+      }
+
+      tabModeCompare.addEventListener('click', () => setMode('compare'));
+      tabModeAr.addEventListener('click', () => {
+        setMode('ar');
+        if (!cameraStream && arUploadedImg.classList.contains('hidden')) {
+          startCamera();
+        }
+      });
+
+      // 拉軸位置更新
       function updateSliderPosition(percent) {
         sliderPercent = Math.max(0, Math.min(100, percent));
         sliderDivider.style.left = `${sliderPercent}%`;
@@ -522,6 +698,7 @@
       }
 
       function handlePointerMove(clientX) {
+        if (activeMode !== 'compare') return;
         const rect = container.getBoundingClientRect();
         if (rect.width <= 0) return;
         const offsetX = clientX - rect.left;
@@ -535,12 +712,13 @@
       }
 
       container.addEventListener('mousedown', (e) => {
+        if (activeMode !== 'compare') return;
         isDragging = true;
         handlePointerMove(e.clientX);
       });
 
       window.addEventListener('mousemove', (e) => {
-        if (!isDragging) return;
+        if (!isDragging || activeMode !== 'compare') return;
         e.preventDefault();
         handlePointerMove(e.clientX);
       });
@@ -548,6 +726,7 @@
       window.addEventListener('mouseup', () => { isDragging = false; });
 
       container.addEventListener('touchstart', (e) => {
+        if (activeMode !== 'compare') return;
         if (e.touches.length > 0) {
           isDragging = true;
           handlePointerMove(e.touches[0].clientX);
@@ -555,7 +734,7 @@
       }, { passive: true });
 
       window.addEventListener('touchmove', (e) => {
-        if (!isDragging || e.touches.length === 0) return;
+        if (!isDragging || activeMode !== 'compare' || e.touches.length === 0) return;
         handlePointerMove(e.touches[0].clientX);
       }, { passive: true });
 
@@ -563,10 +742,168 @@
 
       window.addEventListener('keydown', (e) => {
         if (document.activeElement && document.activeElement.tagName === 'INPUT') return;
-        if (e.key === 'ArrowLeft') updateSliderPosition(sliderPercent - 2);
-        else if (e.key === 'ArrowRight') updateSliderPosition(sliderPercent + 2);
+        if (activeMode === 'compare') {
+          if (e.key === 'ArrowLeft') updateSliderPosition(sliderPercent - 2);
+          else if (e.key === 'ArrowRight') updateSliderPosition(sliderPercent + 2);
+        }
       });
 
+      // AR 遮罩透明度控制
+      function updateArOpacity(val) {
+        arOpacity = Math.max(0, Math.min(100, val));
+        ctrlArOpacity.value = arOpacity;
+        valArOpacity.textContent = `${arOpacity}%`;
+        if (activeMode === 'ar') {
+          beforeLayer.style.opacity = (arOpacity / 100).toFixed(2);
+        }
+      }
+
+      ctrlArOpacity.addEventListener('input', (e) => {
+        updateArOpacity(parseInt(e.target.value, 10));
+      });
+
+      document.querySelectorAll('.btn-op-preset').forEach((btn) => {
+        btn.addEventListener('click', () => {
+          updateArOpacity(parseInt(btn.dataset.op, 10));
+        });
+      });
+
+      // 相機存取控制
+      async function startCamera() {
+        try {
+          if (cameraStream) {
+            cameraStream.getTracks().forEach((t) => t.stop());
+          }
+          const constraints = {
+            video: {
+              facingMode: { ideal: facingMode },
+              width: { ideal: 1920 },
+              height: { ideal: 1080 }
+            },
+            audio: false
+          };
+          cameraStream = await navigator.mediaDevices.getUserMedia(constraints);
+          arVideo.srcObject = cameraStream;
+          arVideo.classList.remove('hidden');
+          arUploadedImg.classList.add('hidden');
+          arCameraPlaceholder.classList.add('hidden');
+          showToast('相機已啟動，請對準古城景觀');
+        } catch (err) {
+          console.warn('Camera access error:', err);
+          showToast('無法存取相機（請確認權限或改用上傳照片）');
+          arCameraPlaceholder.classList.remove('hidden');
+        }
+      }
+
+      btnStartCamera.addEventListener('click', () => {
+        startCamera();
+      });
+
+      btnSwitchCamera.addEventListener('click', () => {
+        facingMode = facingMode === 'environment' ? 'user' : 'environment';
+        startCamera();
+      });
+
+      // AR 模式下上傳本機現場照片代替相機視訊
+      arFileInput.addEventListener('change', (e) => {
+        const file = e.target.files && e.target.files[0];
+        if (!file) return;
+        const url = URL.createObjectURL(file);
+        arUploadedImg.src = url;
+        arUploadedImg.classList.remove('hidden');
+        arVideo.classList.add('hidden');
+        arCameraPlaceholder.classList.add('hidden');
+        if (cameraStream) {
+          cameraStream.getTracks().forEach((t) => t.stop());
+          cameraStream = null;
+        }
+        showToast(`已載入現場照片：${file.name}`);
+      });
+
+      // 拍照與匯出合照
+      btnArCapture.addEventListener('click', () => {
+        const cvs = exportCanvas;
+        const ctx = cvs.getContext('2d');
+
+        // 決定寬高（以相機畫面或上傳圖為準，若皆無則以 1600x1200 為基準）
+        let bgWidth = 1600, bgHeight = 1200;
+        let bgSource = null;
+
+        if (arVideo && !arVideo.classList.contains('hidden') && arVideo.videoWidth > 0) {
+          bgSource = arVideo;
+          bgWidth = arVideo.videoWidth;
+          bgHeight = arVideo.videoHeight;
+        } else if (arUploadedImg && !arUploadedImg.classList.contains('hidden') && arUploadedImg.naturalWidth > 0) {
+          bgSource = arUploadedImg;
+          bgWidth = arUploadedImg.naturalWidth;
+          bgHeight = arUploadedImg.naturalHeight;
+        } else if (imgAfter && imgAfter.naturalWidth > 0) {
+          bgSource = imgAfter;
+          bgWidth = imgAfter.naturalWidth;
+          bgHeight = imgAfter.naturalHeight;
+        }
+
+        cvs.width = bgWidth;
+        cvs.height = bgHeight;
+
+        // 1. 繪製現場底圖 (若相機鏡頭有翻轉則處理，環境鏡頭不翻轉)
+        if (bgSource) {
+          ctx.drawImage(bgSource, 0, 0, bgWidth, bgHeight);
+        } else {
+          ctx.fillStyle = '#1c1915';
+          ctx.fillRect(0, 0, bgWidth, bgHeight);
+        }
+
+        // 2. 繪製古代半透明遮罩
+        if (imgBefore && imgBefore.complete && imgBefore.naturalWidth > 0) {
+          ctx.save();
+          ctx.globalAlpha = arOpacity / 100;
+
+          // 計算縮放與位移
+          const { x, y, scale } = transformState;
+          const scaleRatio = scale / 100;
+          const drawW = bgWidth * scaleRatio;
+          const drawH = bgHeight * scaleRatio;
+          const drawX = (bgWidth - drawW) / 2 + (x / container.clientWidth) * bgWidth;
+          const drawY = (bgHeight - drawH) / 2 + (y / container.clientHeight) * bgHeight;
+
+          ctx.drawImage(imgBefore, drawX, drawY, drawW, drawH);
+          ctx.restore();
+        }
+
+        // 3. 浮水印與歷史標註
+        ctx.save();
+        const bannerH = Math.max(54, Math.round(bgHeight * 0.07));
+        ctx.fillStyle = 'rgba(20, 19, 18, 0.75)';
+        ctx.fillRect(0, bgHeight - bannerH, bgWidth, bannerH);
+
+        ctx.fillStyle = '#ffffff';
+        ctx.font = `bold ${Math.round(bannerH * 0.38)}px "Noto Sans TC", sans-serif`;
+        ctx.textBaseline = 'middle';
+        const titleText = `🏛️ 龐貝古城 · ${(currentAngleObj && currentAngleObj.title) || '今昔合照'}`;
+        ctx.fillText(titleText, 24, bgHeight - bannerH / 2);
+
+        ctx.fillStyle = '#f59e0b';
+        ctx.font = `600 ${Math.round(bannerH * 0.28)}px "Noto Sans TC", sans-serif`;
+        ctx.textAlign = 'right';
+        const dateStr = new Date().toLocaleDateString('zh-TW', { year: 'numeric', month: '2-digit', day: '2-digit' });
+        ctx.fillText(`西元79年 ✕ 2026年 穿越時空合照 (${dateStr})`, bgWidth - 24, bgHeight - bannerH / 2);
+        ctx.restore();
+
+        // 4. 下載圖片
+        const dataUrl = cvs.toDataURL('image/jpeg', 0.95);
+        const a = document.createElement('a');
+        a.href = dataUrl;
+        const timeStamp = new Date().toISOString().slice(0, 19).replace(/[-:T]/g, '');
+        a.download = `pompeii_ar_${currentAngleId}_${timeStamp}.jpg`;
+        document.body.appendChild(a);
+        a.click();
+        document.body.removeChild(a);
+
+        showToast('📸 AR 穿越照片已儲存下載！');
+      });
+
+      // 位移與縮放微調
       function applyAlignmentTransform(showGridBriefly = true) {
         const { x, y, scale } = transformState;
         const scaleRatio = scale / 100;
@@ -657,6 +994,7 @@
         uploadAfter.value = '';
         selectLocation(currentLocId, currentAngleId);
         updateSliderPosition(50);
+        updateArOpacity(50);
         showToast('已重置拉軸與對齊');
       });
 
@@ -664,14 +1002,19 @@
         const urlParams = new URLSearchParams(window.location.search);
         const l = urlParams.get('loc') || urlParams.get('spot');
         const a = urlParams.get('angle');
-        return { loc: l || 'foro', angle: a };
+        const ar = urlParams.get('ar');
+        return { loc: l || 'foro', angle: a, isArParam: ar === '1' || ar === 'true' };
       }
 
       window.addEventListener('DOMContentLoaded', () => {
         initLocations();
-        const { loc, angle } = checkUrlParams();
+        const { loc, angle, isArParam } = checkUrlParams();
         selectLocation(loc, angle);
-        updateSliderPosition(50);
+        if (isArParam) {
+          setMode('ar');
+        } else {
+          updateSliderPosition(50);
+        }
       });
     })();
   </script>

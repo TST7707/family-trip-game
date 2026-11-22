@@ -5688,12 +5688,14 @@ function walkSegments(steps) {
 const STEP_ICON = { '景點': '📍', '午餐': '🍝', '上車': '🚕', '下車': '🚏', '下船': '🚢', '交通': '🚆', '延伸': '➕', '步行': '🚶' };
 function pompeiiSpotKey(zh) {
   if (!zh) return 'foro';
-  if (zh.includes('海門')) return 'marina';
-  if (zh.includes('廣場')) return 'foro';
-  if (zh.includes('熱食店') || zh.includes('豐饒大道')) return 'thermopolium';
-  if (zh.includes('競技場')) return 'anfiteatro';
-  if (zh.includes('體育場') || zh.includes('石膏')) return 'aerial';
-  if (zh.includes('小巷') || zh.includes('妓院')) return 'street';
+  if (zh.includes('阿波羅')) return 'apollo';
+  if (zh.includes('第五區') || zh.includes('快餐') || zh.includes('公雞')) return 'fastfood';
+  if (zh.includes('熱食店') || zh.includes('豐饒大道') || zh.includes('普拉西杜斯')) return 'thermopolium';
+  if (zh.includes('拱門') || zh.includes('卡利古拉')) return 'arch';
+  if (zh.includes('豪宅') || zh.includes('水仙女') || zh.includes('噴泉水景')) return 'villa';
+  if (zh.includes('競技場') || zh.includes('角鬥') || zh.includes('火山') || zh.includes('體育場') || zh.includes('鳥瞰')) return 'aerial';
+  if (zh.includes('小巷') || zh.includes('妓院') || zh.includes('街道') || zh.includes('踩腳石') || zh.includes('噴泉')) return 'street';
+  if (zh.includes('廣場') || zh.includes('神廟') || zh.includes('海門')) return 'foro';
   return 'foro';
 }
 function routeStepHtml(s, i) {
@@ -5780,7 +5782,7 @@ function paintPompeiiCompare(initialLoc, initialAngle) {
     <h1>🏛️ 龐貝今昔對比互動拉軸</h1>
     <p class="sub">左右拖曳中央白線或圓鈕，重現兩千年前古羅馬繁盛風華與今日現場遺跡。同一地點提供多種視角切換，支援 100% 離線本地運算。</p>
     <div style="margin-bottom:12px;display:flex;gap:8px;flex-wrap:wrap">
-      <a class="btn small ghost" href="pompeii-compare.html" target="_blank" rel="noopener">🖥️ 打開獨立全螢幕版（支援現場拍照疊圖與微調）</a>
+      <a id="pc-fullscreen-link" class="btn small" href="pompeii-compare.html" target="_blank" rel="noopener">📸 打開獨立全螢幕版（支援現場 AR 遮罩拍照與微調）</a>
     </div>
     <div class="pcompare-chips" id="pc-loc-chips">
       ${locs.map((l) => {
@@ -5857,6 +5859,29 @@ function paintPompeiiCompare(initialLoc, initialAngle) {
     $$('[data-pangle]').forEach((b) => {
       b.classList.toggle('ghost', b.dataset.pangle !== ang.id);
     });
+
+    const fsLink = $('#pc-fullscreen-link');
+    if (fsLink) {
+      fsLink.href = `pompeii-compare.html?loc=${curLoc.id}&angle=${ang.id}${ang.isAR ? '&ar=1' : ''}`;
+      fsLink.textContent = ang.isAR ? '📸 開啟現場 AR 相機遮罩拍照' : '🖥️ 打開獨立全螢幕版（支援現場 AR 拍照與微調）';
+    }
+
+    if (ang.isAR || !ang.present) {
+      divider.style.display = 'none';
+      pctBefore.parentElement.style.display = 'none';
+      beforeLayer.style.clipPath = 'none';
+      beforeLayer.style.opacity = '1';
+      imgAfter.style.display = 'none';
+      const bAfter = $('.pcompare-badge.after');
+      if (bAfter) bAfter.textContent = '現場 AR 模式';
+    } else {
+      divider.style.display = 'block';
+      pctBefore.parentElement.style.display = 'block';
+      imgAfter.style.display = 'block';
+      const bAfter = $('.pcompare-badge.after');
+      if (bAfter) bAfter.textContent = '今日現場 (考古遺址)';
+      updateSlider(sliderPercent);
+    }
 
     if (window.POMPEII_ART && window.POMPEII_ART.loadAngle) {
       window.POMPEII_ART.loadAngle(ang, imgBefore, imgAfter);
