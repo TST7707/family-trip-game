@@ -5784,6 +5784,7 @@ function walkSegments(steps) {
 const STEP_ICON = { '景點': '📍', '午餐': '🍝', '上車': '🚕', '下車': '🚏', '下船': '🚢', '交通': '🚆', '延伸': '➕', '步行': '🚶' };
 function pompeiiSpotKey(zh) {
   if (!zh) return 'foro';
+  if (zh.includes('AR') || zh.includes('遮罩')) return 'ar_mask';
   if (zh.includes('阿波羅')) return 'apollo';
   if (zh.includes('第五區') || zh.includes('快餐') || zh.includes('公雞')) return 'fastfood';
   if (zh.includes('熱食店') || zh.includes('豐饒大道') || zh.includes('普拉西杜斯')) return 'thermopolium';
@@ -5876,7 +5877,7 @@ function paintPompeiiCompare(initialLoc, initialAngle) {
 
   view(`${back('#/portroute/pompeii', '回龐貝路線')}<div class="kicker">龐貝古城 · 拿坡里 · 西元79年 vs 今日</div>
     <h1>🏛️ 龐貝今昔對比互動拉軸</h1>
-    <p class="sub">左右拖曳中央白線或圓鈕，重現兩千年前古羅馬繁盛風華與今日現場遺跡。同一地點提供多種視角切換，支援 100% 離線本地運算。</p>
+    <p class="sub">左右拖曳中央白線或圓鈕，重現兩千年前古羅馬繁盛風華與今日現場遺跡。AR 模式支援開啟手機鏡頭即時疊加遮罩與調節透明度拍照。</p>
     <div style="margin-bottom:12px;display:flex;gap:8px;flex-wrap:wrap">
       <a id="pc-fullscreen-link" class="btn small" href="pompeii-compare.html" target="_blank" rel="noopener">📸 打開獨立全螢幕版（支援現場 AR 遮罩拍照與微調）</a>
     </div>
@@ -5890,17 +5891,45 @@ function paintPompeiiCompare(initialLoc, initialAngle) {
     <div class="pcompare-angles" id="pc-angle-chips" style="${angles.length > 1 ? 'display:flex;gap:6px;overflow-x:auto;padding-bottom:8px;margin-bottom:8px' : 'display:none'}">
       ${angles.map((a) => `<button type="button" class="btn small${a.id === angleId ? '' : ' ghost'}" data-pangle="${a.id}">${a.title}</button>`).join('')}
     </div>
-    <div class="pcompare-stage" id="pc-stage">
-      <div class="pcompare-layer"><img id="pc-img-after" alt="今日現場" /></div>
+    <div class="pcompare-stage" id="pc-stage" style="position:relative;overflow:hidden;background:#000;">
+      <video id="pc-video" playsinline autoplay muted style="position:absolute;inset:0;width:100%;height:100%;object-fit:cover;display:none;z-index:1;"></video>
+      <div class="pcompare-layer" id="pc-after-layer"><img id="pc-img-after" alt="今日現場" /></div>
       <div class="pcompare-layer" id="pc-before-layer" style="clip-path: inset(0 50% 0 0);"><img id="pc-img-before" alt="昔日風華" /></div>
-      <div class="pcompare-badge before">昔日風華 (西元79年)</div>
-      <div class="pcompare-badge after">今日現場 (考古遺址)</div>
+      <div class="pcompare-badge before" id="pc-badge-before">昔日風華 (西元79年)</div>
+      <div class="pcompare-badge after" id="pc-badge-after">今日現場 (考古遺址)</div>
       <div class="pcompare-divider" id="pc-divider" style="left:50%">
         <div class="pcompare-handle" id="pc-handle">
           <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M8 9l-3 3 3 3m8-6l3 3-3 3"/></svg>
         </div>
       </div>
-      <div class="pcompare-pct">昔日 <span id="pc-pct-before">50%</span> ｜ 今日 <span id="pc-pct-after">50%</span></div>
+      <div class="pcompare-pct" id="pc-pct-bar">昔日 <span id="pc-pct-before">50%</span> ｜ 今日 <span id="pc-pct-after">50%</span></div>
+    </div>
+    <!-- AR 實景相機遮罩控制列 -->
+    <div id="pc-ar-panel" style="display:none;margin-top:12px;padding:14px;background:var(--card-bg,#232220);border-radius:14px;border:1px solid var(--border,#444);">
+      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:10px;flex-wrap:wrap;gap:8px;">
+        <b style="font-size:13px;color:var(--text,#fff);display:flex;align-items:center;gap:6px;">
+          <span style="font-size:16px;">🎭</span> 虛實遮罩透明度: <span id="pc-opacity-val" style="color:#f59e0b;font-weight:700;">50%</span>
+        </b>
+        <div style="display:flex;gap:6px;">
+          <button type="button" id="pc-btn-cam" class="btn small" style="background:#c85a32;color:#fff;border:none;">📷 啟動現場相機</button>
+          <label for="pc-ar-upload" class="btn small ghost" style="margin:0;cursor:pointer;">
+            📁 上傳實景
+            <input type="file" id="pc-ar-upload" accept="image/*" style="display:none;">
+          </label>
+        </div>
+      </div>
+      <div style="display:flex;align-items:center;gap:10px;">
+        <span style="font-size:11px;color:#888;">實景 100%</span>
+        <input type="range" id="pc-opacity-slider" min="0" max="100" value="50" style="flex:1;cursor:pointer;">
+        <span style="font-size:11px;color:#888;">復原 100%</span>
+      </div>
+      <div style="display:flex;gap:6px;margin-top:10px;">
+        <button type="button" class="btn small ghost pc-preset-op" data-op="25" style="flex:1;font-size:11px;">輕透 25%</button>
+        <button type="button" class="btn small ghost pc-preset-op" data-op="50" style="flex:1;font-size:11px;">半透 50%</button>
+        <button type="button" class="btn small ghost pc-preset-op" data-op="75" style="flex:1;font-size:11px;">清晰 75%</button>
+        <button type="button" id="pc-btn-snap" class="btn small primary" style="flex:2;font-size:12px;">📸 拍照合成下載</button>
+      </div>
+      <div id="pc-cam-status" style="font-size:11px;color:#f59e0b;margin-top:6px;display:none;"></div>
     </div>
     <div class="card" style="margin-top:14px" id="pc-info">
       <h3 id="pc-title">${esc(curAngle.title || curLoc.name)}</h3>
@@ -5911,7 +5940,7 @@ function paintPompeiiCompare(initialLoc, initialAngle) {
           <p id="pc-desc-past">${esc(curAngle.descPast || '')}</p>
         </div>
         <div class="ancient-modern-sec">
-          <b style="color:var(--primary)">🔍 今日現場（兩千年後考古見證）</b>
+          <b style="color:var(--primary)" id="pc-modern-title">🔍 今日現場（兩千年後考古見證）</b>
           <p id="pc-desc-present">${esc(curAngle.descPresent || '')}</p>
         </div>
       </div>
@@ -5924,10 +5953,24 @@ function paintPompeiiCompare(initialLoc, initialAngle) {
   const imgAfter = $('#pc-img-after');
   const pctBefore = $('#pc-pct-before');
   const pctAfter = $('#pc-pct-after');
+  const pctBar = $('#pc-pct-bar');
   const angleContainer = $('#pc-angle-chips');
+  const badgeBefore = $('#pc-badge-before');
+  const badgeAfter = $('#pc-badge-after');
+
+  const pcVideo = $('#pc-video');
+  const pcArPanel = $('#pc-ar-panel');
+  const pcOpacitySlider = $('#pc-opacity-slider');
+  const pcOpacityVal = $('#pc-opacity-val');
+  const pcBtnCam = $('#pc-btn-cam');
+  const pcBtnSnap = $('#pc-btn-snap');
+  const pcArUpload = $('#pc-ar-upload');
+  const pcCamStatus = $('#pc-cam-status');
 
   let sliderPercent = 50;
   let isDragging = false;
+  let localCamStream = null;
+  let pcArOpacity = 50;
 
   function updateSlider(pct) {
     sliderPercent = Math.max(0, Math.min(100, pct));
@@ -5939,6 +5982,7 @@ function paintPompeiiCompare(initialLoc, initialAngle) {
   }
 
   function handleMove(clientX) {
+    if (curAngle && curAngle.isAR) return;
     const rect = stage.getBoundingClientRect();
     if (rect.width <= 0) return;
     const pct = ((clientX - rect.left) / rect.width) * 100;
@@ -5959,23 +6003,45 @@ function paintPompeiiCompare(initialLoc, initialAngle) {
     const fsLink = $('#pc-fullscreen-link');
     if (fsLink) {
       fsLink.href = `pompeii-compare.html?loc=${curLoc.id}&angle=${ang.id}${ang.isAR ? '&ar=1' : ''}`;
-      fsLink.textContent = ang.isAR ? '📸 開啟現場 AR 相機遮罩拍照' : '🖥️ 打開獨立全螢幕版（支援現場 AR 拍照與微調）';
+      fsLink.textContent = ang.isAR ? '📸 開啟全螢幕 AR 遮罩相機' : '🖥️ 打開獨立全螢幕版（支援現場 AR 拍照與微調）';
     }
 
     if (ang.isAR || !ang.present) {
       divider.style.display = 'none';
-      pctBefore.parentElement.style.display = 'none';
+      if (pctBar) pctBar.style.display = 'none';
       beforeLayer.style.clipPath = 'none';
-      beforeLayer.style.opacity = '1';
-      imgAfter.style.display = 'none';
-      const bAfter = $('.pcompare-badge.after');
-      if (bAfter) bAfter.textContent = '現場 AR 模式';
+      beforeLayer.style.opacity = (pcArOpacity / 100).toString();
+      beforeLayer.style.zIndex = '3';
+      beforeLayer.style.pointerEvents = 'none';
+      if (badgeBefore) badgeBefore.textContent = '昔日 AR 遮罩 (西元79年)';
+      if (badgeAfter) badgeAfter.textContent = '現場實景鏡頭';
+      if (pcArPanel) pcArPanel.style.display = 'block';
+      const modTitle = $('#pc-modern-title');
+      if (modTitle) modTitle.textContent = '📸 現場 AR 遮罩對位說明';
+
+      if (localCamStream) {
+        if (pcVideo) pcVideo.style.display = 'block';
+        imgAfter.style.display = 'none';
+      }
     } else {
+      if (localCamStream) {
+        localCamStream.getTracks().forEach((t) => t.stop());
+        localCamStream = null;
+        if (pcVideo) pcVideo.style.display = 'none';
+        if (pcBtnCam) pcBtnCam.textContent = '📷 啟動現場相機';
+        if (pcCamStatus) pcCamStatus.style.display = 'none';
+      }
       divider.style.display = 'block';
-      pctBefore.parentElement.style.display = 'block';
+      if (pctBar) pctBar.style.display = 'block';
       imgAfter.style.display = 'block';
-      const bAfter = $('.pcompare-badge.after');
-      if (bAfter) bAfter.textContent = '今日現場 (考古遺址)';
+      beforeLayer.style.zIndex = '';
+      beforeLayer.style.pointerEvents = '';
+      beforeLayer.style.opacity = '1';
+      if (badgeBefore) badgeBefore.textContent = '昔日風華 (西元79年)';
+      if (badgeAfter) badgeAfter.textContent = '今日現場 (考古遺址)';
+      if (pcArPanel) pcArPanel.style.display = 'none';
+      const modTitle = $('#pc-modern-title');
+      if (modTitle) modTitle.textContent = '🔍 今日現場（兩千年後考古見證）';
       updateSlider(sliderPercent);
     }
 
@@ -6009,6 +6075,137 @@ function paintPompeiiCompare(initialLoc, initialAngle) {
     const ang = (targetAngleId && angs.find((x) => x.id === targetAngleId)) || angs[0];
     renderAngle(ang);
   }
+
+  // AR 相機與透明度事件監聽
+  if (pcOpacitySlider) {
+    pcOpacitySlider.oninput = (e) => {
+      pcArOpacity = parseInt(e.target.value, 10);
+      if (pcOpacityVal) pcOpacityVal.textContent = pcArOpacity + '%';
+      if (curAngle && curAngle.isAR) {
+        beforeLayer.style.opacity = (pcArOpacity / 100).toString();
+      }
+    };
+  }
+  $$('.pc-preset-op').forEach((btn) => {
+    btn.onclick = () => {
+      pcArOpacity = parseInt(btn.dataset.op, 10);
+      if (pcOpacitySlider) pcOpacitySlider.value = pcArOpacity;
+      if (pcOpacityVal) pcOpacityVal.textContent = pcArOpacity + '%';
+      if (curAngle && curAngle.isAR) {
+        beforeLayer.style.opacity = (pcArOpacity / 100).toString();
+      }
+    };
+  });
+  if (pcBtnCam) {
+    pcBtnCam.onclick = async () => {
+      if (localCamStream) {
+        localCamStream.getTracks().forEach((t) => t.stop());
+        localCamStream = null;
+        if (pcVideo) pcVideo.style.display = 'none';
+        pcBtnCam.textContent = '📷 啟動現場相機';
+        if (pcCamStatus) pcCamStatus.style.display = 'none';
+        toast('相機已關閉');
+        return;
+      }
+      try {
+        const stream = await navigator.mediaDevices.getUserMedia({
+          video: { facingMode: { ideal: 'environment' } },
+          audio: false
+        });
+        localCamStream = stream;
+        if (pcVideo) {
+          pcVideo.srcObject = stream;
+          pcVideo.style.display = 'block';
+        }
+        imgAfter.style.display = 'none';
+        pcBtnCam.textContent = '🛑 關閉相機';
+        if (pcCamStatus) {
+          pcCamStatus.style.display = 'block';
+          pcCamStatus.textContent = '🟢 現場鏡頭運行中，請對準古蹟並調整透明度滑桿';
+        }
+        toast('相機已啟動，請對準古蹟！');
+      } catch (err) {
+        console.warn('Camera failed:', err);
+        if (pcCamStatus) {
+          pcCamStatus.style.display = 'block';
+          pcCamStatus.textContent = '⚠️ 無法開啟相機（請確認瀏覽器相機權限，或點擊「上傳實景」）';
+        }
+        toast('無法存取相機，請嘗試上傳實景照片');
+      }
+    };
+  }
+  if (pcArUpload) {
+    pcArUpload.onchange = (e) => {
+      const file = e.target.files && e.target.files[0];
+      if (!file) return;
+      if (localCamStream) {
+        localCamStream.getTracks().forEach((t) => t.stop());
+        localCamStream = null;
+        if (pcVideo) pcVideo.style.display = 'none';
+        if (pcBtnCam) pcBtnCam.textContent = '📷 啟動現場相機';
+      }
+      const url = URL.createObjectURL(file);
+      imgAfter.onload = () => {
+        imgAfter.style.display = 'block';
+        toast('已載入現場照片：' + file.name);
+      };
+      imgAfter.src = url;
+    };
+  }
+  if (pcBtnSnap) {
+    pcBtnSnap.onclick = () => {
+      const cvs = document.createElement('canvas');
+      let bgW = 1280, bgH = 960;
+      let bgElem = null;
+      if (pcVideo && pcVideo.style.display !== 'none' && pcVideo.videoWidth > 0) {
+        bgElem = pcVideo;
+        bgW = pcVideo.videoWidth;
+        bgH = pcVideo.videoHeight;
+      } else if (imgAfter && imgAfter.complete && imgAfter.naturalWidth > 0) {
+        bgElem = imgAfter;
+        bgW = imgAfter.naturalWidth;
+        bgH = imgAfter.naturalHeight;
+      }
+      cvs.width = bgW;
+      cvs.height = bgH;
+      const ctx = cvs.getContext('2d');
+      if (bgElem) {
+        ctx.drawImage(bgElem, 0, 0, bgW, bgH);
+      } else {
+        ctx.fillStyle = '#1c1b18';
+        ctx.fillRect(0, 0, bgW, bgH);
+      }
+      if (imgBefore && imgBefore.complete && imgBefore.naturalWidth > 0) {
+        ctx.save();
+        ctx.globalAlpha = pcArOpacity / 100;
+        ctx.drawImage(imgBefore, 0, 0, bgW, bgH);
+        ctx.restore();
+      }
+      const banH = Math.max(48, Math.round(bgH * 0.065));
+      ctx.fillStyle = 'rgba(20, 19, 18, 0.78)';
+      ctx.fillRect(0, bgH - banH, bgW, banH);
+      ctx.fillStyle = '#ffffff';
+      ctx.font = 'bold ' + Math.max(14, Math.round(banH * 0.38)) + 'px sans-serif';
+      ctx.fillText('🏛️ 龐貝古城 AR 虛實合影 · ' + (curAngle ? curAngle.title : ''), 18, bgH - banH * 0.38);
+
+      const dataUrl = cvs.toDataURL('image/jpeg', 0.92);
+      const a = document.createElement('a');
+      a.href = dataUrl;
+      a.download = 'pompeii_ar_' + (curAngle ? curAngle.id : 'snap') + '_' + Date.now() + '.jpg';
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
+      toast('📸 AR 合影照片已下載！');
+    };
+  }
+
+  // 離開頁面時自動關閉相機
+  window.addEventListener('hashchange', () => {
+    if (localCamStream) {
+      localCamStream.getTracks().forEach((t) => t.stop());
+      localCamStream = null;
+    }
+  }, { once: true });
 
   stage.addEventListener('mousedown', (e) => { isDragging = true; handleMove(e.clientX); });
   window.addEventListener('mousemove', (e) => { if (isDragging) { e.preventDefault(); handleMove(e.clientX); } });
