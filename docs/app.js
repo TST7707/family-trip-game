@@ -1590,7 +1590,7 @@ route('/', () => {
 
     <h2>選一座城市</h2><div class="grid2">${tiles}</div>
 
-    <div style="margin-top:16px"><a class="btn block" href="#/trip">看每日行程</a></div>
+    <div style="margin-top:16px"><a class="btn block" href="#/trip">看每日行程</a></div><div style="margin-top:10px"><a class="btn ghost block" href="#/transport">🚕 交通總表</a></div>
     <div style="margin-top:10px"><a class="btn ghost block" href="#/cruise">郵輪靠港：我想去哪裡</a></div>
     <div style="margin-top:10px"><a class="btn ghost block" href="itinerario.html" target="_blank">🇪🇸 西班牙文專屬行程頁（純西文，給司機、導遊或同事）</a></div>
     <div style="margin-top:10px"><a class="btn ghost block" href="#/help">玩法說明</a></div>
@@ -6990,6 +6990,46 @@ function cityLabel(date) {
   if (!u) return '';
   return u[0] === 'cruise' ? '地中海郵輪' : CITY[u[0]].name;
 }
+/* ---------- 交通總表（st: done 已訂／todo 還沒訂／decide 待決定／info 現場處理） ---------- */
+const TRANSPORT = [
+  { d: '12/9', who: 'Leo家 4 人', route: '巴塞隆納機場 BCN → 聖家堂民宿', how: '計程車 1 輛', cost: '約 €35–40', st: 'done', note: '已經訂了。' },
+  { d: '12/11', who: 'Disen家 3 人', route: '巴塞隆納機場 BCN → 聖家堂民宿', how: '機場排班計程車 1 輛', cost: '約 €35–40', st: 'todo', note: '可以現場排隊，不一定要預訂。機場出口有官方排班計程車（黑黃色車身）。' },
+  { d: '12/12', who: '7 人', route: '聖家堂民宿 → MSC 郵輪碼頭', how: '2 輛一般計程車，或 1 輛 XL 大車', cost: '合計約 €44–48', st: 'todo', note: '當天中午用 FREE NOW 叫車。7 個人加郵輪行李，叫 2 輛一般車比較保險；XL 大車不一定塞得下 7 人份行李。' },
+  { d: '12/13–18', who: '7 人', route: '郵輪靠港：馬賽、熱那亞、拿坡里／龐貝、巴勒摩、突尼斯', how: '碼頭接駁車＋步行／區間火車／當地排班車', cost: '依港口', st: 'info', note: '各港口的路線看「郵輪」頁。' },
+  { d: '12/19', who: 'Disen家 3 人', route: '郵輪碼頭 → 巴塞隆納機場 T1', how: '碼頭計程車直達機場', cost: '約 €46（固定價）', st: 'todo', note: '碼頭有排班計程車，可以現場搭。' },
+  { d: '12/19', who: 'Leo家 4 人', route: "郵輪碼頭 → L'Hospitalet 民宿", how: '碼頭計程車 1 輛', cost: '約 €25–30', st: 'todo', note: '碼頭現場搭。' },
+  { d: '12/19–21', who: 'Leo家 4 人', route: '巴塞隆納市區（音樂宮、蒙特惠克山、市集）＋蒙特塞拉特', how: '地鐵／公車：每人一張 T-casual', cost: '每人 €13（10 趟）', st: 'decide',
+    note: '最省：每人買一張 T-casual（1 區 10 趟 €13，每趟 €1.30），4 人共 €52，三天大概夠用。T-casual 一張只能一個人用。要多人共用一張的話是 T-familiar（8 趟 €11.50，每趟 €1.44，比較貴），適合剩幾趟不想多買時用。兩種都不能進機場站。L\'Hospitalet 在 1 區內。<br>蒙特塞拉特：從 Plaça d\'Espanya 搭 FGC R5 線（每小時一班）到山腳，再轉齒軌火車（Cremallera）或纜車（Aeri）上山。最省是分開買 R5 車票＋齒軌火車／纜車來回（約 €15／人）；Trans Montserrat 套票約 €50／人，含來回火車、上山和山上纜車，比較方便但比較貴。' },
+  { d: '12/22', who: 'Leo家 4 人', route: '巴塞隆納 → 塞維亞', how: '高鐵（18:38 抵達）', cost: '—', st: 'done', note: '已買好車票。' },
+  { d: '12/22–25', who: 'Leo家 4 人', route: '塞維亞市區（大教堂、西班牙廣場、王宮、特里亞納）', how: '步行為主＋偶爾短程計程車', cost: '每趟約 €6–10', st: 'info', note: '去龍達和白色山城的票已經買好。' },
+  { d: '12/26', who: 'Leo家 4 人', route: '塞維亞民宿 → 瓜迪斯洞穴屋', how: '計程車（約 €350）或 火車＋接駁（約 €270）', cost: '€270–350', st: 'decide',
+    note: '建議計程車：4 個人只多約 €80，門口到門口、行李不用搬上搬下，約 3 小時；火車沒有直達，要轉車，加上到洞穴屋還要再叫車，總共約 5 小時。最省是 Alsa 巴士（約 €31／人起，4–5 小時），但要從 Plaza de Armas 巴士站出發。' },
+  { d: '12/27', who: 'Leo家 4 人', route: '瓜迪斯 ⇄ 格拉那達（14:30 阿罕布拉宮＋傍晚聖尼古拉斯觀景台）', how: '2 趟單程計程車，或請同一位司機定時接送', cost: '單程約 €80，來回約 €160–180', st: 'todo', note: '提前用 WhatsApp 跟 Taxi Guadix 預約。' },
+  { d: '12/28', who: 'Leo家 4 人', route: '瓜迪斯荒漠 4x4 吉普車導覽', how: '在地合法 4x4 導覽（含接送）', cost: '約 €50–60／人', st: 'decide',
+    note: '想看「紅色沙漠」：選 Gorafe 的 Los Coloraos（赤紅色的荒地地形）。<br>・Cuevas El Torriblanco（Gorafe）：Los Coloraos 路線 €50／人，約 4 小時，2–4 人，結束後才付錢（刷卡或現金）。<br>・Geopark Granada 4x4：Los Coloraos 短線 €50 起（約 3 小時）；Desierto y Toril 路線 €60 起（約 5 小時，看得比較多）；環線 €85 起。<br>・「好萊塢沙漠」是阿梅里亞的 Tabernas 沙漠（很多西部片在那裡拍），離瓜迪斯開車約 1 小時多，是另一個地方；Gorafe 的景色感覺很像，一天只選一個比較從容。' },
+  { d: '12/29', who: 'Leo家 4 人', route: '瓜迪斯洞穴屋 → 格拉那達 → 哥多華民宿', how: '格拉那達 → 哥多華：火車', cost: '—', st: 'done', note: '格拉那達到哥多華這段已經買好。瓜迪斯到格拉那達這段還要安排（計程車約 €80，或巴士）。' },
+  { d: '12/29–30', who: 'Leo家 4 人', route: '哥多華市區（大清真寺、百花巷、羅馬橋）', how: '老城區全程步行', cost: '€0', st: 'info', note: '' },
+  { d: '12/31', who: 'Leo家 4 人', route: '哥多華 → 馬德里', how: '高鐵 AVE（約 1 小時 45 分）', cost: '約 €35–55／人', st: 'todo', note: '還沒訂到，請優先處理：跨年當天車票很搶，可以同時查 Renfe、Iryo、Ouigo。民宿 18:00 前要入住，最好下午 4 點前到馬德里。' },
+  { d: '12/31–1/6', who: 'Leo家 4 人', route: '馬德里市區（跨年、麗池公園、普拉多、三王節大遊行）', how: '地鐵＋步行：Tarjeta Multi 加值 10 次券', cost: '10 次 €7.30（每次約 €0.73）', st: 'info',
+    note: '最划算：在地鐵站售票機買 2 張 Tarjeta Multi（每張 €2.50），各加值 10 次券（€7.30）。Multi 卡的 10 次券可以多人共用，進站時同一張卡刷 2 次就是 2 個人，用完再加值。2 張卡讓 4 個人分兩組也方便。進出機場站要另外補 €3。共用人數上限網路說法不一，買的時候可以問站務員。' },
+  { d: '1/3', who: 'Leo家 4 人', route: '馬德里 ⇄ 塞哥維亞 一日遊', how: 'Renfe Avant 高鐵（28 分）＋車站搭 11 號公車到水道橋', cost: '高鐵來回約 €28／人，公車約 €2／人', st: 'todo', note: '週末很容易客滿，請提前上 Renfe 官網訂。' },
+  { d: '1/4', who: 'Leo家 4 人', route: '馬德里 ⇄ 托雷多 一日遊', how: 'Renfe Avant 高鐵（33 分）', cost: '來回約 €28／人', st: 'todo', note: '請提前上 Renfe 官網訂。' },
+  { d: '1/6', who: 'Leo家 4 人', route: '馬德里公寓（Carabanchel）→ 馬德里機場 T4', how: '計程車／Cabify 大車', cost: '約 €35–40（一口價）', st: 'info', note: '當天用 App 叫車。' },
+];
+const TR_ST = { done: ['good', '已訂'], todo: ['warn', '還沒訂'], decide: ['plan', '待決定'], info: ['', '現場處理'] };
+route('/transport', () => {
+  const n = (k) => TRANSPORT.filter((t) => t.st === k).length;
+  const rows = TRANSPORT.map((t) => {
+    const [cls, lab] = TR_ST[t.st];
+    return `<details class="stay"><summary><span class="stay-date">${esc(t.d)}</span><span class="stay-name">${esc(t.route)} <span class="chip ${cls}">${lab}</span></span></summary>
+      <div class="card"><p><b>誰：</b>${esc(t.who)}</p><p><b>怎麼去：</b>${esc(t.how)}</p><p><b>費用：</b>${esc(t.cost)}</p>${t.note ? `<p class="sub">${t.note}</p>` : ''}</div></details>`;
+  }).join('');
+  view(`${back('#/trip', '每日行程')}<h1>交通總表</h1>
+    <p class="sub">已訂 ${n('done')}・還沒訂 ${n('todo')}・待決定 ${n('decide')}。點每一列看細節。價格是參考，出發前請再確認。</p>
+    ${rows}`);
+  return 'home';
+});
+
 route('/trip', () => {
   const dates = [];
   for (let d = new Date(TRIP_START + 'T00:00:00Z'); ; d = new Date(d.getTime() + 86400000)) {
@@ -7029,6 +7069,7 @@ route('/trip', () => {
     <h2>住宿</h2><div class="stays">${stays}</div>
     <div class="card docs-card"><b>訂房確認單</b><p class="sub" style="margin:4px 0 8px">確認單放在家庭雲端，只有家人打得開。打開過一次就會存在手機裡，沒網路也看得到。</p>
       <div id="docs">${docsCachedHtml()}</div><button class="btn small" type="button" id="docs-load">讀取確認單</button></div>
+    <a class="btn ghost block" href="#/transport" style="margin:12px 0">🚕 交通總表（已訂／還沒訂）</a>
     <h2>每一天</h2><p class="sub">「Disen家」是只參加郵輪部分的三位家人（12/11 抵達，12/19 下船回台灣），「Leo家」是只有 Leo家四人的行程。「未定／推薦」是還沒決定的或是建議的行程。點「延伸賞析」看這個地點的推薦閱讀和電影。每個景點的「行前閱讀」在任務卡裡，參觀前兩天開放。</p>
     <a class="btn ghost block" href="#/cruise" style="margin-bottom:12px">郵輪靠港：我想去哪裡（12/13–12/17）</a>
     <a class="btn ghost block" href="itinerario.html" target="_blank" style="margin-bottom:12px">🇪🇸 西班牙文 30 天完整行程頁（司機與導遊專用）</a>
