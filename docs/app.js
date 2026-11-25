@@ -271,6 +271,7 @@ async function flush() {
       await api('photo', Object.assign({}, p.meta, { id: p.id, mime: blob.type || 'image/jpeg', data }));
       await DB.qDel(p.id);
       if (p.meta.kind === 'task') await DB.del(p.key);
+      else if (p.meta.kind === 'original') await DB.put(p.key, await shrinkPhoto(blob, 480, 0.8));   // 雲端已有一份，手機只留小縮圖
       if (p.award) award(p.award);
     }
     if (n) toast('上傳完成，共 ' + n + ' 張');
@@ -2018,7 +2019,7 @@ function taskControl(box, o) {
     if (!f) return;
     if (!S.server.url) { toast('請先到「我的」設定家庭雲端，上傳成功才會加分'); input.value = ''; return; }
     const pk = 'tp:' + o.key + ':' + uid();
-    await DB.put(pk, f);
+    await DB.put(pk, await shrinkPhoto(f));
     await DB.qPut({
       id: 'p:' + pk, type: 'photo', ts: Date.now(), key: pk,
       meta: { player: S.player, cardId: o.cardId || '', cardTitle: o.cardTitle || '', city: o.city || '', theme: o.theme || '任務', date: today(), kind: 'task', slot: 0 },
@@ -2219,7 +2220,7 @@ route('/card/:id', async (id) => {
         const file = input.files && input.files[0];
         if (!file) return;
         const aid = input.dataset.artId;
-        await DB.put('artphoto:' + card.id + ':' + aid, file);
+        await DB.put('artphoto:' + card.id + ':' + aid, await shrinkPhoto(file));
         const masterpieces = MUSEUM_MASTERPIECES[card.id];
         const mObj = masterpieces.find((m) => m.id === aid);
         award({ key: 'art_photo|' + card.id + '|' + aid, points: 20, label: '名畫真跡拍照：' + (mObj ? mObj.titleZh : aid) });
@@ -2286,7 +2287,7 @@ route('/grid/:cardId/:key', (cardId, key) => {
     input.onchange = async () => {
       const f = input.files && input.files[0];
       if (!f) return;
-      await DB.put(slotKey(cardId, key, i), f);
+      await DB.put(slotKey(cardId, key, i), await shrinkPhoto(f));
       await DB.del(slotKey(cardId, key, 'collage'));
       $('#out').innerHTML = '';
       refresh();
@@ -2328,6 +2329,22 @@ route('/grid/:cardId/:key', (cardId, key) => {
   refresh();
   return 'home';
 });
+/* 照片存進手機前先縮小（長邊 max 像素），避免原圖塞滿手機空間。失敗就用原檔。 */
+async function shrinkPhoto(blob, max = 1600, q = 0.85) {
+  try {
+    if (!blob || !/^image\//.test(blob.type || 'image/')) return blob;
+    const bmp = await loadBitmap(blob);
+    const w = bmp.width, h = bmp.height;
+    const s = Math.min(1, max / Math.max(w, h));
+    if (s === 1 && blob.size < 700000) { if (bmp.close) bmp.close(); return blob; }
+    const cv = document.createElement('canvas');
+    cv.width = Math.round(w * s); cv.height = Math.round(h * s);
+    cv.getContext('2d').drawImage(bmp, 0, 0, cv.width, cv.height);
+    if (bmp.close) bmp.close();
+    const out = await new Promise((res) => cv.toBlob(res, 'image/jpeg', q));
+    return out && out.size < blob.size ? out : blob;
+  } catch (e) { return blob; }
+}
 async function loadBitmap(blob) {
   if (window.createImageBitmap) {
     try { return await createImageBitmap(blob, { imageOrientation: 'from-image' }); } catch (e) { }
@@ -2933,7 +2950,7 @@ async function renderAirports(activeId = 'tpe') {
       tpeInput.onchange = async () => {
         const file = tpeInput.files && tpeInput.files[0];
         if (!file) return;
-        await DB.put('photo:tpe_departure', file);
+        await DB.put('photo:tpe_departure', await shrinkPhoto(file));
         award({ key: 'tpe_departure_photo', points: 50, label: '桃園機場啟程大合照' });
         toast('🎉 出發大合照上傳成功！+50 分');
         renderAirports('tpe');
@@ -2945,7 +2962,7 @@ async function renderAirports(activeId = 'tpe') {
       aInput.onchange = async () => {
         const file = aInput.files && aInput.files[0];
         if (!file) return;
-        await DB.put('photo:airport:' + airport.id, file);
+        await DB.put('photo:airport:' + airport.id, await shrinkPhoto(file));
         award({ key: 'airport_photo|' + airport.id, points: 30, label: airport.name + ' 打卡' });
         toast('🎉 ' + airport.code + ' 機場打卡照片已儲存！+30 分');
         renderAirports(airport.id);

@@ -1,14 +1,14 @@
 ﻿/* Offline support: keep the app and all content on the phone. */
-const CACHE = 'ftg-v2.13';
+const CACHE = 'ftg-v2.14';
 const SHELL = [
   './',
   'index.html',
   'app.css',
-  'app.css?v=2.13',
+  'app.css?v=2.14',
   'app.js',
-  'app.js?v=2.13',
+  'app.js?v=2.14',
   'pompeii-art.js',
-  'pompeii-art.js?v=2.13',
+  'pompeii-art.js?v=2.14',
   'pompeii-compare.html',
   'content.json',
   'preread.json',
