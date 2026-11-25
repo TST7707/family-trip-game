@@ -3404,7 +3404,7 @@ const PACK_NOTICE = `
   <div class="card notice-card">
     <h3>📢 行前注意事項</h3>
     <div class="notice-item urgent">
-      <b>🚢 郵輪：迪森、怡華、星丞務必在出發前完成線上報到（Web Check-in）</b>
+      <b>🚢 郵輪：DISEN一家務必在出發前完成線上報到（Web Check-in）</b>
       <p>到 MSC 官網或 MSC for Me App 填好護照資料，完成後下載登船證（e-ticket）和行李吊牌。沒做完，登船當天會很麻煩。不會操作的話，直接找珊笛幫忙。</p>
     </div>
     <div class="notice-item">
@@ -6233,7 +6233,7 @@ function paintPompeiiCompare(initialLoc, initialAngle) {
 const MONEY_PEOPLE = ['LEO', 'LINDA', 'SIMON', 'SANDY', 'DISEN', 'EVA', 'ERIC'];
 const MONEY_LEO = ['LEO', 'LINDA', 'SIMON', 'SANDY'];
 const MONEY_HOUSE = { LEO: 'LEO家', LINDA: 'LEO家', SIMON: 'LEO家', SANDY: 'LEO家', DISEN: 'DISEN家', EVA: 'DISEN家', ERIC: 'DISEN家' };
-const MONEY_CRUISE_END = '2026-12-19';   // 郵輪結束、迪森一家回臺灣；之後的帳只有 LEO 家四人
+const MONEY_CRUISE_END = '2026-12-19';   // 郵輪結束、DISEN一家回臺灣；之後的帳只有 LEO 家四人
 const MONEY_CUR = { EUR: '€', TWD: 'NT$', TND: 'TND ' };
 function moneyPeopleFor(date) { return date > MONEY_CRUISE_END ? MONEY_LEO : MONEY_PEOPLE; }
 function moneyFmt(cur, n) { const v = Math.round(n * 100) / 100; return (MONEY_CUR[cur] || cur + ' ') + v.toLocaleString('en-US', { minimumFractionDigits: cur === 'TWD' ? 0 : 2, maximumFractionDigits: cur === 'TWD' ? 0 : 2 }); }
@@ -6499,8 +6499,8 @@ function spotIdByTitle(key) {
 const STAYS = [
   { label: '12/9 – 12/12', name: 'Happy People Sagrada Familia Apartments', addr: 'Carrer Sardenya 306, 08013 Barcelona, 西班牙', q: 'Carrer Sardenya 306, 08013 Barcelona, Spain',
     tel: '+34 935 04 74 70', inout: '入住 15:00–24:00　退房 11:00 前',
-    room: '兩筆訂房：12/9–12/11 四人樓中樓公寓（2 晚）；12/11–12/12 七人公寓（1 晚，郵輪組三人一起住）',
-    rules: ['入住時要出示附照片的身分證件和信用卡。', '住宿方會寄租賃合約，要在抵達前簽好寄回；沒收到就打上面的電話。', '入住時用信用卡付 300 歐元損壞押金，退房檢查後 7 天內退還。', '請事先告訴住宿方預計幾點到。'],
+    room: '兩筆訂房：12/9–12/11 Leo家四人樓中樓公寓（2 晚）；12/11–12/12 七人公寓（1 晚，Disen家一起住）',
+    rules: ['入住時要出示附照片的身分證件和信用卡。', '住宿方會寄租賃合約，要在抵達前簽好寄回；沒收到就打上面的電話。', '入住時用信用卡付 300 歐元損壞押金，退房檢查後 7 天內退還。', '請事先告訴住宿方預計幾點到。（已經線上 check-in 完成）'],
     note: '入住 15:00 起　退房 11:00 前', link: '' },
   { label: '12/19 入住', name: "Avinguda d'Isabel la Catòlica, 65, 08905 L'Hospitalet de Llobregat, Barcelona", addr: "Avinguda d'Isabel la Catòlica, 65, 08905 L'Hospitalet de Llobregat, Barcelona, 西班牙", q: "Avinguda d'Isabel la Catòlica, 65, 08905 L'Hospitalet de Llobregat, Barcelona, Spain", note: '', link: '' },
   { label: '12/22 入住', name: '塞維亞', addr: '西班牙塞維亞　Plus Code 92V8+Q2G（37°23\'40.0"N 5°59\'05.7"W）', q: '37.394444,-5.984917', note: '', link: '' },
@@ -6512,7 +6512,7 @@ const STAYS = [
     rules: ['入住時間只到傍晚 6 點，從哥多華過來要算好時間；會晚到一定要先打電話。', '請事先告訴住宿方預計幾點到。', '公寓不接受派對、聚會。'],
     note: '入住 15:00–18:00　退房 08:00–11:00', link: '' },
 ];
-/* 每天的行程。who:'trio' 表示只有三人（郵輪組）。tentative 表示還不確定或是推薦。aside 是延伸賞析。 */
+/* 每天的行程。who:'trio' 表示只有 Disen家（郵輪組），who:'leo' 表示只有 Leo家。tentative 表示還不確定或是推薦。aside 是延伸賞析。 */
 const PLAN = {
   '2026-12-09': [
     {
@@ -6545,12 +6545,13 @@ const PLAN = {
   '2026-12-11': [
     {
       "who": "trio",
-      "text": "三人抵達巴塞隆納",
+      "text": "Disen家抵達巴塞隆納",
       "note": "晚上七個人一起住 Happy People Sagrada Familia Apartments（Carrer Sardenya 306）。"
     },
     {
+      "who": "leo",
       "when": "白天",
-      "text": "聖家堂（7 個人一起）",
+      "text": "聖家堂（Leo家）",
       "spot": "聖家堂",
       "q": "Sagrada Família Barcelona",
       "aside": "高第 1882 年開始建造，至今仍在施工，是世界文化遺產。建築的柱子像樹一樣分枝，是高第最有名的設計概念。"
@@ -6589,7 +6590,7 @@ const PLAN = {
     {
       "who": "trio",
       "when": "早上",
-      "text": "聖家堂（三人，第二批）",
+      "text": "聖家堂（Disen家，第二批）",
       "spot": "聖家堂",
       "q": "Sagrada Família Barcelona"
     },
@@ -6691,7 +6692,7 @@ const PLAN = {
   '2026-12-19': [
     {
       "who": "trio",
-      "text": "三人下船，搭機回台灣"
+      "text": "Disen家下船，搭機回台灣"
     },
     {
       "when": "下午 5 點",
@@ -6987,7 +6988,7 @@ route('/trip', () => {
     const label = cityLabel(date);
     const body = items.map((it) => {
       const sid = spotIdByTitle(it.spot);
-      const chips = [it.who === 'trio' ? '<span class="chip plan">三人</span>' : '', it.tentative ? '<span class="chip">未定／推薦</span>' : ''].join(' ');
+      const chips = [it.who === 'trio' ? '<span class="chip plan">Disen家</span>' : it.who === 'leo' ? '<span class="chip plan">Leo家</span>' : '', it.tentative ? '<span class="chip">未定／推薦</span>' : ''].join(' ');
       const mapBtn = it.q ? `<a class="btn small ghost" href="${esc(mapUrl(it.q))}" target="_blank" rel="noopener">地圖</a>` : '';
       const cardBtn = sid ? `<a class="btn small ghost" href="#/card/${sid}">任務卡</a>` : '';
       const aside = it.aside ? `<details class="aside"><summary>延伸賞析</summary><p>${esc(it.aside)}</p></details>` : '';
@@ -7004,7 +7005,7 @@ route('/trip', () => {
     <h2>住宿</h2><div class="stays">${stays}</div>
     <div class="card docs-card"><b>訂房確認單</b><p class="sub" style="margin:4px 0 8px">確認單放在家庭雲端，只有家人打得開。打開過一次就會存在手機裡，沒網路也看得到。</p>
       <div id="docs">${docsCachedHtml()}</div><button class="btn small" type="button" id="docs-load">讀取確認單</button></div>
-    <h2>每一天</h2><p class="sub">「三人」是只參加郵輪部分的三位家人（12/11 抵達，12/19 下船回台灣）。「未定／推薦」是還沒決定的或是建議的行程。點「延伸賞析」看這個地點的推薦閱讀和電影。每個景點的「行前閱讀」在任務卡裡，參觀前兩天開放。</p>
+    <h2>每一天</h2><p class="sub">「Disen家」是只參加郵輪部分的三位家人（12/11 抵達，12/19 下船回台灣），「Leo家」是只有 Leo家四人的行程。「未定／推薦」是還沒決定的或是建議的行程。點「延伸賞析」看這個地點的推薦閱讀和電影。每個景點的「行前閱讀」在任務卡裡，參觀前兩天開放。</p>
     <a class="btn ghost block" href="#/cruise" style="margin-bottom:12px">郵輪靠港：我想去哪裡（12/13–12/17）</a>
     <a class="btn ghost block" href="itinerario.html" target="_blank" style="margin-bottom:12px">🇪🇸 西班牙文 30 天完整行程頁（司機與導遊專用）</a>
     <div class="timeline">${rows}</div>`);
