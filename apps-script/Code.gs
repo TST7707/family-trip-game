@@ -1,18 +1,18 @@
 /**
- * 家族任務遊戲：照片上傳、分數、留言、讚、主辦人後台、12/7 自動重新開始
+ * 家族任務遊戲：照片上傳、分數、留言、讚、主辦人後台
  * 這段程式貼在一份 Google 試算表的「擴充功能 → Apps Script」裡。
  * 只要改下面三行，其他都不用動。
+ * 不會再自動清空：從 v5 起一切都正式記錄。同一個名字（不分大小寫、前後空白）在不同裝置算同一個玩家。
  */
 const FOLDER_ID = '請貼上共享雲端硬碟資料夾的 ID';     // 資料夾網址最後那一串英數字（不要貼整段網址）
 const FAMILY_CODE = '請自己設一組家庭密碼';             // 家人加入時要用
 const ADMIN_CODE = '請設一組只有主辦人知道的後台密碼';   // 後台刪人、清空、設定截止時間用
-const RESET_AT = '2026-12-07T00:00:00+08:00';         // 台灣時間 12/7 00:00 自動清空一次
 
 /* ---------- 以下不用改 ---------- */
 
 const DOCS_FOLDER = '住宿確認';   // 訂房確認單放這個子資料夾（在 FOLDER_ID 裡面），只有輸入家庭密碼的人讀得到
 
-/* 帳本不放在 SHEETS 裡：12/7 自動清空和後台「清空全部」都不會刪掉帳 */
+/* 帳本不放在 SHEETS 裡：後台「清空」不會刪掉帳 */
 const LEDGER = '帳本';
 const LEDGER_HEADERS = ['id', 'date', 'item', 'amount', 'cur', 'payer', 'split', 'by', 'ts'];
 
@@ -27,7 +27,8 @@ const SHEETS = {
 function doGet(e) {
   const p = (e && e.parameter) || {};
   if (p.code !== FAMILY_CODE) return json_({ ok: false, error: '家庭密碼不對' });
-  if (p.action === 'ping') return json_({ ok: true, version: 4 });
+  if (p.action === 'ping') return json_({ ok: true, version: 5 });
+  if (p.action === 'mine') return json_(mine_(p.player || ''));
   if (p.action === 'expenses') return json_(expenses_());
   if (p.action === 'feed') return json_(feed_(p.date || ''));
   if (p.action === 'image') return json_(image_(p.id));
@@ -57,27 +58,43 @@ function doPost(e) {
   }
 }
 
-/* 第一次用：在編輯器上方選 setup 再按「執行」。會建立工作表、檢查資料夾，並排好 12/7 自動清空。 */
+/* 第一次用：在編輯器上方選 setup 再按「執行」。會建立工作表、檢查資料夾，並取消舊的 12/7 自動清空排程。 */
 function setup() {
   Object.keys(SHEETS).forEach((n) => sheet_(n, SHEETS[n]));
   const folder = DriveApp.getFolderById(FOLDER_ID);
+  removeResetTriggers_();
+  Logger.log('設定完成，照片會存到：' + folder.getName() + '。不會再自動清空。');
+}
+
+function removeResetTriggers_() {
   ScriptApp.getProjectTriggers().forEach((t) => {
     if (t.getHandlerFunction() === 'resetAll') ScriptApp.deleteTrigger(t);
   });
-  ScriptApp.newTrigger('resetAll').timeBased().at(new Date(RESET_AT)).create();
-  Logger.log('設定完成，照片會存到：' + folder.getName() + '。12/7 00:00（台灣時間）會自動清空。');
 }
 
-/* 排程會在 12/7 自動呼叫這一支。也可以在後台按「清空全部測試資料」達到同樣效果。 */
+/* 一次性：在編輯器上方選 resetKeepSimon 再按「執行」。
+   只保留 Simon 的分數，其他分數、照片、留言、讚全部清掉，並取消 12/7 自動清空。 */
+function resetKeepSimon() {
+  const lock = LockService.getScriptLock();
+  lock.waitLock(30000);
+  try { removeResetTriggers_(); resetCore_('Simon'); } finally { lock.releaseLock(); }
+  Logger.log('已清空，只保留 Simon 的分數。12/7 不會再自動清空。');
+}
+
+/* 舊排程呼叫的名字；保留函式但不再排程。 */
 function resetAll() {
   const lock = LockService.getScriptLock();
   lock.waitLock(30000);
   try { resetCore_(); } finally { lock.releaseLock(); }
 }
 
-function resetCore_() {
+/* keep：要保留分數的玩家名字（不分大小寫）；留空就全部清掉 */
+function resetCore_(keep) {
+  const k = norm_(keep);
   Object.keys(SHEETS).forEach((n) => {
+    if (n === '設定') return;
     const sh = sheet_(n, SHEETS[n]);
+    if (n === '分數' && k) { removeRows_(sh, SHEETS[n].length, (r) => norm_(r[1]) !== k); return; }
     const last = sh.getLastRow();
     if (last > 1) sh.deleteRows(2, last - 1);
   });
@@ -123,7 +140,42 @@ function removeRows_(sh, ncols, pred) {
 }
 
 function deletedSet_() {
-  try { return new Set(JSON.parse(getSetting_('deleted') || '[]')); } catch (e) { return new Set(); }
+  let list = [];
+  try { list = JSON.parse(getSetting_('deleted') || '[]'); } catch (e) { list = []; }
+  const s = new Set(list.map(norm_));
+  return { has: (name) => s.has(norm_(name)) };
+}
+
+/* 同一個名字不分大小寫、前後空白都算同一個人 */
+function norm_(name) { return String(name || '').trim().replace(/\s+/g, ' ').toLowerCase(); }
+
+/* 找雲端上已經有的寫法；沒有就用這次輸入的 */
+function canon_(name) {
+  const n = String(name || '').trim().replace(/\s+/g, ' ');
+  const k = norm_(n);
+  if (!k) return n;
+  const hit = dataRows_(sheet_('分數', SHEETS['分數']), 2).find((r) => norm_(r[1]) === k);
+  return hit ? String(hit[1]) : n;
+}
+
+/* 把 id 開頭的玩家名字換成統一寫法，避免同一題在兩台裝置各算一次 */
+function canonId_(id, raw, name) {
+  id = String(id);
+  const i = id.indexOf('|');
+  if (i > 0 && norm_(id.slice(0, i)) === norm_(raw)) return name + id.slice(i);
+  return id;
+}
+
+/* 換新裝置時，把這個玩家在雲端的分數紀錄抓回去 */
+function mine_(player) {
+  const name = canon_(player);
+  const k = norm_(name);
+  if (!k) return { ok: true, name: name, entries: [] };
+  const entries = dataRows_(sheet_('分數', SHEETS['分數']), 7).filter((r) => norm_(r[1]) === k).map((r) => ({
+    id: String(r[0]), player: String(r[1]), points: Number(r[2]) || 0, label: String(r[3]), cardId: String(r[4]), date: dateStr_(r[5]), ts: Number(r[6]) || 0,
+  }));
+  const props = PropertiesService.getScriptProperties();
+  return { ok: true, name: name, entries: entries, epoch: Number(props.getProperty('EPOCH') || 0) };
 }
 
 function getSetting_(k) {
@@ -150,10 +202,15 @@ function saveScores_(entries) {
   const seen = existingIds_(sh);
   const deleted = deletedSet_();
   const rows = [];
+  const names = {};
   entries.forEach(function (x) {
-    if (!x || !x.id || seen.has(String(x.id)) || deleted.has(x.player)) return;
-    seen.add(String(x.id));
-    rows.push([x.id, x.player, Number(x.points) || 0, x.label || '', x.cardId || '', "'" + (x.date || ''), x.ts || Date.now()]);
+    if (!x || !x.id) return;
+    const k = norm_(x.player);
+    const name = names[k] || (names[k] = canon_(x.player));
+    const id = canonId_(x.id, x.player, name);
+    if (seen.has(id) || deleted.has(name)) return;
+    seen.add(id);
+    rows.push([id, name, Number(x.points) || 0, x.label || '', x.cardId || '', "'" + (x.date || ''), x.ts || Date.now()]);
   });
   if (rows.length) sh.getRange(sh.getLastRow() + 1, 1, rows.length, SHEETS['分數'].length).setValues(rows);
   return { ok: true, added: rows.length };
@@ -167,6 +224,7 @@ function subfolder_(parent, name) {
 function savePhoto_(b) {
   const sh = sheet_('照片', SHEETS['照片']);
   if (existingIds_(sh).has(String(b.id))) return { ok: true, duplicate: true };
+  b.player = canon_(b.player);
   if (deletedSet_().has(b.player)) return { ok: true, skipped: true };
   const root = DriveApp.getFolderById(FOLDER_ID);
   const day = subfolder_(root, b.date || 'unknown');
@@ -186,6 +244,7 @@ function savePhoto_(b) {
 function saveComment_(b) {
   const sh = sheet_('留言', SHEETS['留言']);
   if (!b.id || existingIds_(sh).has(String(b.id))) return { ok: true, duplicate: true };
+  b.player = canon_(b.player);
   if (deletedSet_().has(b.player)) return { ok: true, skipped: true };
   sh.appendRow([b.id, b.fileId, b.player, String(b.text || '').slice(0, 80), b.ts || Date.now()]);
   return { ok: true };
@@ -193,8 +252,8 @@ function saveComment_(b) {
 
 function saveLike_(b) {
   const sh = sheet_('讚', SHEETS['讚']);
+  b.player = canon_(b.player);
   if (deletedSet_().has(b.player)) return { ok: true, skipped: true };
-  const n = sh.getLastRow();
   const rows = dataRows_(sh, 3);
   const exists = rows.some((r) => String(r[0]) === String(b.factId) && String(r[1]) === String(b.player));
   if (b.on && !exists) sh.appendRow([b.factId, b.player, Date.now()]);
@@ -215,21 +274,23 @@ function admin_(b) {
   if (b.op === 'deletePlayer') {
     const name = String(b.name || '');
     if (!name) return { ok: false, error: '沒有名字' };
-    const deleted = Array.from(deletedSet_());
+    let deleted = [];
+    try { deleted = JSON.parse(getSetting_('deleted') || '[]'); } catch (e) { deleted = []; }
     if (deleted.indexOf(name) < 0) deleted.push(name);
     setSetting_('deleted', JSON.stringify(deleted));
-    removeRows_(sheet_('分數', SHEETS['分數']), 7, (r) => r[1] === name);
-    removeRows_(sheet_('留言', SHEETS['留言']), 5, (r) => r[2] === name);
-    removeRows_(sheet_('讚', SHEETS['讚']), 3, (r) => r[1] === name);
+    const k = norm_(name);
+    removeRows_(sheet_('分數', SHEETS['分數']), 7, (r) => norm_(r[1]) === k);
+    removeRows_(sheet_('留言', SHEETS['留言']), 5, (r) => norm_(r[2]) === k);
+    removeRows_(sheet_('讚', SHEETS['讚']), 3, (r) => norm_(r[1]) === k);
     removeRows_(sheet_('照片', SHEETS['照片']), 11, function (r) {
-      if (r[1] !== name) return false;
+      if (norm_(r[1]) !== k) return false;
       try { DriveApp.getFileById(String(r[9])).setTrashed(true); } catch (err) { /* 檔案已不在就略過 */ }
       return true;
     });
     return { ok: true };
   }
   if (b.op === 'wipe') {
-    resetCore_();
+    resetCore_(String(b.keep || ''));
     return { ok: true };
   }
   return { ok: false, error: 'unknown op' };
@@ -240,8 +301,8 @@ function feed_(date) {
   const players = {};
   const scoreRows = dataRows_(sheet_('分數', SHEETS['分數']), 7).filter((r) => !deleted.has(r[1]));
   scoreRows.forEach(function (r) {
-    const name = r[1];
-    const p = players[name] || (players[name] = { name: name, total: 0, today: 0 });
+    const name = String(r[1]);
+    const p = players[norm_(name)] || (players[norm_(name)] = { name: name, total: 0, today: 0 });
     p.total += Number(r[2]) || 0;
     if (dateStr_(r[5]) === date) p.today += Number(r[2]) || 0;
   });

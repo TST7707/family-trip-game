@@ -3,7 +3,6 @@
 const APP_VERSION = '2.7.1';
 const TRIP_START = '2026-12-09';
 const TRIP_END = '2027-01-06';
-const RESET_DATE = '2026-12-07';
 
 /* ---------- small helpers ---------- */
 const $ = (s, el = document) => el.querySelector(s);
@@ -206,10 +205,32 @@ async function syncMeta(d) {
     const was = LS.get('epoch', null);
     if (was !== null && was !== d.epoch) {
       await wipeLocal();
-      toast('新的一季開始了，分數和照片已重新開始');
+      LS.set('epoch', d.epoch);
+      await pullMine();
+      toast('分數已重新開始');
     }
     LS.set('epoch', d.epoch);
   }
+}
+/* 同一個名字（不分大小寫）在不同裝置算同一個玩家：把雲端上這個名字的分數抓回來 */
+const normName = (n) => String(n || '').trim().replace(/\s+/g, ' ').toLowerCase();
+async function pullMine() {
+  const me = S.player;
+  if (!me || !S.server.url) return;
+  try {
+    const d = await apiGet({ action: 'mine', player: me });
+    if (d.epoch != null && LS.get('epoch', null) !== null && LS.get('epoch', null) !== d.epoch) return;   // 交給 syncMeta 先清空
+    const name = d.name || me;
+    if (name !== me && normName(name) === normName(me)) {
+      LS.set('player', name);
+      LS.set('family', S.family.map((f) => (normName(f) === normName(name) ? name : f)));
+    }
+    const all = ledger();
+    const ids = new Set(all.map((e) => e.id));
+    let added = 0;
+    for (const e of d.entries || []) if (!ids.has(e.id)) { all.push(e); ids.add(e.id); added++; }
+    if (added) { LS.set('ledger', all); }
+  } catch (e) { /* 連不上就算了，下次再抓 */ }
 }
 async function wipeLocal() {
   LS.set('ledger', []);
@@ -1488,12 +1509,13 @@ route('/onboard', () => {
   paint();
   $$('#md button').forEach((b) => b.onclick = () => { mode = b.dataset.m; paint(); });
   $('#go').onclick = () => {
-    const n = $('#nm').value.trim();
+    const n = $('#nm').value.trim().replace(/\s+/g, ' ');
     if (!n) { toast('請先輸入名字'); return; }
     LS.set('player', n);
     LS.set('mode', mode);
     const fam = S.family;
-    if (!fam.includes(n)) LS.set('family', fam.concat(n));
+    if (!fam.some((f) => normName(f) === normName(n))) LS.set('family', fam.concat(n));
+    pullMine().then(() => render());
     location.hash = '#/';
   };
   return '';
@@ -1567,7 +1589,7 @@ route('/', () => {
     </div>
 
     <h2>選一座城市</h2><div class="grid2">${tiles}</div>
-    ${tToday < RESET_DATE ? '<div class="card" style="margin-top:12px"><b>出發前的分數 12/7 會清空</b><p class="sub" style="margin:4px 0 0">12/9 出發後才正式計分。</p></div>' : ''}
+
     <div style="margin-top:16px"><a class="btn block" href="#/trip">看每日行程</a></div>
     <div style="margin-top:10px"><a class="btn ghost block" href="#/cruise">郵輪靠港：我想去哪裡</a></div>
     <div style="margin-top:10px"><a class="btn ghost block" href="itinerario.html" target="_blank">🇪🇸 西班牙文專屬行程頁（純西文，給司機、導遊或同事）</a></div>
@@ -3261,9 +3283,10 @@ route('/me', () => {
   paint();
   $$('#md button').forEach((b) => b.onclick = () => { mode = b.dataset.m; paint(); });
   $('#savep').onclick = () => {
-    const n = $('#nm').value.trim(); if (!n) return toast('名字不能空白');
+    const n = $('#nm').value.trim().replace(/\s+/g, ' '); if (!n) return toast('名字不能空白');
     LS.set('player', n); LS.set('mode', mode);
-    if (!S.family.includes(n)) LS.set('family', S.family.concat(n));
+    if (!S.family.some((f) => normName(f) === normName(n))) LS.set('family', S.family.concat(n));
+    pullMine();
     toast('已儲存');
   };
   $('#pv').onchange = (e) => { LS.set('preview', e.target.checked); toast(e.target.checked ? '已打開全部城市卡' : '恢復每天解鎖'); };
@@ -3316,8 +3339,9 @@ async function renderAdmin() {
     <div class="card"><label class="field"><span>台灣時間，例如 21:30（留空就是不截止）</span><input class="text" id="cut" placeholder="HH:MM"></label>
       <button class="btn small" id="sc2">儲存時間</button></div>
     <h2>重新開始</h2>
-    <div class="card"><p class="sub">會清空所有分數、照片、留言和讚。台灣時間 12/7 00:00 也會自動清空一次。</p>
-      <button class="btn small ghost" id="wipe">清空全部測試資料</button></div>
+    <div class="card"><p class="sub">會清空分數、照片、留言和讚（帳本不會動）。不會再自動清空。</p>
+      <label class="field"><span>要保留分數的玩家（不分大小寫，留空就全部清掉）</span><input class="text" id="keep" value="Simon"></label>
+      <button class="btn small ghost" id="wipe">清空</button></div>
     <button class="btn ghost block" id="lo" style="margin-top:16px">登出後台</button>`);
   const code = LS.get('adminCode', '');
   const load = async () => {
@@ -3345,8 +3369,9 @@ async function renderAdmin() {
     try { await adminCall({ op: 'setCutoff', value: v }, code); toast('已儲存截止時間'); } catch (e) { toast(e.message); }
   };
   $('#wipe').onclick = async () => {
-    if (!confirm('真的要清空全部測試資料嗎？這個動作無法復原。')) return;
-    try { await adminCall({ op: 'wipe' }, code); await wipeLocal(); toast('已清空，重新開始'); load(); } catch (e) { toast(e.message); }
+    const keep = $('#keep').value.trim();
+    if (!confirm((keep ? '只保留「' + keep + '」的分數，其他' : '全部') + '分數、照片、留言和讚都會清掉，無法復原。確定嗎？')) return;
+    try { await adminCall({ op: 'wipe', keep }, code); await wipeLocal(); await pullMine(); toast('已清空'); load(); } catch (e) { toast(e.message); }
   };
   $('#lo').onclick = () => { LS.set('adminCode', ''); location.hash = '#/me'; };
   load();
@@ -7000,7 +7025,6 @@ route('/trip', () => {
         <div class="day-body">${items.length ? `<ul class="plan-list">${body}</ul>` : `<p class="sub">還沒定，這天在${esc(label)}。</p>`}</div></details>`;
   }).join('');
   view(`${back('#/', '首頁')}<h1>每日行程</h1>
-    <div class="card"><b>提醒：</b>出發前在遊戲裡累積的分數，會在 <b>12/7</b> 清空。12/9 出發後才開始正式計分，請到時候再玩。</div>
     <div class="card"><b>博物館免費小撇步：</b>1/2 週六 14:00 後國立考古博物館免費、18:00–20:00 普拉多美術館免費；1/4 週一安排托雷多剛好避開市區休館！</div>
     <h2>住宿</h2><div class="stays">${stays}</div>
     <div class="card docs-card"><b>訂房確認單</b><p class="sub" style="margin:4px 0 8px">確認單放在家庭雲端，只有家人打得開。打開過一次就會存在手機裡，沒網路也看得到。</p>
@@ -7309,7 +7333,7 @@ async function start() {
   window.addEventListener('online', flush);
   setInterval(flush, 60000);
   render();
-  if (S.server.url) apiGet({ action: 'feed', date: today() }).then(syncMeta).catch(() => {});
+  if (S.server.url) apiGet({ action: 'feed', date: today() }).then(syncMeta).then(pullMine).catch(() => {});
   flush();
 }
 start();
