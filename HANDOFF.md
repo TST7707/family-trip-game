@@ -13,7 +13,7 @@
 - `docs/`：GitHub Pages 單頁 app
   - `app.js`：全部邏輯與資料（行程、STAYS、TRANSPORT、PODCASTS、題目、路由）
   - `app.css`、`index.html`、`sw.js`（network-first service worker，快取名稱 `ftg-vX`，不快取跨網域請求）
-  - **每次改動都要把 index.html 與 sw.js 的版本號一起 +1**，目前是 **2.16**
+  - **每次改動都要把 index.html 與 sw.js 的版本號一起 +1**，目前是 **2.17**
   - 本機資料：localStorage（前綴 `ftg:`）＋ IndexedDB（photos / queue / pokedex）
 - `apps-script/Code.gs`（v5）：Google Apps Script 後端，寫 Google 試算表與 Drive 資料夾。**使用者必須自己貼上並重新部署**，agent 無法部署。
 - `腳本/`：各城市的內容 markdown（00-總覽.md 是總表）。

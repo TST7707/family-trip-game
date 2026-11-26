@@ -1598,16 +1598,6 @@ route('/', () => {
 
   view(`${posterBlock('barcelona', TRIP_META, 'FAMILY · QUEST')}<div class="kicker">S / 00 · ${esc(S.player)}，你好</div><h1>家族任務遊戲</h1><p class="sub">旅遊也能解任務!</p>${hero}
     ${readsHtml()}
-    <!-- 每日美味 Tapa 刮刮樂捷徑卡 -->
-    <a class="card" href="#/tapa" style="display:flex;align-items:center;gap:14px;text-decoration:none;border-left:4px solid var(--warn);margin-bottom:14px">
-      <div style="font-size:36px">🍢</div>
-      <div style="flex:1">
-        <b style="color:var(--fg);font-size:17px">今日美味 Tapa 刮刮樂</b>
-        <p class="sub" style="margin:2px 0 0">每天為大家刮出一道暖心西班牙美食或好運！</p>
-      </div>
-      ${CHEV}
-    </a>
-
     <!-- 啟程飛行與四大國際機場手帳 -->
     <a class="card" href="#/airports" style="display:flex;align-items:center;gap:14px;text-decoration:none;border-left:4px solid var(--primary);margin-bottom:14px">
       <div style="font-size:36px">✈️</div>
@@ -3459,43 +3449,42 @@ const PACK_GROUPS = [
     { id: 'ticket', t: '機票／電子機票', n: '存在手機裡，也印一份紙本放在隨身包。' },
     { id: 'cruise-doc', t: '郵輪登船證（e-ticket）與行李吊牌', n: '完成 MSC 線上報到後才拿得到，存手機＋印紙本。' },
     { id: 'card', t: '信用卡 2 張（不同發卡組織，例如 Visa＋Mastercard）', n: '分開放，一張不見還有另一張。出國前打開海外刷卡功能。' },
-    { id: 'cash', t: '少量歐元現金', n: '小費、廁所、市集用。不用帶太多，歐洲幾乎都能刷卡。' },
+    { id: 'cash', t: '少量歐元現金', n: '小費、廁所、市集用。歐洲幾乎都能刷卡。不需要換太多，請直接跟 Sandy 說需要換多少。' },
     { id: 'phone', t: '手機＋充電線', n: '開通國際漫遊或買好歐洲網卡／eSIM。' },
     { id: 'meds', t: '個人常用藥＋英文藥單', n: '放隨身行李，不要托運。帶足整趟旅程的量，再多幾天備用。' },
     { id: 'insurance', t: '旅遊平安險與海外醫療險資料', n: '把保單號碼和緊急聯絡電話存在手機裡。' },
   ] },
   { lv: 2, title: '② 很重要', items: [
+    { id: 'copy', t: '護照影本＋兩張大頭照', n: '和護照分開放，萬一護照遺失補辦會快很多。這項很重要，請排第一個準備。' },
     { id: 'plug', t: '歐規轉接頭（兩根圓腳，C／F 型）', n: '西班牙、法國、義大利、突尼西亞都用得到。歐洲電壓是 230V，吹風機等電器要看清楚是否支援。' },
-    { id: 'powerbank', t: '行動電源', n: '只能放隨身行李，不能托運。阿聯酋航空機上禁止使用行動電源，出發前請再確認航空公司規定。' },
-    { id: 'glasses', t: '眼鏡／隱形眼鏡＋備用', n: '' },
-    { id: 'coat', t: '保暖外套', n: '12 月到 1 月，馬德里、格拉納達早晚可能接近 0°C。' },
+    { id: 'powerbank', t: '行動電源', n: '只能放隨身行李，不能托運。飛機上禁止使用行動電源！！！！！！！' },
+    { id: 'glasses', t: '眼鏡／太陽眼鏡', n: '' },
+    { id: 'coat', t: '保暖外套', n: '12 月到 1 月，馬德里、格拉納達早晚可能接近 0°C。若只參加郵輪行程，請自行確認平均氣溫再決定。' },
     { id: 'shoes', t: '好走的鞋', n: '每天會走很多路，老城區是石板路。' },
     { id: 'warm', t: '毛帽、手套、圍巾', n: '' },
     { id: 'umbrella', t: '摺疊傘或輕便雨衣', n: '' },
-    { id: 'copy', t: '護照影本＋兩張大頭照', n: '和護照分開放，萬一護照遺失補辦會快很多。' },
   ] },
   { lv: 3, title: '③ 郵輪上用得到', items: [
-    { id: 'formal', t: '正裝（如果要參加船上的正式晚宴）', n: 'Gala Night 通常 1 次（有時 2 次）。男生：有領襯衫或西裝外套；女生：洋裝。不強制，但晚上進餐廳不能穿短褲、拖鞋和背心。' },
-    { id: 'white', t: '一件白色衣服', n: '船上常辦白色派對。' },
+    { id: 'formal', t: '正裝（如果要參加船上的正式晚宴）', n: 'Gala Night 通常 1 次（有時 2 次），目前還不知道是哪一晚。男生：有領襯衫或西裝外套；女生：洋裝。不強制，但晚上進餐廳不能穿短褲、拖鞋和吊嘎。' },
+    { id: 'white', t: '白色衣服或褲子', n: '船上會辦白色派對（MSC 最著名的活動）。全白更好，裙裝也可以。' },
     { id: 'swim', t: '泳衣', n: '船上有泳池和按摩池。' },
     { id: 'seasick', t: '暈船藥', n: '冬天的地中海有時浪會比較大，容易暈的人先準備。' },
     { id: 'daybag', t: '上岸用的小背包', n: '每個港口上岸玩一天用，拉鍊要能關好。' },
   ] },
   { lv: 4, title: '④ 生活用品', items: [
     { id: 'toilet', t: '盥洗用品、牙刷牙膏', n: '歐洲很多住宿不提供牙刷。' },
-    { id: 'skin', t: '保養品、護唇膏、護手霜', n: '歐洲冬天很乾。液體帶上飛機要用 100ml 以下小瓶，裝進透明夾鏈袋。' },
+    { id: 'skin', t: '保養品、護唇膏、護手霜', n: '歐洲冬天很乾。液體帶上飛機要用 100ml 以下小瓶，裝進透明夾鏈袋。也可以跟 Sandy 說想要哪個歐洲牌子，德國買 CP 值很高。' },
+    { id: 'clothes', t: '衣服、褲子（含保暖衣）', n: '需要帶幾件，請依行程天數自行決定。' },
     { id: 'pajama', t: '睡衣', n: '' },
     { id: 'slipper', t: '室內拖鞋', n: '歐洲旅館多半沒有拖鞋。' },
     { id: 'underwear', t: '內衣褲、襪子', n: '有洗衣機可以洗，帶一週份就夠。' },
     { id: 'tissue', t: '面紙', n: '' },
     { id: 'pen', t: '一支筆', n: '填表格、寫明信片用。' },
   ] },
-  { lv: 5, title: '⑤ 不用從臺灣帶（珊笛帶）', note: '這些東西歐洲就買得到，由珊笛從歐洲就近帶過來，大家不用塞進行李箱。', items: [
-    { id: 'detergent', t: '洗衣粉／洗衣球（珊笛帶）', n: '' },
-    { id: 'hanger', t: '衣架、曬衣夾（珊笛帶）', n: '' },
-    { id: 'bags', t: '垃圾袋、夾鏈袋（珊笛帶）', n: '' },
-    { id: 'wipes', t: '濕紙巾（珊笛帶）', n: '' },
-    { id: 'shampoo', t: '大罐洗髮精、沐浴乳（珊笛帶）', n: '' },
+  { lv: 5, title: '⑤ 不用從臺灣帶（Sandy帶）', note: '這些東西歐洲就買得到，由 Sandy 從歐洲就近帶過來，大家不用塞進行李箱。', items: [
+    { id: 'detergent', t: '洗衣粉／洗衣球（Sandy帶）', n: '' },
+    { id: 'bags', t: '垃圾袋（Sandy帶）', n: '' },
+    { id: 'shampoo', t: '洗髮精、沐浴乳（Sandy帶）', n: '' },
   ] },
 ];
 
@@ -3503,17 +3492,16 @@ const PACK_NOTICE = `
   <div class="card notice-card">
     <h3>📢 行前注意事項</h3>
     <div class="notice-item urgent">
-      <b>🚢 郵輪：DISEN一家務必在出發前完成線上報到（Web Check-in）</b>
-      <p>到 MSC 官網或 MSC for Me App 填好護照資料，完成後下載登船證（e-ticket）和行李吊牌。沒做完，登船當天會很麻煩。不會操作的話，直接找珊笛幫忙。</p>
-    </div>
-    <div class="notice-item">
-      <b>🇪🇺 入境歐洲申根區要付費的政策（ETIAS）：目前還不用申請</b>
-      <p>ETIAS 全名翻成中文大概是：歐洲旅遊資訊和授權系統。就是入境前要先上網申請，然後繳一筆手續費。這不是簽證，概念跟英國的 ETA 類似。</p>
-      <p>原訂 ETIAS 要在 2026 年第四季實施，目前官網公告的大意是：<b>現在還不用 ETIAS，歐盟會在正式啟用前幾個月公告。</b>所以這趟入境申根區，只有「不用事先申請的 EES」。</p>
+      <b>🚢 郵輪：DISEN一家務必在<strong>出發前兩天</strong>完成線上報到（Web Check-in）</b>
+      <p>完成後下載或列印登船證（e-ticket）和行李吊牌。</p>
     </div>
     <div class="notice-item">
       <b>🛂 EES 數位通關：入境要拍臉、按指紋</b>
       <p>流程和排隊的心理準備，請看 <a href="#/airports">四大機場手帳</a> 最上方的說明。</p>
+    </div>
+    <div class="notice-item">
+      <b>🇪🇺 之前廣傳的入境歐洲申根區要付費政策（ETIAS）：目前不用申請！！！</b>
+      <p>ETIAS 全名翻成中文大概是：歐洲旅遊資訊和授權系統，入境前要先上網申請，繳一筆手續費。原訂 ETIAS 要在 2026 年第四季實施，幸運的是，截至目前官網公告：現在還不用 ETIAS，歐盟會在正式啟用前幾個月公告。所以這趟入境申根區，免去一道麻煩。</p>
     </div>
   </div>`;
 
@@ -7151,7 +7139,7 @@ route('/trip', () => {
     <div class="card docs-card"><b>訂房確認單</b><p class="sub" style="margin:4px 0 8px">確認單放在家庭雲端，只有家人打得開。打開過一次就會存在手機裡，沒網路也看得到。</p>
       <div id="docs">${docsCachedHtml()}</div><button class="btn small" type="button" id="docs-load">讀取確認單</button></div>
     <a class="btn ghost block" href="#/transport" style="margin:12px 0">🚕 交通總表（已訂／還沒訂）</a>
-    <h2>每一天</h2><p class="sub">「Disen家」是只參加郵輪部分的三位家人（12/11 抵達，12/19 下船回台灣），「Leo家」是只有 Leo家四人的行程。「未定／推薦」是還沒決定的或是建議的行程。點「延伸賞析」看這個地點的推薦閱讀和電影。每個景點的「行前閱讀」在任務卡裡，參觀前兩天開放。</p>
+    <h2>每一天</h2><p class="sub">「Disen家」只參加豪華郵輪行（12/11 抵達，12/19 下船回台灣），「Leo家」還會參加額外三週的西班牙之旅。「未定／推薦」是還沒決定的或是建議的行程。點「延伸賞析」看這個地點的推薦閱讀和電影。每個景點的「行前閱讀」在任務卡裡，參觀前兩天開放。</p>
     <a class="btn ghost block" href="#/cruise" style="margin-bottom:12px">郵輪靠港：我想去哪裡（12/13–12/17）</a>
     <a class="btn ghost block" href="itinerario.html" target="_blank" style="margin-bottom:12px">🇪🇸 西班牙文 30 天完整行程頁（司機與導遊專用）</a>
     <div class="timeline">${rows}</div>`);
