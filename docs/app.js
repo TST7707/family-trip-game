@@ -271,7 +271,7 @@ async function flush() {
       await api('photo', Object.assign({}, p.meta, { id: p.id, mime: blob.type || 'image/jpeg', data }));
       await DB.qDel(p.id);
       if (p.meta.kind === 'task') await DB.del(p.key);
-      else if (p.meta.kind === 'original') await DB.put(p.key, await shrinkPhoto(blob, 480, 0.8));   // 雲端已有一份，手機只留小縮圖
+      else if (p.meta.kind === 'original' || p.meta.kind === 'keep') await DB.put(p.key, await shrinkPhoto(blob, 480, 0.8));   // 雲端已有一份，手機只留小縮圖
       if (p.award) award(p.award);
     }
     if (n) toast('上傳完成，共 ' + n + ' 張');
@@ -503,10 +503,55 @@ const SPOT_POSTER = {
   'cruise-s6': 'palermo', 'cruise-s7': 'palermo', 'cruise-s8': 'tunis', 'cruise-s9': 'tunis',
 };
 const PORT_POSTER = { '2026-12-13': 'marseille', '2026-12-14': 'genoa', '2026-12-15': 'pompeii', '2026-12-16': 'palermo', '2026-12-17': 'tunis' };
+/* 城市海報的 podcast：音檔放在 Google 雲端硬碟（要設成「知道連結的任何人都能查看」），
+   點海報就從雲端串流播放，不會存進手機。key 對應 POSTER_IMG，id 是雲端硬碟檔案 ID。 */
+const PODCASTS = {
+  barcelona: { title: '用直線蓋曲線的高第', id: '12jTioz5RH6Ej8TD1d1QAlNMWl627vf5y' },
+};
 function posterImg(key, cls = 'poster img') {
   const p = POSTER_IMG[key];
-  return p ? `<figure class="${cls}"><img src="${p[0]}" alt="${esc(p[1])}" loading="lazy" decoding="async"></figure>` : '';
+  if (!p) return '';
+  const pod = PODCASTS[key];
+  return pod
+    ? `<figure class="${cls} has-pod" data-pod="${esc(key)}" role="button" tabindex="0" aria-label="播放 podcast：${esc(pod.title)}"><img src="${p[0]}" alt="${esc(p[1])}" loading="lazy" decoding="async"><span class="pod-badge">🎧 點海報聽：${esc(pod.title)}</span></figure>`
+    : `<figure class="${cls}"><img src="${p[0]}" alt="${esc(p[1])}" loading="lazy" decoding="async"></figure>`;
 }
+const POD = { audio: null, key: '' };
+function podBar() {
+  let bar = document.getElementById('podbar');
+  if (!bar) {
+    bar = document.createElement('div');
+    bar.id = 'podbar'; bar.className = 'podbar';
+    bar.innerHTML = '<button type="button" class="btn small" id="pod-pp">暫停</button><span class="pod-title" id="pod-t"></span><button type="button" class="btn small ghost" id="pod-x" aria-label="關閉">✕</button>';
+    document.body.appendChild(bar);
+    $('#pod-pp', bar).onclick = () => { const a = POD.audio; if (!a) return; if (a.paused) a.play().catch(() => {}); else a.pause(); };
+    $('#pod-x', bar).onclick = () => { if (POD.audio) { POD.audio.pause(); POD.audio.removeAttribute('src'); POD.audio.load(); } POD.key = ''; bar.hidden = true; };
+  }
+  return bar;
+}
+function playPodcast(key) {
+  const pod = PODCASTS[key];
+  if (!pod) return;
+  if (!POD.audio) {
+    POD.audio = new Audio();
+    POD.audio.preload = 'none';
+    const sync = () => { const b = document.getElementById('pod-pp'); if (b) b.textContent = POD.audio.paused ? '播放' : '暫停'; };
+    ['play', 'pause', 'ended'].forEach((ev) => POD.audio.addEventListener(ev, sync));
+    POD.audio.addEventListener('waiting', () => { const t = document.getElementById('pod-t'); if (t) t.textContent = '載入中… ' + PODCASTS[POD.key].title; });
+    POD.audio.addEventListener('playing', () => { const t = document.getElementById('pod-t'); if (t) t.textContent = '🎧 ' + PODCASTS[POD.key].title; });
+    POD.audio.addEventListener('error', () => toast('podcast 播不出來，請確認網路'));
+  }
+  const bar = podBar(); bar.hidden = false;
+  if (POD.key === key) { if (POD.audio.paused) POD.audio.play().catch(() => {}); else POD.audio.pause(); return; }
+  POD.key = key;
+  $('#pod-t', bar).textContent = '載入中… ' + pod.title;
+  POD.audio.src = 'https://drive.google.com/uc?export=download&id=' + encodeURIComponent(pod.id);
+  POD.audio.play().catch(() => toast('請再點一次海報播放'));
+}
+document.addEventListener('click', (e) => {
+  const f = e.target.closest && e.target.closest('[data-pod]');
+  if (f) { e.preventDefault(); playPodcast(f.dataset.pod); }
+});
 function posterBlock(kind, meta, foot) {
   if (POSTER_IMG[kind]) return posterImg(kind);
   return `<div class="poster"><div class="pmeta"><span>S / ${esc(meta.no)}</span>${swatch()}</div>${posterSVG(kind)}
@@ -2221,6 +2266,7 @@ route('/card/:id', async (id) => {
         if (!file) return;
         const aid = input.dataset.artId;
         await DB.put('artphoto:' + card.id + ':' + aid, await shrinkPhoto(file));
+        { const mm = (MUSEUM_MASTERPIECES[card.id] || []).find((m) => m.id === aid); queueKeepPhoto('artphoto:' + card.id + ':' + aid, { city: CITY[card.city] ? CITY[card.city].name : '', cardId: card.id, cardTitle: card.title, theme: '名畫真跡', slot: mm ? mm.titleZh : aid }); }
         const masterpieces = MUSEUM_MASTERPIECES[card.id];
         const mObj = masterpieces.find((m) => m.id === aid);
         award({ key: 'art_photo|' + card.id + '|' + aid, points: 20, label: '名畫真跡拍照：' + (mObj ? mObj.titleZh : aid) });
@@ -2329,6 +2375,14 @@ route('/grid/:cardId/:key', (cardId, key) => {
   refresh();
   return 'home';
 });
+/* 機場合照、機場打卡、名畫照：排進上傳清單存到家庭雲端（做紀念冊用），上傳後手機只留小縮圖 */
+async function queueKeepPhoto(key, meta) {
+  if (!S.server.url || !S.player) return;
+  const ts = Date.now();
+  await DB.qPut({ id: 'p:' + key + ':' + ts, type: 'photo', ts, key,
+    meta: Object.assign({ player: S.player, kind: 'keep', cardId: '', date: today() }, meta) });
+  flush();
+}
 /* 照片存進手機前先縮小（長邊 max 像素），避免原圖塞滿手機空間。失敗就用原檔。 */
 async function shrinkPhoto(blob, max = 1600, q = 0.85) {
   try {
@@ -2951,6 +3005,7 @@ async function renderAirports(activeId = 'tpe') {
         const file = tpeInput.files && tpeInput.files[0];
         if (!file) return;
         await DB.put('photo:tpe_departure', await shrinkPhoto(file));
+        queueKeepPhoto('photo:tpe_departure', { city: '機場', cardTitle: '桃園機場', theme: '啟程大合照', slot: '桃園機場合照' });
         award({ key: 'tpe_departure_photo', points: 50, label: '桃園機場啟程大合照' });
         toast('🎉 出發大合照上傳成功！+50 分');
         renderAirports('tpe');
@@ -2963,6 +3018,7 @@ async function renderAirports(activeId = 'tpe') {
         const file = aInput.files && aInput.files[0];
         if (!file) return;
         await DB.put('photo:airport:' + airport.id, await shrinkPhoto(file));
+        queueKeepPhoto('photo:airport:' + airport.id, { city: '機場', cardTitle: airport.name, theme: '機場打卡', slot: airport.name });
         award({ key: 'airport_photo|' + airport.id, points: 30, label: airport.name + ' 打卡' });
         toast('🎉 ' + airport.code + ' 機場打卡照片已儲存！+30 分');
         renderAirports(airport.id);
@@ -6870,6 +6926,13 @@ const PLAN = {
       "text": "哥多華・基督教君主城堡與古羅馬大石橋",
       "q": "Alcázar de los Reyes Cristianos Córdoba",
       "aside": "天主教雙王在這裡指揮攻打格拉那達，哥倫布也在這裡向他們說明往西航行的計畫。後來這座城堡當了三百年的宗教裁判所總部。"
+    },
+    {
+      "when": "上午（推薦）",
+      "text": "聖巴西里奧區三座免費庭院（San Basilio 17／20／44）",
+      "tentative": true,
+      "q": "Calle San Basilio 44 Córdoba",
+      "aside": "聖巴西里奧（San Basilio）街區就在基督教君主城堡和舊城牆之間，有三座全年開放的免費庭院，直接走進去就好，不用預約，也不用買東西。\n・San Basilio 17（Casa LONGA）：一間小型精品旅館，庭院小巧溫馨，用藍白陶器裝飾。開放時間：週一、週四到週日 11:00–14:00。12/29（二）和 12/30（三）剛好沒開。\n・San Basilio 20：La Plata Cordobesa 銀器工坊，可以看師傅做銀絲細工（filigrana）。每天 10:30–14:00。\n・San Basilio 44：三座裡最大的一座，中間有噴泉，四周是手工藝小店，葡萄藤一路爬到二樓。每天 10:30–14:00。\n城堡看完走過去只要幾分鐘，建議中午 2 點前到。"
     }
   ],
   '2026-12-31': [
@@ -7073,7 +7136,7 @@ route('/trip', () => {
       const chips = [it.who === 'trio' ? '<span class="chip plan">Disen家</span>' : it.who === 'leo' ? '<span class="chip plan">Leo家</span>' : '', it.tentative ? '<span class="chip">未定／推薦</span>' : ''].join(' ');
       const mapBtn = it.q ? `<a class="btn small ghost" href="${esc(mapUrl(it.q))}" target="_blank" rel="noopener">地圖</a>` : '';
       const cardBtn = sid ? `<a class="btn small ghost" href="#/card/${sid}">任務卡</a>` : '';
-      const aside = it.aside ? `<details class="aside"><summary>延伸賞析</summary><p>${esc(it.aside)}</p></details>` : '';
+      const aside = it.aside ? `<details class="aside"><summary>延伸賞析</summary><p>${esc(it.aside).replace(/\n/g, '<br>')}</p></details>` : '';
       return `<li><div class="plan-main">${it.when ? `<span class="sub">${esc(it.when)}</span> ` : ''}<b>${esc(it.text)}</b> ${chips}${it.note ? `<div class="sub">${esc(it.note)}</div>` : ''}${aside}</div>
         <div class="plan-btns">${mapBtn}${cardBtn}</div></li>`;
     }).join('');

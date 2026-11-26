@@ -616,3 +616,9 @@ details.stay[open] summary{border-bottom:1px solid var(--line)}
 .pcompare-angles{display:flex;gap:6px;overflow-x:auto;padding:2px 0 8px;margin-bottom:8px}
 .pcompare-angles .btn.small{font-size:12.5px;padding:5px 12px;white-space:nowrap}
 
+/* podcast on city posters */
+.poster.has-pod{position:relative;cursor:pointer}
+.pod-badge{position:absolute;left:10px;bottom:10px;padding:4px 10px;background:rgba(0,0,0,.65);color:#fff;font:600 13px/1.5 inherit;border-radius:999px;max-width:calc(100% - 20px);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.podbar{position:fixed;left:12px;right:12px;bottom:calc(76px + env(safe-area-inset-bottom));z-index:50;display:flex;align-items:center;gap:8px;padding:8px 10px;background:var(--card);border:1px solid var(--line-strong);box-shadow:0 4px 16px rgba(0,0,0,.25)}
+.podbar[hidden]{display:none}
+.podbar .pod-title{flex:1;min-width:0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;font-size:14px}
