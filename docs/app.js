@@ -506,7 +506,7 @@ const PORT_POSTER = { '2026-12-13': 'marseille', '2026-12-14': 'genoa', '2026-12
 /* 城市海報的 podcast：音檔放在 Google 雲端硬碟（要設成「知道連結的任何人都能查看」），
    點海報就從雲端串流播放，不會存進手機。key 對應 POSTER_IMG，id 是雲端硬碟檔案 ID。 */
 const PODCASTS = {
-  barcelona: { title: '用直線蓋曲線的高第', id: '12jTioz5RH6Ej8TD1d1QAlNMWl627vf5y' },
+  barcelona: { title: '用直線蓋曲線的高第', src: 'pod/barcelona.m4a' },
 };
 function posterImg(key, cls = 'poster img') {
   const p = POSTER_IMG[key];
@@ -539,13 +539,14 @@ function playPodcast(key) {
     ['play', 'pause', 'ended'].forEach((ev) => POD.audio.addEventListener(ev, sync));
     POD.audio.addEventListener('waiting', () => { const t = document.getElementById('pod-t'); if (t) t.textContent = '載入中… ' + PODCASTS[POD.key].title; });
     POD.audio.addEventListener('playing', () => { const t = document.getElementById('pod-t'); if (t) t.textContent = '🎧 ' + PODCASTS[POD.key].title; });
-    POD.audio.addEventListener('error', () => toast('podcast 播不出來，請確認網路'));
+    POD.audio.addEventListener('error', () => { const t = document.getElementById('pod-t'); if (t) t.textContent = '⚠️ 播不出來，請確認網路後再點一次'; POD.key = ''; toast('podcast 播不出來，請確認網路'); });
+    POD.audio.addEventListener('stalled', () => { if (POD.audio.readyState < 3) { const t = document.getElementById('pod-t'); if (t) t.textContent = '網路較慢，載入中… ' + PODCASTS[POD.key].title; } });
   }
   const bar = podBar(); bar.hidden = false;
   if (POD.key === key) { if (POD.audio.paused) POD.audio.play().catch(() => {}); else POD.audio.pause(); return; }
   POD.key = key;
   $('#pod-t', bar).textContent = '載入中… ' + pod.title;
-  POD.audio.src = 'https://drive.google.com/uc?export=download&id=' + encodeURIComponent(pod.id);
+  POD.audio.src = pod.src;
   POD.audio.play().catch(() => toast('請再點一次海報播放'));
 }
 document.addEventListener('click', (e) => {

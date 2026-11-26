@@ -1,14 +1,14 @@
 ﻿/* Offline support: keep the app and all content on the phone. */
-const CACHE = 'ftg-v2.15';
+const CACHE = 'ftg-v2.16';
 const SHELL = [
   './',
   'index.html',
   'app.css',
-  'app.css?v=2.15',
+  'app.css?v=2.16',
   'app.js',
-  'app.js?v=2.15',
+  'app.js?v=2.16',
   'pompeii-art.js',
-  'pompeii-art.js?v=2.15',
+  'pompeii-art.js?v=2.16',
   'pompeii-compare.html',
   'content.json',
   'preread.json',
@@ -73,7 +73,7 @@ self.addEventListener('activate', (e) => {
 
 self.addEventListener('fetch', (e) => {
   const url = new URL(e.request.url);
-  if (e.request.method !== 'GET' || url.origin !== location.origin) return; // uploads and Google go straight to the network
+  if (e.request.method !== 'GET' || url.origin !== location.origin || url.pathname.indexOf('/pod/') !== -1 || e.request.headers.has('range')) return; // uploads and Google go straight to the network
   // Network first (so updates arrive), fall back to the cached copy when offline.
   e.respondWith(
     fetch(e.request).then((res) => {
